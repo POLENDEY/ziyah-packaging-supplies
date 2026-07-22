@@ -1,0 +1,362 @@
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(65, 44, 71, 0.12);
+  box-shadow: 0 2px 12px rgba(65, 44, 71, 0.07);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--primary-dark);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.3px;
+  flex-shrink: 0;
+}
+
+.logo img {
+  height: 44px;
+  width: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logoName {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--primary-dark);
+  letter-spacing: 0.3px;
+}
+
+.logoSub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--gray-600);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.desktopMenu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.link {
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: var(--gray-600);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--transition), background var(--transition);
+  white-space: nowrap;
+}
+
+.link:hover {
+  color: var(--primary);
+  background: var(--primary-xlight);
+}
+
+.linkActive {
+  color: var(--primary) !important;
+  background: var(--primary-xlight);
+  font-weight: 600;
+}
+
+.ctaBtn {
+  margin-left: 8px;
+  padding: 9px 20px;
+  background: var(--primary);
+  color: #fff !important;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+.ctaBtn:hover {
+  background: var(--primary-dark) !important;
+  box-shadow: 0 4px 16px rgba(13, 124, 106, 0.25);
+  color: #fff !important;
+}
+
+.burger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background var(--transition);
+}
+
+.burger:hover {
+  background: var(--primary-xlight);
+}
+
+.burger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--primary-dark);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.burgerActive span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.burgerActive span:nth-child(2) {
+  opacity: 0;
+}
+
+.burgerActive span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile drawer */
+.drawer {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.drawerOpen {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.drawerContent {
+  background: #fff;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 8px 32px rgba(13, 124, 106, 0.12);
+}
+
+.drawerLink {
+  padding: 14px 16px;
+  color: var(--gray-700);
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background var(--transition), color var(--transition);
+}
+
+.drawerLink:hover {
+  background: var(--primary-xlight);
+  color: var(--primary);
+}
+
+.drawerCta {
+  margin-top: 8px;
+  padding: 14px 16px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+  text-align: center;
+  transition: background var(--transition);
+}
+
+.drawerCta:hover {
+  background: var(--primary-dark);
+}
+
+/* Keep lightbox classes to avoid import errors */
+.lightbox {
+  display: none;
+}
+
+.lightboxOpen {
+  display: none;
+}
+
+.lightboxContent {
+  display: none;
+}
+
+.lightboxLink {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktopMenu {
+    display: none;
+  }
+
+  .burger {
+    display: flex;
+  }
+
+  .drawer {
+    display: block;
+  }
+}
+
+
+.container {
+  max-width: 1200px;
+  height: 80px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.logo span {
+  color: var(--gray-400);
+}
+
+.desktopMenu {
+  display: flex;
+  gap: 32px;
+}
+
+.link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-600);
+  transition: color 0.2s;
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--foreground);
+  }
+}
+
+.burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
+  padding: 10px;
+  margin-right: -10px;
+}
+
+.burger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background-color: var(--foreground);
+  transition: all 0.3s ease-in-out;
+}
+
+.burgerActive span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.burgerActive span:nth-child(2) {
+  opacity: 0;
+}
+
+.burgerActive span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--background);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lightboxOpen {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightboxContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.lightboxLink {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--foreground);
+  transition: transform 0.2s;
+}
+
+@media (hover: hover) {
+  .lightboxLink:hover {
+    transform: scale(1.1);
+  }
+}
+
+@media (max-width: 768px) {
+  .desktopMenu {
+    display: none;
+  }
+
+  .burger {
+    display: flex;
+  }
+}

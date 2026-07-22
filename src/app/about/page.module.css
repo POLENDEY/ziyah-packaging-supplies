@@ -1,0 +1,247 @@
+.main {
+    padding-top: 70px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.pageHeader {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    padding: 60px 0 50px;
+    text-align: center;
+}
+
+.pageHeader h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 12px;
+}
+
+.pageHeader p {
+    font-size: 17px;
+    color: rgba(255, 255, 255, 0.92);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Story */
+.storySection {
+    padding: 80px 0;
+}
+
+.storyGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+}
+
+.storyContent h2 {
+    font-size: clamp(24px, 3.5vw, 36px);
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+}
+
+.storyContent p {
+    font-size: 16px;
+    color: var(--gray-600);
+    line-height: 1.8;
+    margin-bottom: 16px;
+}
+
+.storyImage {
+    background: var(--primary-xlight);
+    border-radius: var(--radius);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg);
+}
+
+.storyImage img {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Values */
+.valuesSection {
+    padding: 80px 0;
+    background: var(--primary-xlight);
+}
+
+.sectionHeader {
+    text-align: center;
+    margin-bottom: 56px;
+}
+
+.sectionHeader h2 {
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 10px;
+}
+
+.sectionHeader p {
+    font-size: 16px;
+    color: var(--gray-600);
+}
+
+.valuesGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+.valueCard {
+    background: #fff;
+    padding: 36px 28px;
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(65, 44, 71, 0.08);
+}
+
+.valueIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    background: var(--primary-xlight);
+    color: var(--primary-dark);
+}
+
+.valueCard h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 10px;
+}
+
+.valueCard p {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.7;
+}
+
+/* Location */
+.locationSection {
+    padding: 80px 0;
+}
+
+.locationGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    align-items: start;
+}
+
+.locationContent h2 {
+    font-size: clamp(24px, 3.5vw, 32px);
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin-bottom: 24px;
+}
+
+.locationItem {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 24px;
+    align-items: flex-start;
+}
+
+.locationItemIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: var(--primary-xlight);
+    color: var(--primary-dark);
+}
+
+.locationItem strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+}
+
+.locationItem p {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.6;
+}
+
+.mapPlaceholder {
+    background: var(--primary-xlight);
+    border-radius: var(--radius);
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--primary-dark);
+    font-size: 14px;
+    text-align: center;
+    border: 2px dashed var(--primary-light);
+    padding: 32px;
+}
+
+.mapIcon {
+    color: var(--primary);
+}
+
+.mapPlaceholder a {
+    margin-top: 8px;
+    padding: 10px 22px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background var(--transition);
+}
+
+.mapPlaceholder a:hover {
+    background: var(--primary-dark);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+
+    .storyGrid,
+    .locationGrid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .storyImage {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .valuesGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .valuesGrid {
+        grid-template-columns: 1fr;
+    }
+}
