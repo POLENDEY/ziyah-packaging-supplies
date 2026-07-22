@@ -199,6 +199,42 @@ export function IconMap(props: IconProps) {
   );
 }
 
+export function IconMail(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </Icon>
+  );
+}
+
+export function IconFacebook(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M14 8h2V5h-2c-2.2 0-4 1.8-4 4v2H8v3h2v7h3v-7h2.2l.8-3H13V9c0-.6.4-1 1-1z" />
+    </Icon>
+  );
+}
+
+export function IconMessenger(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.5 3.7 7.2V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.3S17.5 2 12 2z" />
+      <path d="m7.5 13.5 2.8-3 2.2 2 3.5-3-2.8 3-2.2-2-3.5 3z" />
+    </Icon>
+  );
+}
+
+export function IconShopee(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6 9h12l-1 11H7L6 9z" />
+      <path d="M9 9a3 3 0 0 1 6 0" />
+      <path d="M9 13h6" />
+    </Icon>
+  );
+}
+
 export function IconArrowRight(props: IconProps) {
   return (
     <Icon {...props}>

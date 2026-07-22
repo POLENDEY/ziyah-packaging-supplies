@@ -10,7 +10,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  const isAdminRoute = pathname?.startsWith("/admin");
+  const isAdminRoute = pathname?.startsWith("/ziyah-admin") || pathname?.startsWith("/admin");
   if (isAdminRoute) return null;
 
   const navLinks = [
@@ -47,7 +47,7 @@ export default function Navbar() {
               {link.name}
             </Link>
           ))}
-          <Link href="/contact" className={styles.ctaBtn}>
+          <Link href="/quote" className={styles.ctaBtn}>
             Get a Quote
           </Link>
         </div>
@@ -83,7 +83,7 @@ export default function Navbar() {
             </Link>
           ))}
           <Link
-            href="/contact"
+            href="/quote"
             className={styles.drawerCta}
             onClick={() => setIsOpen(false)}
           >

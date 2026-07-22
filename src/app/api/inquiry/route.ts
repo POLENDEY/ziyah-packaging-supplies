@@ -37,6 +37,7 @@ export async function POST(request: Request) {
         phone,
         subject,
         status: "new",
+        is_read: false,
       },
     ]);
 
@@ -120,21 +121,34 @@ export async function PATCH(request: Request) {
       }, { status: 500 });
     }
 
-    const { id, status } = await request.json();
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing inquiry id" }, { status: 400 });
+    }
+
+    const updates: Record<string, unknown> = {};
+    if (typeof body.status === "string") updates.status = body.status;
+    if (typeof body.is_read === "boolean") updates.is_read = body.is_read;
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "No updates provided" }, { status: 400 });
+    }
 
     const { data, error } = await supabase
-      .from('inquiries')
-      .update({ status })
-      .eq('id', id)
+      .from("inquiries")
+      .update(updates)
+      .eq("id", id)
       .select()
       .single();
 
     if (error) throw error;
 
-    return NextResponse.json(data);
+    return NextResponse.json({ ...data, date: data.created_at });
   } catch (error) {
-    console.error('Error updating inquiry:', error);
-    return NextResponse.json({ error: 'Failed to update inquiry' }, { status: 500 });
+    console.error("Error updating inquiry:", error);
+    return NextResponse.json({ error: "Failed to update inquiry" }, { status: 500 });
   }
 }
 

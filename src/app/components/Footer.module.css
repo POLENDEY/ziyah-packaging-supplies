@@ -1,12 +1,14 @@
 .footer {
   width: 100%;
-  background: var(--primary-dark);
+  background:
+    radial-gradient(ellipse at top left, rgba(253, 68, 37, 0.18), transparent 45%),
+    linear-gradient(165deg, #2a1c2e 0%, var(--primary-dark) 55%, #301f35 100%);
   color: #fff;
   margin-top: auto;
 }
 
 .mainContent {
-  padding: 64px 0 32px;
+  padding: 72px 0 28px;
 }
 
 .container {
@@ -17,50 +19,72 @@
 
 .top {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  gap: 48px;
+  grid-template-columns: 1.5fr 1fr 1fr 1.35fr;
+  gap: 40px;
   margin-bottom: 48px;
 }
 
 .brand {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .brandLogo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .brandLogo img {
-  height: 42px;
-  width: 42px;
+  height: 52px;
+  width: 52px;
   border-radius: 50%;
   object-fit: cover;
+  box-shadow: 0 0 0 3px rgba(253, 68, 37, 0.45);
 }
 
 .brandName {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: #fff;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
   line-height: 1.1;
 }
 
 .brandSub {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.82);
   letter-spacing: 1px;
   text-transform: uppercase;
+  margin-top: 3px;
 }
 
 .brandDesc {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.88);
   line-height: 1.7;
-  max-width: 260px;
+  max-width: 320px;
+}
+
+.brandCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.brandCta:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
 }
 
 .column {
@@ -68,23 +92,23 @@
 }
 
 .title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.78);
   margin-bottom: 18px;
 }
 
 .links {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 11px;
 }
 
 .links a {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.92);
   text-decoration: none;
   transition: color var(--transition);
 }
@@ -97,7 +121,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -107,15 +131,21 @@
   color: var(--accent-light);
 }
 
-.contactLine p {
+.contactLine p,
+.contactLine a {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.9);
-  line-height: 1.5;
+  line-height: 1.55;
+}
+
+.contactLine a:hover {
+  color: #fff;
+  text-decoration: underline;
 }
 
 .bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  padding-top: 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -125,26 +155,28 @@
 
 .bottomText {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 560px;
+  line-height: 1.5;
 }
 
 .bottomLinks {
   display: flex;
-  gap: 20px;
+  gap: 18px;
+  flex-wrap: wrap;
 }
 
 .bottomLinks a {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.82);
   text-decoration: none;
-  transition: color var(--transition);
 }
 
 .bottomLinks a:hover {
   color: #fff;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 980px) {
   .top {
     grid-template-columns: 1fr 1fr;
     gap: 36px;
@@ -159,6 +191,6 @@
 
   .bottom {
     flex-direction: column;
-    text-align: center;
+    align-items: flex-start;
   }
 }

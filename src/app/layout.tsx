@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ChatBot from "./components/ChatBot";
+import { SITE } from "@/data/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,9 +17,35 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ziyah Packaging Supplies – Food & Disposable Packaging",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  title: {
+    default: `${SITE.name} | Food Packaging Nationwide Philippines`,
+    template: `%s | ${SITE.name}`,
+  },
   description:
-    "Your trusted source for premium food packaging: bento boxes, sushi trays, disposable containers, and more. Located in Pasay City, Metro Manila.",
+    "Food-grade packaging for restaurants, caterers, and home businesses nationwide across the Philippines. Bento boxes, trays, cups, and wrapping supplies.",
+  keywords: [
+    "food packaging Philippines",
+    "bento boxes",
+    "sushi trays",
+    "disposable containers",
+    "wholesale packaging Pasay",
+    "Ziyah Packaging Supplies",
+  ],
+  icons: {
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    apple: [{ url: "/logo.png" }],
+    shortcut: ["/logo.png"],
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_PH",
+    siteName: SITE.name,
+    title: `${SITE.name} | Food Packaging Nationwide`,
+    description:
+      "Premium food packaging supplies for businesses across the Philippines.",
+    images: [{ url: "/logo.png", width: 512, height: 512, alt: SITE.name }],
+  },
 };
 
 export default function RootLayout({

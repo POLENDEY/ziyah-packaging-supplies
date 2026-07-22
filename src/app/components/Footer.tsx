@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./Footer.module.css";
-import { IconClock, IconMapPin, IconPhone } from "./Icons";
+import { IconClock, IconMail, IconMapPin, IconPhone } from "./Icons";
+import SocialLinks from "./SocialLinks";
+import { SITE } from "@/data/site";
 
 export default function Footer() {
   return (
@@ -13,30 +15,40 @@ export default function Footer() {
               <div className={styles.brandLogo}>
                 <Image
                   src="/logo.png"
-                  alt="Ziyah Packaging"
-                  width={42}
-                  height={42}
+                  alt="Ziyah Packaging Supplies"
+                  width={52}
+                  height={52}
                 />
                 <div>
                   <div className={styles.brandName}>ZIYAH PACKAGING</div>
-                  <div className={styles.brandSub}>Supplies</div>
+                  <div className={styles.brandSub}>Supplies · Philippines</div>
                 </div>
               </div>
               <p className={styles.brandDesc}>
-                Premium food packaging for restaurants, caterers, home bakers, and
-                businesses across Metro Manila.
+                Food-grade packaging for restaurants, caterers, bakeries, and growing
+                brands — delivering quality nationwide across the Philippines.
               </p>
+              <SocialLinks variant="light" />
+              <Link href="/quote" className={styles.brandCta}>
+                Request a Wholesale Quote
+              </Link>
             </div>
 
             <div className={styles.column}>
-              <h4 className={styles.title}>Products</h4>
+              <h4 className={styles.title}>Shop</h4>
               <div className={styles.links}>
+                <Link href="/products">All Products</Link>
                 <Link href="/products?category=bento">Bento Boxes</Link>
                 <Link href="/products?category=sushi">Sushi Trays</Link>
-                <Link href="/products?category=clamshell">Clamshell Containers</Link>
-                <Link href="/products?category=trays">Food Trays</Link>
                 <Link href="/products?category=cups">Cups & Lids</Link>
-                <Link href="/products?category=wrapping">Wrapping & Film</Link>
+                <a
+                  href={SITE.social.shopee.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Shop on Shopee
+                </a>
+                <Link href="/quote">Get a Quote</Link>
               </div>
             </div>
 
@@ -44,28 +56,47 @@ export default function Footer() {
               <h4 className={styles.title}>Company</h4>
               <div className={styles.links}>
                 <Link href="/">Home</Link>
-                <Link href="/products">All Products</Link>
                 <Link href="/about">About Us</Link>
                 <Link href="/contact">Contact</Link>
+                <a
+                  href={SITE.social.facebook.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Facebook Page
+                </a>
+                <a
+                  href={SITE.social.messenger.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Chat on Messenger
+                </a>
+                <Link href="/quote">Wholesale Quote</Link>
               </div>
             </div>
 
             <div className={styles.column}>
-              <h4 className={styles.title}>Contact Us</h4>
+              <h4 className={styles.title}>Visit & Reach Us</h4>
               <div className={styles.contactLine}>
                 <IconMapPin size={16} />
-                <p>
-                  Unit 103, Doña Adela Apartment, 2247 F.B.Harrison St, Pasay City,
-                  Metro Manila
-                </p>
+                <p>{SITE.addressShort}</p>
               </div>
               <div className={styles.contactLine}>
                 <IconPhone size={16} />
-                <p>0966 847 3419</p>
+                <p>
+                  <a href={SITE.phoneHref}>{SITE.phone}</a>
+                </p>
+              </div>
+              <div className={styles.contactLine}>
+                <IconMail size={16} />
+                <p>
+                  <a href={SITE.emailHref}>{SITE.email}</a>
+                </p>
               </div>
               <div className={styles.contactLine}>
                 <IconClock size={16} />
-                <p>Open · Closes 6:30 PM</p>
+                <p>{SITE.hoursSummary}</p>
               </div>
             </div>
           </div>
@@ -73,12 +104,33 @@ export default function Footer() {
           <div className={styles.bottom}>
             <p className={styles.bottomText}>
               ©{" "}
-              <span suppressHydrationWarning>{new Date().getFullYear()}</span> Ziyah
-              Packaging Supplies. All rights reserved.
+              <span suppressHydrationWarning>{new Date().getFullYear()}</span>{" "}
+              {SITE.name}. Serving food businesses nationwide across the Philippines.
             </p>
             <div className={styles.bottomLinks}>
-              <Link href="/contact">Privacy Policy</Link>
-              <Link href="/contact">Terms of Service</Link>
+              <Link href="/contact">Contact</Link>
+              <Link href="/quote">Get a Quote</Link>
+              <a
+                href={SITE.social.shopee.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Shopee
+              </a>
+              <a
+                href={SITE.social.facebook.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Facebook
+              </a>
+              <a
+                href={SITE.social.messenger.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Messenger
+              </a>
             </div>
           </div>
         </div>

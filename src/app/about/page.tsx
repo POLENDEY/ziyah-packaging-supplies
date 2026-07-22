@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import styles from "./page.module.css";
 import Image from "next/image";
 import {
@@ -5,13 +6,22 @@ import {
   IconHandshake,
   IconLeaf,
   IconLightbulb,
-  IconMap,
+  IconMail,
   IconMapPin,
   IconPackage,
   IconPhone,
   IconShield,
   IconTruck,
 } from "../components/Icons";
+import SocialLinks from "../components/SocialLinks";
+import { SITE } from "@/data/site";
+
+export const metadata: Metadata = {
+  title: "About Ziyah Packaging Supplies | Nationwide Food Packaging PH",
+  description:
+    "Learn about Ziyah Packaging Supplies in Pasay City — food-grade packaging partner for restaurants and home businesses nationwide across the Philippines.",
+  alternates: { canonical: "/about" },
+};
 
 const values = [
   {
@@ -22,12 +32,12 @@ const values = [
   {
     Icon: IconHandshake,
     title: "Trusted by Businesses",
-    desc: "From home bakers to restaurant chains, businesses across Metro Manila rely on us daily.",
+    desc: "From home bakers to restaurant chains, businesses across the Philippines rely on us daily.",
   },
   {
     Icon: IconLeaf,
     title: "Eco-Conscious Options",
-    desc: "We offer biodegradable and compostable alternatives for environmentally conscious businesses.",
+    desc: "We offer biodegradable and compostable alternatives for environmentally conscious brands.",
   },
   {
     Icon: IconLightbulb,
@@ -41,20 +51,23 @@ const values = [
   },
   {
     Icon: IconTruck,
-    title: "Reliable Delivery",
-    desc: "Fast and reliable delivery across Metro Manila so your business never runs out of stock.",
+    title: "Nationwide Delivery",
+    desc: "Reliable delivery coordination across the Philippines so your business never runs out of stock.",
   },
 ];
 
 export default function AboutPage() {
   return (
     <main className={styles.main}>
-      <div className={styles.pageHeader}>
+      <header className={styles.pageHeader}>
         <div className={styles.container}>
-          <h1>About Ziyah Packaging</h1>
-          <p>Your trusted partner for food packaging in Metro Manila since day one.</p>
+          <h1>About Ziyah Packaging Supplies</h1>
+          <p>
+            Your packaging partner based in Pasay City — supplying food businesses
+            nationwide across the Philippines.
+          </p>
         </div>
-      </div>
+      </header>
 
       <section className={styles.storySection}>
         <div className={styles.container}>
@@ -63,19 +76,18 @@ export default function AboutPage() {
               <h2>Who We Are</h2>
               <p>
                 Ziyah Packaging Supplies is a packaging store based in Pasay City, Metro
-                Manila, specializing in food packaging products for restaurants, caterers,
+                Manila, specializing in food packaging for restaurants, caterers,
                 home-based food businesses, and everyday consumers.
               </p>
               <p>
-                We carry a wide range of products — from disposable bento boxes and sushi
-                trays to reusable containers, clamshells, cups, food trays, and wrapping
-                materials. Our goal is simple: provide high-quality, affordable packaging
-                that meets food safety standards.
+                We carry disposable bento boxes, sushi trays, reusable containers,
+                clamshells, cups, food trays, and wrapping materials. Our goal is simple:
+                high-quality, affordable packaging that meets food safety standards.
               </p>
               <p>
-                Whether you&apos;re a small home baker packaging custom cakes, a restaurant
-                owner looking for bulk takeaway containers, or a caterer preparing for a
-                large event — we have the right packaging for you.
+                Whether you&apos;re a home baker, a restaurant stocking takeaway packs, or
+                a caterer preparing for a large event — we help you package with
+                confidence, anywhere in the Philippines.
               </p>
             </div>
             <div className={styles.storyImage}>
@@ -94,7 +106,7 @@ export default function AboutPage() {
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
             <h2>What We Stand For</h2>
-            <p>Our commitments to every customer we serve.</p>
+            <p>Our commitments to every customer we serve nationwide.</p>
           </div>
           <div className={styles.valuesGrid}>
             {values.map((v) => (
@@ -122,11 +134,12 @@ export default function AboutPage() {
                 <div>
                   <strong>Address</strong>
                   <p>
-                    Unit 103, Doña Adela Apartment
-                    <br />
-                    2247 F.B.Harrison St, Pasay City
-                    <br />
-                    Metro Manila
+                    {SITE.addressLines.map((line) => (
+                      <span key={line}>
+                        {line}
+                        <br />
+                      </span>
+                    ))}
                   </p>
                 </div>
               </div>
@@ -136,7 +149,18 @@ export default function AboutPage() {
                 </span>
                 <div>
                   <strong>Phone / Viber / SMS</strong>
-                  <p>0966 847 3419</p>
+                  <p>{SITE.phone}</p>
+                </div>
+              </div>
+              <div className={styles.locationItem}>
+                <span className={styles.locationItemIcon}>
+                  <IconMail size={20} />
+                </span>
+                <div>
+                  <strong>Email</strong>
+                  <p>
+                    <a href={SITE.emailHref}>{SITE.email}</a>
+                  </p>
                 </div>
               </div>
               <div className={styles.locationItem}>
@@ -145,7 +169,14 @@ export default function AboutPage() {
                 </span>
                 <div>
                   <strong>Store Hours</strong>
-                  <p>Open daily · Closes 6:30 PM</p>
+                  <ul className={styles.hoursList}>
+                    {SITE.hours.map((row) => (
+                      <li key={row.day}>
+                        <span>{row.day}</span>
+                        <span>{row.hours}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
               <div className={styles.locationItem}>
@@ -154,28 +185,22 @@ export default function AboutPage() {
                 </span>
                 <div>
                   <strong>Plus Code</strong>
-                  <p>GXXV+R4 Pasay City, Metro Manila</p>
+                  <p>{SITE.plusCode}</p>
                 </div>
               </div>
+              <div className={styles.socialBlock}>
+                <strong>Follow & Shop Online</strong>
+                <SocialLinks variant="dark" />
+              </div>
             </div>
-            <div className={styles.mapPlaceholder}>
-              <span className={styles.mapIcon}>
-                <IconMap size={48} />
-              </span>
-              <p>
-                <strong>Ziyah Packaging Supplies</strong>
-                <br />
-                Unit 103, Doña Adela Apartment
-                <br />
-                2247 F.B.Harrison St, Pasay City
-              </p>
-              <a
-                href="https://maps.app.goo.gl/pasay"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Open in Google Maps
-              </a>
+            <div className={styles.mapEmbed}>
+              <iframe
+                src={SITE.mapsEmbedUrl}
+                title="Ziyah Packaging Supplies on Google Maps"
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
             </div>
           </div>
         </div>

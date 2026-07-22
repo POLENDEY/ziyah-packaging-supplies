@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import styles from "./ChatBot.module.css";
+import { IconMessenger } from "./Icons";
+import { SITE } from "@/data/site";
 
 interface Message {
   id: number;
@@ -19,17 +21,21 @@ const FAQ: { pattern: RegExp; answer: string }[] = [
   { pattern: /wrap|film|cling|baking paper/i, answer: "We carry PVC cling wrap, shrink wrap film, and greaseproof baking paper. Starting at 120 per roll." },
   { pattern: /price|cost|how much|magkano/i, answer: "Our prices start from 2 per piece for lids up to 250 for film rolls. Visit our Products page for full pricing, or send us an inquiry for bulk quotes!" },
   { pattern: /bulk|wholesale|order/i, answer: "Yes, we accommodate bulk and wholesale orders! Send us an inquiry via our Contact page for a custom quote." },
-  { pattern: /deliver|shipping/i, answer: "We deliver across Metro Manila. Contact us at 0966 847 3419 or via our Contact page." },
-  { pattern: /address|location|where/i, answer: "We are at Unit 103, Dona Adela Apartment, 2247 F.B. Harrison St, Pasay City, Metro Manila. Plus code: GXXV+R4." },
-  { pattern: /hour|open|close/i, answer: "We are open daily and close at 6:30 PM." },
-  { pattern: /phone|contact|number|call|viber/i, answer: "You can reach us at 0966 847 3419 (call/Viber/SMS). Or use our Contact page to send an inquiry." },
+  { pattern: /shopee|online store|shop online/i, answer: `You can shop our products on Shopee: ${SITE.social.shopee.href}` },
+  { pattern: /messenger|message (me|us)|chat (with|on)/i, answer: `Message us anytime on Messenger: ${SITE.social.messenger.href}` },
+  { pattern: /facebook|social|page/i, answer: `Follow us on Facebook: ${SITE.social.facebook.href} — or chat with us on Messenger: ${SITE.social.messenger.href}` },
+  { pattern: /deliver|shipping|nationwide|philippines/i, answer: `We serve nationwide across the Philippines. Contact us at ${SITE.phone}, email ${SITE.email}, message us on Messenger, or use Contact / Get a Quote. You can also shop on Shopee.` },
+  { pattern: /address|location|where/i, answer: `We are at ${SITE.addressShort}. Plus code: ${SITE.plusCode}.` },
+  { pattern: /hour|open|close/i, answer: `Hours: ${SITE.hoursSummary}.` },
+  { pattern: /phone|contact|number|call|viber|email/i, answer: `Call/Viber/SMS ${SITE.phone}, email ${SITE.email}, or chat on Messenger: ${SITE.social.messenger.href}. You can also use our Contact page.` },
   { pattern: /disposable/i, answer: "Most of our products are disposable and food-grade safe. We also carry reusable options. Check the Products page for type filters." },
   { pattern: /eco|environment|biodegradable/i, answer: "We offer eco-friendly options like kraft paper bento boxes and biodegradable alternatives!" },
   { pattern: /thank|thanks/i, answer: "You are welcome! Is there anything else I can help you with?" },
   { pattern: /bye|goodbye/i, answer: "Goodbye! Feel free to come back anytime. Have a great day!" },
 ];
 
-const GREETING = "Hi! I am Ziyah support assistant. Ask me about our products, pricing, location, or delivery. How can I help you?";
+const GREETING =
+  "Hi! I am Ziyah support assistant. Ask me about our products, pricing, location, or delivery — or chat with us on Messenger anytime. How can I help you?";
 
 let idCounter = 1;
 
@@ -58,7 +64,7 @@ export default function ChatBot() {
     const match = FAQ.find((f) => f.pattern.test(text));
     const reply = match
       ? match.answer
-      : "I am not sure about that. You can reach us at 0966 847 3419 or visit our Contact page for personalized help.";
+      : `I am not sure about that. You can reach us at ${SITE.phone}, chat on Messenger (${SITE.social.messenger.href}), or visit our Contact page for personalized help.`;
 
     setTimeout(() => {
       setMessages((prev) => [...prev, { id: idCounter++, from: "bot", text: reply }]);
@@ -135,6 +141,16 @@ export default function ChatBot() {
             </button>
           ))}
         </div>
+
+        <a
+          href={SITE.social.messenger.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.messengerLink}
+        >
+          <IconMessenger size={16} />
+          Continue on Messenger
+        </a>
 
         <div className={styles.inputArea}>
           <input

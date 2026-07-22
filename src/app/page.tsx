@@ -1,6 +1,8 @@
+import type { Metadata } from "next";
 import styles from "./page.module.css";
 import Link from "next/link";
 import Image from "next/image";
+import PromoMarquee from "./components/PromoMarquee";
 import {
   IconArrowRight,
   IconBento,
@@ -10,6 +12,7 @@ import {
   IconCup,
   IconFactory,
   IconList,
+  IconMail,
   IconMapPin,
   IconPackage,
   IconPhone,
@@ -17,41 +20,54 @@ import {
   IconTray,
   IconTruck,
 } from "./components/Icons";
+import { SITE } from "@/data/site";
+
+export const metadata: Metadata = {
+  title: "Ziyah Packaging Supplies | Food Packaging Nationwide Philippines",
+  description:
+    "Buy food-grade packaging in the Philippines: bento boxes, sushi trays, clamshells, cups, and wrapping. Bulk & retail for restaurants, caterers, and home businesses.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Ziyah Packaging Supplies | Food Packaging Nationwide",
+    description:
+      "Premium disposable and reusable food packaging delivered nationwide across the Philippines.",
+  },
+};
 
 const categories = [
   {
     name: "Bento Boxes",
-    desc: "Compartmented meal containers for bento-style servings.",
+    desc: "Compartmented meal containers built for takeout and meal-prep brands.",
     Icon: IconBento,
     href: "/products?category=bento",
   },
   {
     name: "Sushi Trays",
-    desc: "Sleek trays perfect for sushi and Japanese cuisine display.",
+    desc: "Clear and display trays that make sushi sets look premium on the go.",
     Icon: IconSushi,
     href: "/products?category=sushi",
   },
   {
     name: "Clamshell Containers",
-    desc: "Hinged containers ideal for salads, pastries, and more.",
+    desc: "Hinged containers for salads, burgers, pastries, and ready meals.",
     Icon: IconClamshell,
     href: "/products?category=clamshell",
   },
   {
     name: "Food Trays",
-    desc: "Versatile trays for takeaway meals and catering events.",
+    desc: "Foam, PP, and foil trays for markets, kitchens, and catering drops.",
     Icon: IconTray,
     href: "/products?category=trays",
   },
   {
     name: "Cups & Lids",
-    desc: "Clear and opaque cups with matching lids for drinks.",
+    desc: "Clear cups and dome lids for milk tea, juices, and iced drinks.",
     Icon: IconCup,
     href: "/products?category=cups",
   },
   {
     name: "Wrapping & Film",
-    desc: "Cling wraps, foil, and specialty food-grade wrapping film.",
+    desc: "Cling wrap, shrink film, and baking paper for busy production lines.",
     Icon: IconPackage,
     href: "/products?category=wrapping",
   },
@@ -60,54 +76,82 @@ const categories = [
 const whyUs = [
   {
     title: "Food-Grade Quality",
-    desc: "All our packaging meets food-safe standards — safe for direct food contact.",
+    desc: "Packaging chosen for safe food contact — so your brand ships with confidence.",
     Icon: IconCheck,
   },
   {
     title: "Wide Product Range",
-    desc: "From disposable trays to reusable containers — we have everything you need.",
+    desc: "From disposable trays to reusable containers — stock what your menu needs.",
     Icon: IconList,
   },
   {
     title: "Bulk & Retail Orders",
-    desc: "Flexible ordering for small businesses, home cooks, and large catering operations.",
+    desc: "Flexible ordering for small kitchens, home businesses, and high-volume operations.",
     Icon: IconFactory,
   },
   {
-    title: "Fast Metro Manila Delivery",
-    desc: "We deliver across Metro Manila quickly and reliably.",
+    title: "Nationwide Delivery",
+    desc: "We serve food businesses across the Philippines — not just Metro Manila.",
     Icon: IconTruck,
   },
 ];
 
 export default function Home() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: SITE.name,
+    image: `${process.env.NEXT_PUBLIC_SITE_URL || "https://ziyahpackagingsupplies.com"}/logo.png`,
+    email: SITE.email,
+    telephone: SITE.phone,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Unit 103, Doña Adela Apartment, 2247 F.B. Harrison St",
+      addressLocality: "Pasay City",
+      addressRegion: "Metro Manila",
+      addressCountry: "PH",
+    },
+    areaServed: "Philippines",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://ziyahpackagingsupplies.com",
+    sameAs: [
+      SITE.social.facebook.href,
+      SITE.social.messenger.href,
+      SITE.social.shopee.href,
+    ],
+  };
+
   return (
     <main className={styles.main}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <section className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
-          <div className={styles.heroBadge}>Pasay City, Metro Manila</div>
+          <div className={styles.heroBadge}>Pasay City · Serving Nationwide PH</div>
           <h1 className={styles.heroTitle}>
-            Premium Food Packaging <br />
-            <span>for Every Occasion</span>
+            Food Packaging Supplies <br />
+            <span>Built for Growing Brands</span>
           </h1>
           <p className={styles.heroDesc}>
-            Bento boxes, sushi trays, clamshell containers, and more — sourced for
-            restaurants, caterers, home bakers, and businesses of all sizes.
+            Stock food-safe bento boxes, sushi trays, clamshells, cups, and wraps —
+            trusted by restaurants, caterers, and home bakers across the Philippines.
           </p>
           <div className={styles.heroActions}>
             <Link href="/products" className={styles.btnPrimary}>
               Shop Products
             </Link>
-            <Link href="/contact" className={styles.btnOutline}>
-              Request a Quote
+            <Link href="/quote" className={styles.btnOutline}>
+              Get a Wholesale Quote
             </Link>
           </div>
         </div>
         <div className={styles.heroImageWrap}>
           <Image
             src="/logo.png"
-            alt="Ziyah Packaging Supplies"
+            alt="Ziyah Packaging Supplies logo"
             width={320}
             height={320}
             className={styles.heroLogo}
@@ -116,11 +160,16 @@ export default function Home() {
         </div>
       </section>
 
+      <PromoMarquee />
+
       <section className={styles.section}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Browse by Category</h2>
-            <p>Find the right packaging for your food business or event.</p>
+            <h2>Shop Packaging by Category</h2>
+            <p>
+              Find the right food packaging for takeout, meal prep, catering, and retail
+              — ready for businesses nationwide.
+            </p>
           </div>
           <div className={styles.categoryGrid}>
             {categories.map((cat) => (
@@ -142,10 +191,10 @@ export default function Home() {
       <section className={`${styles.section} ${styles.sectionAlt}`}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Why Choose Ziyah?</h2>
+            <h2>Why Food Businesses Choose Ziyah</h2>
             <p>
-              We&apos;ve been serving Metro Manila&apos;s packaging needs with quality and
-              consistency.
+              We&apos;ve been serving packaging needs across the Philippines with quality,
+              consistency, and practical guidance for every order size.
             </p>
           </div>
           <div className={styles.whyGrid}>
@@ -165,16 +214,17 @@ export default function Home() {
       <section className={styles.ctaBanner}>
         <div className={styles.container}>
           <div className={styles.ctaContent}>
-            <h2>Ready to order?</h2>
+            <h2>Ready to stock up?</h2>
             <p>
-              Visit our store or send us an inquiry — we&apos;ll get back to you promptly.
+              Browse products online or request a wholesale quote — we&apos;ll help you
+              choose packaging that fits your menu and budget.
             </p>
             <div className={styles.ctaActions}>
               <Link href="/products" className={styles.btnWhite}>
                 View All Products
               </Link>
               <Link href="/contact" className={styles.btnOutlineWhite}>
-                Contact Us
+                Contact the Store
               </Link>
             </div>
           </div>
@@ -190,10 +240,7 @@ export default function Home() {
               </span>
               <div>
                 <strong>Our Address</strong>
-                <p>
-                  Unit 103, Doña Adela Apartment, 2247 F.B.Harrison St, Pasay City,
-                  Metro Manila
-                </p>
+                <p>{SITE.addressShort}</p>
               </div>
             </div>
             <div className={styles.infoItem}>
@@ -202,7 +249,16 @@ export default function Home() {
               </span>
               <div>
                 <strong>Call / Viber / SMS</strong>
-                <p>0966 847 3419</p>
+                <p>{SITE.phone}</p>
+              </div>
+            </div>
+            <div className={styles.infoItem}>
+              <span className={styles.infoIcon}>
+                <IconMail size={22} />
+              </span>
+              <div>
+                <strong>Email</strong>
+                <p>{SITE.email}</p>
               </div>
             </div>
             <div className={styles.infoItem}>
@@ -211,7 +267,7 @@ export default function Home() {
               </span>
               <div>
                 <strong>Store Hours</strong>
-                <p>Open · Closes 6:30 PM daily</p>
+                <p>{SITE.hoursSummary}</p>
               </div>
             </div>
           </div>

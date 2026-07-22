@@ -1,10 +1,5 @@
-import LoginForm from "./LoginForm";
-import styles from "./login.module.css";
+import { redirect } from "next/navigation";
 
-export default function AdminLoginPage() {
-  return (
-    <div className={styles.loginPage}>
-      <LoginForm />
-    </div>
-  );
+export default function LegacyAdminLoginRedirect() {
+  redirect("/ziyah-admin/login");
 }
