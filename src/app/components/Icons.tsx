@@ -21,6 +21,15 @@ function Icon({ size = 24, children, ...props }: IconProps & { children: ReactNo
   );
 }
 
+export function IconSearch(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </Icon>
+  );
+}
+
 export function IconMapPin(props: IconProps) {
   return (
     <Icon {...props}>

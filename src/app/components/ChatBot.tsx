@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import styles from "./ChatBot.module.css";
-import { IconMessenger } from "./Icons";
 import { SITE } from "@/data/site";
 
 interface Message {
@@ -13,21 +12,20 @@ interface Message {
 
 const FAQ: { pattern: RegExp; answer: string }[] = [
   { pattern: /hello|hi|hey|good (morning|afternoon|evening)/i, answer: "Hi there! Welcome to Ziyah Packaging Supplies. How can I help you today?" },
-  { pattern: /bento|bento box/i, answer: "We carry 3-compartment, 5-compartment, and kraft paper bento boxes. Prices start at 8 per piece. Check our Products page for details!" },
-  { pattern: /sushi|sushi tray/i, answer: "We have clear OPS sushi trays (small and large) and premium matte-black display trays. Prices start at 10 per piece." },
-  { pattern: /clamshell/i, answer: "We offer clear PET and black-base clamshell containers in 6-inch and 9-inch sizes, plus round burger clamshells. Starting at 6 per piece." },
-  { pattern: /cup|cups|lid/i, answer: "We carry 16oz and 22oz clear disposable cups plus dome lids. Starting at 2 per piece for lids." },
-  { pattern: /tray|food tray/i, answer: "We have foam trays, PP trays with lids, and aluminum foil trays for catering. Starting at 4 per piece." },
-  { pattern: /wrap|film|cling|baking paper/i, answer: "We carry PVC cling wrap, shrink wrap film, and greaseproof baking paper. Starting at 120 per roll." },
-  { pattern: /price|cost|how much|magkano/i, answer: "Our prices start from 2 per piece for lids up to 250 for film rolls. Visit our Products page for full pricing, or send us an inquiry for bulk quotes!" },
-  { pattern: /bulk|wholesale|order/i, answer: "Yes, we accommodate bulk and wholesale orders! Send us an inquiry via our Contact page for a custom quote." },
+  { pattern: /bento|bento box/i, answer: "We carry 3-compartment, 5-compartment, and kraft paper bento boxes. Prices start at ₱8 per piece. Check our Products page for details!" },
+  { pattern: /sushi|sushi tray/i, answer: "We have clear OPS sushi trays (small and large) and premium matte-black display trays. Prices start at ₱10 per piece." },
+  { pattern: /clamshell/i, answer: "We offer clear PET and black-base clamshell containers in 6-inch and 9-inch sizes, plus round burger clamshells. Starting at ₱6 per piece." },
+  { pattern: /cup|cups|lid/i, answer: "We carry 16oz and 22oz clear disposable cups plus dome lids. Starting at ₱2 per piece for lids." },
+  { pattern: /tray|food tray/i, answer: "We have foam trays, PP trays with lids, and aluminum foil trays for catering. Starting at ₱4 per piece." },
+  { pattern: /wrap|film|cling|baking paper/i, answer: "We carry PVC cling wrap, shrink wrap film, and greaseproof baking paper. Starting at ₱120 per roll." },
+  { pattern: /price|cost|how much|magkano/i, answer: "You can see product pricing on our Products page. For bulk rates, send a request on Contact or Get a Quote and our team will follow up." },
+  { pattern: /bulk|wholesale|order/i, answer: "Yes, we accommodate bulk and wholesale orders! Use Get a Quote or our Contact page for a custom quote." },
   { pattern: /shopee|online store|shop online/i, answer: `You can shop our products on Shopee: ${SITE.social.shopee.href}` },
-  { pattern: /messenger|message (me|us)|chat (with|on)/i, answer: `Message us anytime on Messenger: ${SITE.social.messenger.href}` },
-  { pattern: /facebook|social|page/i, answer: `Follow us on Facebook: ${SITE.social.facebook.href} — or chat with us on Messenger: ${SITE.social.messenger.href}` },
-  { pattern: /deliver|shipping|nationwide|philippines/i, answer: `We serve nationwide across the Philippines. Contact us at ${SITE.phone}, email ${SITE.email}, message us on Messenger, or use Contact / Get a Quote. You can also shop on Shopee.` },
+  { pattern: /facebook|social|page/i, answer: `Follow us on Facebook: ${SITE.social.facebook.href}` },
+  { pattern: /deliver|shipping|nationwide|philippines/i, answer: `We serve nationwide across the Philippines. Call ${SITE.phone}, email ${SITE.email}, or use Contact / Get a Quote. You can also shop on Shopee.` },
   { pattern: /address|location|where/i, answer: `We are at ${SITE.addressShort}. Plus code: ${SITE.plusCode}.` },
   { pattern: /hour|open|close/i, answer: `Hours: ${SITE.hoursSummary}.` },
-  { pattern: /phone|contact|number|call|viber|email/i, answer: `Call/Viber/SMS ${SITE.phone}, email ${SITE.email}, or chat on Messenger: ${SITE.social.messenger.href}. You can also use our Contact page.` },
+  { pattern: /phone|contact|number|call|viber|email/i, answer: `Call/Viber/SMS ${SITE.phone} or email ${SITE.email}. You can also use our Contact page.` },
   { pattern: /disposable/i, answer: "Most of our products are disposable and food-grade safe. We also carry reusable options. Check the Products page for type filters." },
   { pattern: /eco|environment|biodegradable/i, answer: "We offer eco-friendly options like kraft paper bento boxes and biodegradable alternatives!" },
   { pattern: /thank|thanks/i, answer: "You are welcome! Is there anything else I can help you with?" },
@@ -35,7 +33,9 @@ const FAQ: { pattern: RegExp; answer: string }[] = [
 ];
 
 const GREETING =
-  "Hi! I am Ziyah support assistant. Ask me about our products, pricing, location, or delivery — or chat with us on Messenger anytime. How can I help you?";
+  "Hi! I’m the Ziyah support assistant. Ask me about products, pricing, location, or delivery — I’m happy to help.";
+
+const FALLBACK = `Happy to help you find the right packaging. Browse our Products page, request a quote, or reach us at ${SITE.phone} / ${SITE.email}.`;
 
 let idCounter = 1;
 
@@ -62,9 +62,7 @@ export default function ChatBot() {
     setTyping(true);
 
     const match = FAQ.find((f) => f.pattern.test(text));
-    const reply = match
-      ? match.answer
-      : `I am not sure about that. You can reach us at ${SITE.phone}, chat on Messenger (${SITE.social.messenger.href}), or visit our Contact page for personalized help.`;
+    const reply = match ? match.answer : FALLBACK;
 
     setTimeout(() => {
       setMessages((prev) => [...prev, { id: idCounter++, from: "bot", text: reply }]);
@@ -141,16 +139,6 @@ export default function ChatBot() {
             </button>
           ))}
         </div>
-
-        <a
-          href={SITE.social.messenger.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.messengerLink}
-        >
-          <IconMessenger size={16} />
-          Continue on Messenger
-        </a>
 
         <div className={styles.inputArea}>
           <input

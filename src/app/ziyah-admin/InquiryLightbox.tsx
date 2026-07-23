@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./InquiryLightbox.module.css";
 
 export type InquiryDetail = {
@@ -22,6 +22,7 @@ type Props = {
   onToggleRead: (id: number, isRead: boolean) => void;
   onUpdateStatus: (id: number, status: string) => void;
   onDelete: (id: number) => void;
+  onReplied: (inquiry: InquiryDetail) => void;
 };
 
 export default function InquiryLightbox({
@@ -31,8 +32,14 @@ export default function InquiryLightbox({
   onToggleRead,
   onUpdateStatus,
   onDelete,
+  onReplied,
 }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
+  const [replyMsg, setReplyMsg] = useState<{ type: "ok" | "err"; text: string } | null>(
+    null
+  );
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -51,6 +58,12 @@ export default function InquiryLightbox({
   }, [open, inquiry]);
 
   useEffect(() => {
+    setReply("");
+    setReplyMsg(null);
+    setSending(false);
+  }, [inquiry?.id]);
+
+  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     const onClick = (event: MouseEvent) => {
@@ -65,6 +78,36 @@ export default function InquiryLightbox({
   if (!inquiry) return <dialog ref={dialogRef} className={styles.dialog} />;
 
   const isRead = !!inquiry.is_read;
+
+  const sendReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reply.trim()) return;
+    setSending(true);
+    setReplyMsg(null);
+    try {
+      const response = await fetch("/api/inquiry/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: inquiry.id, message: reply.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to send reply");
+
+      const updated: InquiryDetail = data.inquiry || {
+        ...inquiry,
+        status: "replied",
+        is_read: true,
+      };
+      onReplied(updated);
+      setReply("");
+      setReplyMsg({ type: "ok", text: `Reply emailed to ${inquiry.email}.` });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Failed to send reply";
+      setReplyMsg({ type: "err", text: msg });
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <dialog
@@ -112,6 +155,29 @@ export default function InquiryLightbox({
           <strong>Full message</strong>
           <p>{inquiry.message}</p>
         </div>
+
+        <form className={styles.replyForm} onSubmit={sendReply}>
+          <label htmlFor="inquiry-reply">
+            <strong>Reply by email</strong>
+          </label>
+          <textarea
+            id="inquiry-reply"
+            className={styles.replyInput}
+            rows={5}
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            placeholder={`Write a reply to ${inquiry.name}…`}
+            required
+          />
+          {replyMsg && (
+            <p className={replyMsg.type === "ok" ? styles.replyOk : styles.replyErr}>
+              {replyMsg.text}
+            </p>
+          )}
+          <button type="submit" className={styles.sendReply} disabled={sending || !reply.trim()}>
+            {sending ? "Sending…" : "Send Reply Email"}
+          </button>
+        </form>
 
         <div className={styles.actions}>
           <button

@@ -3,13 +3,13 @@ import styles from "./page.module.css";
 import Link from "next/link";
 import Image from "next/image";
 import PromoMarquee from "./components/PromoMarquee";
+import PromoBannerSlider from "./components/PromoBannerSlider";
+import FeedbackSection from "./components/FeedbackSection";
 import {
   IconArrowRight,
   IconBento,
   IconCheck,
-  IconClamshell,
   IconClock,
-  IconCup,
   IconFactory,
   IconList,
   IconMail,
@@ -36,40 +36,34 @@ export const metadata: Metadata = {
 
 const categories = [
   {
-    name: "Bento Boxes",
-    desc: "Compartmented meal containers built for takeout and meal-prep brands.",
+    name: "Hard Bento Clear",
+    desc: "Clear hard bento boxes with lids — 2 to 5 divisions, 1000ml.",
     Icon: IconBento,
-    href: "/products?category=bento",
+    href: "/products?category=Hard%20Bento%20Clear",
   },
   {
-    name: "Sushi Trays",
-    desc: "Clear and display trays that make sushi sets look premium on the go.",
-    Icon: IconSushi,
-    href: "/products?category=sushi",
-  },
-  {
-    name: "Clamshell Containers",
-    desc: "Hinged containers for salads, burgers, pastries, and ready meals.",
-    Icon: IconClamshell,
-    href: "/products?category=clamshell",
-  },
-  {
-    name: "Food Trays",
-    desc: "Foam, PP, and foil trays for markets, kitchens, and catering drops.",
-    Icon: IconTray,
-    href: "/products?category=trays",
-  },
-  {
-    name: "Cups & Lids",
-    desc: "Clear cups and dome lids for milk tea, juices, and iced drinks.",
-    Icon: IconCup,
-    href: "/products?category=cups",
-  },
-  {
-    name: "Wrapping & Film",
-    desc: "Cling wrap, shrink film, and baking paper for busy production lines.",
+    name: "Bento Boxes",
+    desc: "Red-base bento boxes with clear lids for everyday takeout.",
     Icon: IconPackage,
-    href: "/products?category=wrapping",
+    href: "/products?category=Bento%20Boxes",
+  },
+  {
+    name: "Hard Bento Black",
+    desc: "Black hard bento boxes with lids — premium meal presentation.",
+    Icon: IconBento,
+    href: "/products?category=Hard%20Bento%20Black",
+  },
+  {
+    name: "Round Sushi Trays",
+    desc: "Round black sushi trays with gold pattern and lids.",
+    Icon: IconSushi,
+    href: "/products?category=Round%20Sushi%20Trays",
+  },
+  {
+    name: "Rectangular Sushi Trays",
+    desc: "RE-ST series rectangular sushi trays with lids.",
+    Icon: IconTray,
+    href: "/products?category=Rectangular%20Sushi%20Trays",
   },
 ];
 
@@ -160,6 +154,8 @@ export default function Home() {
         </div>
       </section>
 
+      <PromoBannerSlider />
+
       <PromoMarquee />
 
       <section className={styles.section}>
@@ -210,6 +206,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <FeedbackSection />
 
       <section className={styles.ctaBanner}>
         <div className={styles.container}>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import styles from "./Navbar.module.css";
+import ProductSearch from "./ProductSearch";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,6 +38,10 @@ export default function Navbar() {
           </div>
         </Link>
 
+        <div className={styles.searchDesktop}>
+          <ProductSearch collapsible />
+        </div>
+
         <div className={styles.desktopMenu}>
           {navLinks.map((link) => (
             <Link
@@ -63,7 +68,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Drawer */}
       <div
         className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ""}`}
         onClick={() => setIsOpen(false)}
@@ -72,6 +76,10 @@ export default function Navbar() {
           className={styles.drawerContent}
           onClick={(e) => e.stopPropagation()}
         >
+          <ProductSearch
+            className={styles.searchMobile}
+            onNavigate={() => setIsOpen(false)}
+          />
           {navLinks.map((link) => (
             <Link
               key={link.name}

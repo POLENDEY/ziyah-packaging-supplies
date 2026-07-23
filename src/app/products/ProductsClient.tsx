@@ -1,20 +1,32 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import styles from "./page.module.css";
 import { IconPackage } from "../components/Icons";
+import ProtectedProductImage from "../components/ProtectedProductImage";
 import {
   buildInquireHref,
   getProductHref,
+  getProductImageAlt,
   productCategories,
   products,
 } from "@/data/products";
 
 export default function ProductsClient() {
+  const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeType, setActiveType] = useState("All");
+
+  useEffect(() => {
+    const raw = searchParams.get("category");
+    if (!raw) return;
+    const match = productCategories.find(
+      (cat) => cat.toLowerCase() === decodeURIComponent(raw).toLowerCase()
+    );
+    if (match) setActiveCategory(match);
+  }, [searchParams]);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -76,9 +88,9 @@ export default function ProductsClient() {
                     aria-label={`View details for ${product.name}`}
                   >
                     <div className={styles.productImageWrap}>
-                      <Image
+                      <ProtectedProductImage
                         src={product.images[0]}
-                        alt={product.name}
+                        alt={getProductImageAlt(product.name, product.images[0], 0)}
                         fill
                         sizes="(max-width: 480px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className={styles.productImage}

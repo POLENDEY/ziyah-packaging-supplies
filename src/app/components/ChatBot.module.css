@@ -238,27 +238,6 @@
     border-color: var(--primary);
 }
 
-.messengerLink {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin: 0 14px 10px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: #0084ff;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    transition: background var(--transition), transform var(--transition);
-}
-
-.messengerLink:hover {
-    background: #006fd6;
-    transform: translateY(-1px);
-}
-
 /* Input */
 .inputArea {
     padding: 12px 14px;

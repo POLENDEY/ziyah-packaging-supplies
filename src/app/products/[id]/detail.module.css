@@ -55,6 +55,76 @@
   object-fit: cover;
 }
 
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #1a121c;
+}
+
+.videoPoster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: #1a121c;
+}
+
+.playLarge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(26, 18, 28, 0.62);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  color: #fff;
+  font-size: 22px;
+  padding-left: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  transition: transform 0.2s ease, background 0.2s ease;
+  pointer-events: none;
+}
+
+.videoPoster:hover .playLarge {
+  background: rgba(253, 68, 37, 0.92);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+.videoThumb {
+  position: relative;
+  display: block;
+  width: 64px;
+  height: 64px;
+}
+
+.videoThumb img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+}
+
+.playBadge {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  background: rgba(26, 18, 28, 0.45);
+  color: #fff;
+  font-size: 14px;
+  pointer-events: none;
+}
+
 .controls {
   display: flex;
   align-items: center;
@@ -123,11 +193,60 @@
   margin-bottom: 8px;
 }
 
-.price span {
-  margin-left: 6px;
+.price span,
+.price .from {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--gray-600);
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-left: 4px;
+}
+
+.price .from {
+  margin-left: 0;
+  margin-right: 2px;
+}
+
+.priceTiers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.priceTiers li {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-100);
+  font-size: 14px;
+}
+
+.priceTiers strong {
+  color: var(--primary-dark);
+}
+
+.priceTiers span {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.priceTiers em {
+  font-style: normal;
+  color: var(--gray-500);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .priceTiers li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 
 .type {
