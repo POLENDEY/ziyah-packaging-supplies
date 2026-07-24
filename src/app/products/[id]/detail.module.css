@@ -51,6 +51,16 @@
   box-shadow: var(--shadow);
 }
 
+.mainImageSwipe {
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+
+.mainImageSwipe:active {
+  cursor: grabbing;
+}
+
 .image {
   object-fit: cover;
 }

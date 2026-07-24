@@ -6,7 +6,7 @@ import Link from "next/link";
 import { promoSlides } from "@/data/promos";
 import styles from "./PromoBannerSlider.module.css";
 
-const INTERVAL_MS = 5000;
+const INTERVAL_MS = 5500;
 const CLICK_THRESHOLD = 8;
 
 export default function PromoBannerSlider() {
@@ -91,61 +91,62 @@ export default function PromoBannerSlider() {
       aria-roledescription="carousel"
       aria-label="Promotional banners"
     >
-      <div className={styles.shell}>
+      <div
+        ref={trackRef}
+        className={styles.viewport}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
         <div
-          ref={trackRef}
-          className={styles.viewport}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
+          className={styles.track}
+          style={{
+            transform: `translateX(${offsetPercent}%)`,
+            transition: dragging ? "none" : "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
         >
-          <div
-            className={`${styles.status} ${playing ? styles.statusPlay : styles.statusPause}`}
-            aria-live="polite"
-          >
-            {playing ? "Playing" : "Paused"}
-          </div>
+          {promoSlides.map((slide, i) => (
+            <article
+              key={slide.id}
+              className={`${styles.slide} ${styles[slide.tone]}`}
+              aria-hidden={i !== index}
+            >
+              <div className={styles.bgMedia} aria-hidden="true">
+                <Image
+                  src={slide.image}
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  className={styles.bgImage}
+                  draggable={false}
+                  priority={i === 0}
+                />
+              </div>
+              <div className={styles.fade} aria-hidden="true" />
+              <div className={styles.copy}>
+                <p className={styles.eyebrow}>Promotion</p>
+                <h2>{slide.title}</h2>
+                <p>{slide.subtitle}</p>
+                <Link href={slide.ctaHref} className={styles.cta}>
+                  {slide.ctaLabel}
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
 
-          <div
-            className={styles.track}
-            style={{
-              transform: `translateX(${offsetPercent}%)`,
-              transition: dragging ? "none" : "transform 0.45s ease",
-            }}
+        <div className={styles.chrome} onPointerDown={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            className={styles.playBtn}
+            onClick={() => setPlaying((v) => !v)}
+            aria-label={playing ? "Pause slideshow" : "Play slideshow"}
           >
-            {promoSlides.map((slide, i) => (
-              <article
-                key={slide.id}
-                className={`${styles.slide} ${styles[slide.tone]}`}
-                aria-hidden={i !== index}
-              >
-                <div className={styles.copy}>
-                  <p className={styles.eyebrow}>Promotion</p>
-                  <h2>{slide.title}</h2>
-                  <p>{slide.subtitle}</p>
-                  <Link href={slide.ctaHref} className={styles.cta}>
-                    {slide.ctaLabel}
-                  </Link>
-                </div>
-                <div className={styles.media}>
-                  <Image
-                    src={slide.image}
-                    alt=""
-                    fill
-                    sizes="(max-width: 900px) 40vw, 360px"
-                    className={styles.image}
-                    draggable={false}
-                  />
-                </div>
-              </article>
-            ))}
-          </div>
+            {playing ? "Pause" : "Play"}
+          </button>
 
-          <div
-            className={styles.controls}
-            onPointerDown={(e) => e.stopPropagation()}
-          >
+          <div className={styles.controls}>
             <button
               type="button"
               className={styles.navBtn}

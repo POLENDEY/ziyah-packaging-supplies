@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import styles from "./page.module.css";
 import Link from "next/link";
-import Image from "next/image";
 import PromoMarquee from "./components/PromoMarquee";
 import PromoBannerSlider from "./components/PromoBannerSlider";
 import FeedbackSection from "./components/FeedbackSection";
+import HeroFulfillmentScene from "./components/HeroFulfillmentScene";
+import HomeScrollEffects from "./components/HomeScrollEffects";
 import {
   IconArrowRight,
   IconBento,
@@ -23,14 +24,23 @@ import {
 import { SITE } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: "Ziyah Packaging Supplies | Food Packaging Nationwide Philippines",
+  title: "Ziyah Packaging Supplies | Buy Food Packaging Philippines",
   description:
-    "Buy food-grade packaging in the Philippines: bento boxes, sushi trays, clamshells, cups, and wrapping. Bulk & retail for restaurants, caterers, and home businesses.",
+    "Ziyah Packaging Supplies — food packaging in the Philippines. Shop bento boxes, sushi trays, and wholesale packaging with nationwide delivery from Pasay City.",
+  keywords: [
+    "Ziyah Packaging Supplies",
+    "food packaging Philippines",
+    "bento boxes",
+    "sushi trays",
+    "wholesale packaging",
+    "Pasay City packaging",
+    "nationwide delivery Philippines",
+  ],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Ziyah Packaging Supplies | Food Packaging Nationwide",
+    title: "Ziyah Packaging Supplies | Food Packaging Philippines",
     description:
-      "Premium disposable and reusable food packaging delivered nationwide across the Philippines.",
+      "Buy bento boxes, sushi trays, and wholesale food packaging. Nationwide delivery across the Philippines.",
   },
 };
 
@@ -95,6 +105,8 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name: SITE.name,
+    description:
+      "Ziyah Packaging Supplies sells food packaging in the Philippines — bento boxes, sushi trays, and wholesale packaging with nationwide delivery from Pasay City.",
     image: `${process.env.NEXT_PUBLIC_SITE_URL || "https://ziyahpackagingsupplies.com"}/logo.png`,
     email: SITE.email,
     telephone: SITE.phone,
@@ -112,53 +124,61 @@ export default function Home() {
       SITE.social.messenger.href,
       SITE.social.shopee.href,
     ],
+    knowsAbout: [
+      "food packaging",
+      "bento boxes",
+      "sushi trays",
+      "wholesale packaging Philippines",
+    ],
   };
 
   return (
     <main className={styles.main}>
+      <HomeScrollEffects />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       <section className={styles.hero}>
-        <div className={styles.heroOverlay} />
-        <div className={styles.heroContent}>
-          <div className={styles.heroBadge}>Pasay City · Serving Nationwide PH</div>
-          <h1 className={styles.heroTitle}>
-            Food Packaging Supplies <br />
-            <span>Built for Growing Brands</span>
-          </h1>
-          <p className={styles.heroDesc}>
-            Stock food-safe bento boxes, sushi trays, clamshells, cups, and wraps —
-            trusted by restaurants, caterers, and home bakers across the Philippines.
-          </p>
-          <div className={styles.heroActions}>
-            <Link href="/products" className={styles.btnPrimary}>
-              Shop Products
-            </Link>
-            <Link href="/quote" className={styles.btnOutline}>
-              Get a Wholesale Quote
-            </Link>
-          </div>
+        <div className={styles.heroScene} aria-hidden="true">
+          <HeroFulfillmentScene />
         </div>
-        <div className={styles.heroImageWrap}>
-          <Image
-            src="/logo.png"
-            alt="Ziyah Packaging Supplies logo"
-            width={320}
-            height={320}
-            className={styles.heroLogo}
-            priority
-          />
+        <div className={styles.heroScrim} aria-hidden="true" />
+        <div className={styles.heroOverlay} aria-hidden="true" />
+        <div className={styles.heroInner}>
+          <div className={styles.heroContent} data-reveal>
+            <p className={styles.heroBrand}>Ziyah Packaging Supplies</p>
+            <div className={styles.heroBadge}>Pasay City · Nationwide PH</div>
+            <h1 className={styles.heroTitle}>
+              Food Packaging{" "}
+              <span>for Growing Brands</span>
+            </h1>
+            <p className={styles.heroDesc}>
+              Bento boxes, sushi trays, and wholesale packaging — delivered nationwide
+              across the Philippines.
+            </p>
+            <div className={styles.heroActions}>
+              <Link href="/products" className={styles.btnPrimary}>
+                Shop Products
+              </Link>
+              <Link href="/quote" className={styles.btnOutline}>
+                Get a Quote
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
-      <PromoBannerSlider />
+      <div data-reveal>
+        <PromoBannerSlider />
+      </div>
 
-      <PromoMarquee />
+      <div data-reveal>
+        <PromoMarquee />
+      </div>
 
-      <section className={styles.section}>
+      <section className={styles.section} data-reveal>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
             <h2>Shop Packaging by Category</h2>
@@ -184,7 +204,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.sectionAlt}`}>
+      <section className={`${styles.section} ${styles.sectionAlt}`} data-reveal>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
             <h2>Why Food Businesses Choose Ziyah</h2>
@@ -207,9 +227,11 @@ export default function Home() {
         </div>
       </section>
 
-      <FeedbackSection />
+      <div data-reveal>
+        <FeedbackSection />
+      </div>
 
-      <section className={styles.ctaBanner}>
+      <section className={styles.ctaBanner} data-reveal>
         <div className={styles.container}>
           <div className={styles.ctaContent}>
             <h2>Ready to stock up?</h2>
@@ -229,7 +251,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={styles.infoStrip}>
+      <section className={styles.infoStrip} data-reveal>
         <div className={styles.container}>
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>

@@ -15,7 +15,7 @@ export const promoSlides: PromoSlide[] = [
     subtitle: "Food-grade bento boxes, trays, and cups for restaurants across the Philippines.",
     ctaLabel: "Shop Products",
     ctaHref: "/products",
-    image: "/dummy-post-square-1.jpg",
+    image: "/slider-promotional-banner/slider-promotional-banner-1.jpg",
     tone: "plum",
   },
   {
@@ -24,7 +24,7 @@ export const promoSlides: PromoSlide[] = [
     subtitle: "Tell us your volume — we’ll prepare a clear bulk quote for your menu.",
     ctaLabel: "Get a Quote",
     ctaHref: "/quote",
-    image: "/logo.png",
+    image: "/slider-promotional-banner/slider-promotional-banner-2.jpg",
     tone: "coral",
   },
   {
@@ -33,7 +33,7 @@ export const promoSlides: PromoSlide[] = [
     subtitle: "Clamshells, sushi trays, cups, and wraps — practical packaging that looks sharp.",
     ctaLabel: "Browse Categories",
     ctaHref: "/products",
-    image: "/dummy-post-square-1.jpg",
+    image: "/slider-promotional-banner/slider-promotional-banner-3.jpg",
     tone: "night",
   },
   {
@@ -42,7 +42,7 @@ export const promoSlides: PromoSlide[] = [
     subtitle: "Unit 103, Doña Adela Apartment, F.B. Harrison St — or message us anytime.",
     ctaLabel: "Contact Store",
     ctaHref: "/contact",
-    image: "/logo.png",
+    image: "/slider-promotional-banner/slider-promotional-banner-4.png",
     tone: "plum",
   },
 ];
