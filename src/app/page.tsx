@@ -53,7 +53,7 @@ const categories = [
   },
   {
     name: "Bento Boxes",
-    desc: "Red-base bento boxes with clear lids for everyday takeout.",
+    desc: "Red outside, black inside bento boxes with clear lids for everyday takeout.",
     Icon: IconPackage,
     href: "/products?category=Bento%20Boxes",
   },
@@ -65,13 +65,13 @@ const categories = [
   },
   {
     name: "Round Sushi Trays",
-    desc: "Round black sushi trays with gold pattern and lids.",
+    desc: "Round black sushi trays with gold pattern and lids — multiple sizes.",
     Icon: IconSushi,
     href: "/products?category=Round%20Sushi%20Trays",
   },
   {
     name: "Rectangular Sushi Trays",
-    desc: "RE-ST series rectangular sushi trays with lids.",
+    desc: "RE-ST series rectangular sushi trays with lids for plated sets.",
     Icon: IconTray,
     href: "/products?category=Rectangular%20Sushi%20Trays",
   },

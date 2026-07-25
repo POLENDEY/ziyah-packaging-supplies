@@ -34,9 +34,20 @@ export type Product = {
   specs: { label: string; value: string }[];
   dimensions: string;
   priceTiers: PriceTier[];
+  /** Shared key for color siblings (e.g. hard-bento-4div) */
+  variantGroup?: string;
+  /** Display color name (Clear, Black, …) */
+  color?: string;
+  /** Swatch hex for the color picker */
+  colorHex?: string;
+  /** Title without color suffix for PDP */
+  displayName?: string;
 };
 
-type Draft = Omit<Product, "id" | "video" | "badge" | "type" | "unit" | "images" | "price"> & {
+type Draft = Omit<
+  Product,
+  "id" | "video" | "badge" | "type" | "unit" | "images" | "price"
+> & {
   /** Per-piece price when buying by the box */
   boxPerPiece: string;
   /** Optional custom images; first image is used on listing cards */
@@ -59,6 +70,10 @@ function buildProducts(drafts: Draft[]): Product[] {
     specs: d.specs,
     dimensions: d.dimensions,
     priceTiers: d.priceTiers,
+    variantGroup: d.variantGroup,
+    color: d.color,
+    colorHex: d.colorHex,
+    displayName: d.displayName ?? d.name,
   }));
 }
 
@@ -66,6 +81,10 @@ const drafts: Draft[] = [
   // Hard Bento Clear
   {
     name: "2 Division Hard Bento Box (Clear)",
+    displayName: "2 Division Bento Box",
+    variantGroup: "hard-bento-2div",
+    color: "Clear",
+    colorHex: "#dce8ef",
     category: "Hard Bento Clear",
     desc: "Clear hard bento with lid — 2 compartments, 1000ml.",
     longDesc:
@@ -74,6 +93,7 @@ const drafts: Draft[] = [
     dimensions: "1000ml · 21.1 × 14.5 × 4.5 cm",
     specs: [
       { label: "Style", value: "Hard bento with lid (clear)" },
+      { label: "Color", value: "Clear" },
       { label: "Divisions", value: "2" },
       { label: "Capacity", value: "1000ml" },
     ],
@@ -86,6 +106,10 @@ const drafts: Draft[] = [
   },
   {
     name: "3 Division Hard Bento Box (Clear)",
+    displayName: "3 Division Bento Box",
+    variantGroup: "hard-bento-3div",
+    color: "Clear",
+    colorHex: "#dce8ef",
     category: "Hard Bento Clear",
     desc: "Clear hard bento with lid — 3 compartments, 1000ml.",
     longDesc:
@@ -94,6 +118,7 @@ const drafts: Draft[] = [
     dimensions: "1000ml · 20.95 × 17.78 × 3.81 cm",
     specs: [
       { label: "Style", value: "Hard bento with lid (clear)" },
+      { label: "Color", value: "Clear" },
       { label: "Divisions", value: "3" },
       { label: "Capacity", value: "1000ml" },
     ],
@@ -106,6 +131,10 @@ const drafts: Draft[] = [
   },
   {
     name: "4 Division Hard Bento Box (Clear)",
+    displayName: "4 Division Bento Box",
+    variantGroup: "hard-bento-4div",
+    color: "Clear",
+    colorHex: "#dce8ef",
     category: "Hard Bento Clear",
     desc: "Clear hard bento with lid — 4 compartments, 1000ml.",
     longDesc:
@@ -114,6 +143,7 @@ const drafts: Draft[] = [
     dimensions: "1000ml · 20.95 × 17.78 × 3.81 cm",
     specs: [
       { label: "Style", value: "Hard bento with lid (clear)" },
+      { label: "Color", value: "Clear" },
       { label: "Divisions", value: "4" },
       { label: "Capacity", value: "1000ml" },
     ],
@@ -126,6 +156,10 @@ const drafts: Draft[] = [
   },
   {
     name: "5 Division Hard Bento Box (Clear)",
+    displayName: "5 Division Bento Box",
+    variantGroup: "hard-bento-5div",
+    color: "Clear",
+    colorHex: "#dce8ef",
     category: "Hard Bento Clear",
     desc: "Clear hard bento with lid — 5 compartments, 1000ml.",
     longDesc:
@@ -134,6 +168,7 @@ const drafts: Draft[] = [
     dimensions: "1000ml · 20.95 × 17.78 × 3.81 cm",
     specs: [
       { label: "Style", value: "Hard bento with lid (clear)" },
+      { label: "Color", value: "Clear" },
       { label: "Divisions", value: "5" },
       { label: "Capacity", value: "1000ml" },
     ],
@@ -145,17 +180,21 @@ const drafts: Draft[] = [
     ],
   },
 
-  // Soft / red-base bento
+  // Soft bento — Red outside / Black inside
   {
     name: "1 Division Bento Box",
+    displayName: "1 Division Bento Box",
+    color: "Red & Black",
+    colorHex: "#e53935",
     category: "Bento Boxes",
-    desc: "Red-base bento with clear lid — 1 compartment.",
+    desc: "Red outside, black inside bento with clear lid — 1 compartment.",
     longDesc:
-      "Official Ziyah 1-division bento box with red base and clear lid. Volume pricing from 25 pieces to full boxes.",
+      "Official Ziyah 1-division bento box with a red exterior and black interior, plus a clear lid. Volume pricing from 25 pieces to full boxes.",
     boxPerPiece: "₱6.20",
     dimensions: "20.5 × 13 × 5.5 cm",
     specs: [
       { label: "Style", value: "Bento box with lid" },
+      { label: "Color", value: "Red outside / Black inside" },
       { label: "Divisions", value: "1" },
     ],
     priceTiers: [
@@ -167,14 +206,19 @@ const drafts: Draft[] = [
   },
   {
     name: "2 Division Bento Box",
+    displayName: "2 Division Bento Box",
+    variantGroup: "hard-bento-2div",
+    color: "Red & Black",
+    colorHex: "#e53935",
     category: "Bento Boxes",
-    desc: "Red-base bento with clear lid — 2 compartments.",
+    desc: "Red outside, black inside bento with clear lid — 2 compartments.",
     longDesc:
-      "Official Ziyah 2-division bento box with red base and clear lid for separated meals.",
+      "Official Ziyah 2-division bento box with a red exterior and black interior, plus a clear lid for separated meals.",
     boxPerPiece: "₱5.90",
     dimensions: "22.5 × 14.5 × 5.5 cm",
     specs: [
       { label: "Style", value: "Bento box with lid" },
+      { label: "Color", value: "Red outside / Black inside" },
       { label: "Divisions", value: "2" },
     ],
     priceTiers: [
@@ -186,14 +230,19 @@ const drafts: Draft[] = [
   },
   {
     name: "3 Division Bento Box",
+    displayName: "3 Division Bento Box",
+    variantGroup: "hard-bento-3div",
+    color: "Red & Black",
+    colorHex: "#e53935",
     category: "Bento Boxes",
-    desc: "Red-base bento with clear lid — 3 compartments.",
+    desc: "Red outside, black inside bento with clear lid — 3 compartments.",
     longDesc:
-      "Official Ziyah 3-division bento box with red base and clear lid.",
+      "Official Ziyah 3-division bento box with a red exterior and black interior, plus a clear lid.",
     boxPerPiece: "₱5.90",
     dimensions: "22.5 × 19.5 × 3.5 cm",
     specs: [
       { label: "Style", value: "Bento box with lid" },
+      { label: "Color", value: "Red outside / Black inside" },
       { label: "Divisions", value: "3" },
     ],
     priceTiers: [
@@ -205,14 +254,19 @@ const drafts: Draft[] = [
   },
   {
     name: "4 Division Bento Box",
+    displayName: "4 Division Bento Box",
+    variantGroup: "hard-bento-4div",
+    color: "Red & Black",
+    colorHex: "#e53935",
     category: "Bento Boxes",
-    desc: "Red-base bento with clear lid — 4 compartments.",
+    desc: "Red outside, black inside bento with clear lid — 4 compartments.",
     longDesc:
-      "Official Ziyah 4-division bento box with red base and clear lid.",
+      "Official Ziyah 4-division bento box with a red exterior and black interior, plus a clear lid.",
     boxPerPiece: "₱5.98",
     dimensions: "22.5 × 19.5 × 3.5 cm",
     specs: [
       { label: "Style", value: "Bento box with lid" },
+      { label: "Color", value: "Red outside / Black inside" },
       { label: "Divisions", value: "4" },
     ],
     priceTiers: [
@@ -224,14 +278,19 @@ const drafts: Draft[] = [
   },
   {
     name: "5 Division Bento Box",
+    displayName: "5 Division Bento Box",
+    variantGroup: "hard-bento-5div",
+    color: "Red & Black",
+    colorHex: "#e53935",
     category: "Bento Boxes",
-    desc: "Red-base bento with clear lid — 5 compartments.",
+    desc: "Red outside, black inside bento with clear lid — 5 compartments.",
     longDesc:
-      "Official Ziyah 5-division bento box with red base and clear lid for complete meal sets.",
+      "Official Ziyah 5-division bento box with a red exterior and black interior, plus a clear lid for complete meal sets.",
     boxPerPiece: "₱6.00",
     dimensions: "22.5 × 19.5 × 3.5 cm",
     specs: [
       { label: "Style", value: "Bento box with lid" },
+      { label: "Color", value: "Red outside / Black inside" },
       { label: "Divisions", value: "5" },
     ],
     priceTiers: [
@@ -245,6 +304,10 @@ const drafts: Draft[] = [
   // Hard Bento Black
   {
     name: "2 Division Hard Bento Box (Black)",
+    displayName: "2 Division Bento Box",
+    variantGroup: "hard-bento-2div",
+    color: "Black",
+    colorHex: "#1c141f",
     category: "Hard Bento Black",
     desc: "Black hard bento with clear lid — 2 compartments, 1000ml.",
     longDesc:
@@ -265,6 +328,10 @@ const drafts: Draft[] = [
   },
   {
     name: "3 Division Hard Bento Box (Black)",
+    displayName: "3 Division Bento Box",
+    variantGroup: "hard-bento-3div",
+    color: "Black",
+    colorHex: "#1c141f",
     category: "Hard Bento Black",
     desc: "Black hard bento with clear lid — 3 compartments, 1000ml.",
     longDesc:
@@ -285,6 +352,10 @@ const drafts: Draft[] = [
   },
   {
     name: "4 Division Hard Bento Box (Black)",
+    displayName: "4 Division Bento Box",
+    variantGroup: "hard-bento-4div",
+    color: "Black",
+    colorHex: "#1c141f",
     category: "Hard Bento Black",
     desc: "Black hard bento with clear lid — 4 compartments, 1000ml.",
     longDesc:
@@ -305,6 +376,10 @@ const drafts: Draft[] = [
   },
   {
     name: "5 Division Hard Bento Box (Black)",
+    displayName: "5 Division Bento Box",
+    variantGroup: "hard-bento-5div",
+    color: "Black",
+    colorHex: "#1c141f",
     category: "Hard Bento Black",
     desc: "Black hard bento with clear lid — 5 compartments, 1000ml.",
     longDesc:
@@ -623,18 +698,80 @@ export function getProductById(id: number) {
   return products.find((p) => p.id === id);
 }
 
+const COLOR_ORDER = ["Clear", "Black", "Red & Black"];
+
+export function getColorVariants(product: Product): Product[] {
+  if (!product.variantGroup) return [product];
+  return products
+    .filter((p) => p.variantGroup === product.variantGroup)
+    .sort((a, b) => {
+      const ai = COLOR_ORDER.indexOf(a.color || "");
+      const bi = COLOR_ORDER.indexOf(b.color || "");
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+}
+
+/** Same-category products for internal linking (SEO). */
+export function getRelatedProducts(product: Product, limit = 4): Product[] {
+  const sameCategory = products.filter(
+    (p) => p.id !== product.id && p.category === product.category
+  );
+  if (sameCategory.length >= limit) return sameCategory.slice(0, limit);
+
+  const rest = products.filter(
+    (p) =>
+      p.id !== product.id &&
+      p.category !== product.category &&
+      !sameCategory.some((s) => s.id === p.id)
+  );
+  return [...sameCategory, ...rest].slice(0, limit);
+}
+
+export type ProductFaq = { question: string; answer: string };
+
+export function getProductFaqs(product: Product): ProductFaq[] {
+  const label = product.displayName || product.name;
+  const brand = "Ziyah Packaging Supplies";
+  return [
+    {
+      question: `Is the ${label} food-grade and safe for takeout?`,
+      answer: `Yes. ${label} from ${brand} is made for food service use — suitable for takeout, meal prep, and restaurant plating. Confirm your menu needs with our team for the best fit.`,
+    },
+    {
+      question: `Do you deliver ${label} nationwide in the Philippines?`,
+      answer: `Yes. We serve businesses nationwide across the Philippines. You can also pick up at our Pasay City store (Unit 103, Doña Adela Apartment, F.B. Harrison St) during store hours.`,
+    },
+    {
+      question: `Can I order ${label} in bulk or wholesale?`,
+      answer: `Absolutely. Volume pricing is available by pack and box. Share your quantity and preferred color${product.color ? ` (currently ${product.color})` : ""} — we’ll prepare a clear wholesale quote.`,
+    },
+    {
+      question: `What are the dimensions of ${label}?`,
+      answer: `${label} measures ${product.dimensions}. Specs: ${product.specs
+        .map((s) => `${s.label} ${s.value}`)
+        .join(", ")}.`,
+    },
+  ];
+}
+
 export function getProductHref(product: Product | number) {
   const id = typeof product === "number" ? product : product.id;
   return `/products/${id}`;
 }
 
-export function buildInquireHref(product: Product) {
+export function buildInquireHref(
+  product: Product,
+  options?: { quantity?: number }
+) {
+  const qty = options?.quantity && options.quantity > 1 ? options.quantity : undefined;
   const params = new URLSearchParams({
     product: product.name,
     category: product.category,
     price: `${product.price}${product.unit}`,
     subject: "product-inquiry",
   });
+  if (product.color) params.set("color", product.color);
+  if (qty) params.set("quantity", String(qty));
   return `/contact?${params.toString()}`;
 }
 

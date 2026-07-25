@@ -345,11 +345,11 @@ export default function HeroFulfillmentScene() {
       );
       homeWin.position.set(0.85, 1.25, 1.12);
       home.add(homeWin);
-      home.position.set(7.5, 0, -0.55);
+      home.position.set(7.5, 0, -2.0);
       scene.add(home);
 
-      // Drop target: in front of home door on the doormat
-      const homeDropWorld = new THREE.Vector3(7.5, 0.32, 1.05);
+      // Drop target: doormat at front door, facing the roadside
+      const homeDropWorld = new THREE.Vector3(7.5, 0.32, 0.65);
 
       // Brand plum delivery van
       const matVan = new THREE.MeshStandardMaterial({
@@ -668,7 +668,8 @@ export default function HeroFulfillmentScene() {
       scene.add(orderPkg, waitingPkg);
 
       const pathAt = (t: number) => {
-        const x = THREE.MathUtils.lerp(-5.6, 5.8, t);
+        // Extended past the house so the van parks after the home
+        const x = THREE.MathUtils.lerp(-5.6, 10.2, t);
         const z = 0.75 + Math.sin(t * Math.PI) * -0.28;
         return new THREE.Vector3(x, 0, z);
       };
@@ -710,11 +711,12 @@ export default function HeroFulfillmentScene() {
           packageInTruck = true;
           waitingPkg.visible = t < 0.29;
         } else if (t < 0.76) {
-          truckT = THREE.MathUtils.lerp(0.07, 0.94, (t - 0.34) / 0.42);
+          truckT = THREE.MathUtils.lerp(0.07, 0.88, (t - 0.34) / 0.42);
           packageInTruck = true;
           waitingPkg.visible = false;
         } else {
-          truckT = 0.94;
+          // Park just past the house before dropping
+          truckT = 0.88;
           dropping = true;
           waitingPkg.visible = false;
         }

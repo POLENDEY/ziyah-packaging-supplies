@@ -3,13 +3,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   absoluteAssetUrl,
-  buildInquireHref,
+  getColorVariants,
   getProductById,
+  getProductFaqs,
   getProductImageAlt,
+  getSiteOrigin,
   products,
 } from "@/data/products";
 import { SITE } from "@/data/site";
 import ProductGallery from "./ProductGallery";
+import ProductPurchasePanel from "./ProductPurchasePanel";
+import ProductSeoSections from "./ProductSeoSections";
 import styles from "./detail.module.css";
 
 type Props = {
@@ -33,24 +37,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     url: absoluteAssetUrl(src),
     alt: getProductImageAlt(product.name, src, i),
   }));
+  const titleName = product.displayName || product.name;
 
   return {
     title: `${product.name} | Buy Food Packaging Philippines`,
-    description: `${product.desc} Shop ${product.name} from ${SITE.name}. ${product.longDesc}`,
+    description: `Buy ${titleName} from ${SITE.name}. ${product.desc} ${product.dimensions}. Nationwide delivery across the Philippines. Wholesale & pickup in Pasay City.`,
     keywords: [
       product.name,
+      titleName,
       product.category,
+      product.color,
       "Ziyah Packaging Supplies",
       "food packaging Philippines",
-      "sushi tray",
       "wholesale packaging",
-    ],
+      "bento box Philippines",
+      "sushi tray Philippines",
+    ].filter(Boolean) as string[],
     alternates: { canonical: `/products/${product.id}` },
     openGraph: {
       type: "website",
       title: `${product.name} | ${SITE.name}`,
       description: product.longDesc,
       images: absoluteImages,
+      url: `/products/${product.id}`,
     },
     twitter: {
       card: "summary_large_image",
@@ -60,6 +69,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     other: {
       "og:image:alt": imageAlt,
+      "product:brand": SITE.name,
+      "product:availability": "in stock",
+      "product:condition": "new",
+      "product:price:amount": product.price.replace(/[^\d.]/g, ""),
+      "product:price:currency": "PHP",
     },
   };
 }
@@ -69,7 +83,12 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = getProductById(Number(id));
   if (!product) notFound();
 
+  const variants = getColorVariants(product);
+  const faqs = getProductFaqs(product);
+  const origin = getSiteOrigin();
   const productUrl = absoluteAssetUrl(`/products/${product.id}`);
+  const titleName = product.displayName || product.name;
+
   const imageObjects = product.images.map((src, i) => ({
     "@type": "ImageObject",
     contentUrl: absoluteAssetUrl(src),
@@ -82,31 +101,86 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.longDesc,
-    sku: `ZIYAH-${product.id}`,
-    image: imageObjects,
-    category: product.category,
-    brand: {
-      "@type": "Brand",
-      name: SITE.name,
-    },
-    manufacturer: {
-      "@type": "Organization",
-      name: SITE.name,
-    },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "PHP",
-      price: product.price.replace(/[^\d.]/g, "") || undefined,
-      availability: "https://schema.org/InStock",
-      url: productUrl,
-      seller: {
-        "@type": "Organization",
-        name: SITE.name,
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: origin,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Products",
+            item: `${origin}/products`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: titleName,
+            item: productUrl,
+          },
+        ],
       },
-    },
+      {
+        "@type": "Product",
+        "@id": `${productUrl}#product`,
+        name: product.name,
+        description: product.longDesc,
+        sku: `ZIYAH-${product.id}`,
+        mpn: `ZIYAH-${product.id}`,
+        image: imageObjects,
+        category: product.category,
+        color: product.color,
+        material: product.type,
+        brand: {
+          "@type": "Brand",
+          name: SITE.name,
+        },
+        manufacturer: {
+          "@type": "Organization",
+          name: SITE.name,
+          url: origin,
+        },
+        additionalProperty: product.specs.map((spec) => ({
+          "@type": "PropertyValue",
+          name: spec.label,
+          value: spec.value,
+        })),
+        offers: {
+          "@type": "Offer",
+          url: productUrl,
+          priceCurrency: "PHP",
+          price: product.price.replace(/[^\d.]/g, "") || undefined,
+          availability: "https://schema.org/InStock",
+          itemCondition: "https://schema.org/NewCondition",
+          seller: {
+            "@type": "Organization",
+            name: SITE.name,
+            url: origin,
+          },
+          areaServed: {
+            "@type": "Country",
+            name: "Philippines",
+          },
+        },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${productUrl}#faq`,
+        mainEntity: faqs.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.answer,
+          },
+        })),
+      },
+    ],
   };
 
   return (
@@ -122,56 +196,21 @@ export default async function ProductDetailPage({ params }: Props) {
           <span>/</span>
           <Link href="/products">Products</Link>
           <span>/</span>
-          <span>{product.name}</span>
+          <span>{titleName}</span>
         </nav>
 
         <div className={styles.layout}>
           <ProductGallery
+            key={product.id}
             images={product.images}
             name={product.name}
             video={product.video}
           />
 
-          <div className={styles.content}>
-            <p className={styles.category}>{product.category}</p>
-            <h1>{product.name}</h1>
-            <p className={styles.price}>
-              {product.price}
-              <span>{product.unit}</span>
-            </p>
-            <p className={styles.type}>{product.type}</p>
-            <p className={styles.desc}>{product.longDesc}</p>
-
-            <div className={styles.block}>
-              <h2>Dimensions</h2>
-              <p>{product.dimensions}</p>
-            </div>
-
-            <div className={styles.block}>
-              <h2>Specifications</h2>
-              <ul className={styles.specs}>
-                {product.specs.map((spec) => (
-                  <li key={spec.label}>
-                    <strong>{spec.label}</strong>
-                    <span>{spec.value}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className={styles.actions}>
-              <Link href={buildInquireHref(product)} className={styles.primary}>
-                Inquire about this product
-              </Link>
-              <Link href="/products" className={styles.secondary}>
-                Back to products
-              </Link>
-              <Link href="/quote" className={styles.secondary}>
-                Request wholesale quote
-              </Link>
-            </div>
-          </div>
+          <ProductPurchasePanel product={product} variants={variants} />
         </div>
+
+        <ProductSeoSections product={product} />
       </div>
     </main>
   );

@@ -26,6 +26,8 @@ export default function ContactForm() {
     const product = searchParams.get("product") || "";
     const category = searchParams.get("category") || "";
     const price = searchParams.get("price") || "";
+    const color = searchParams.get("color") || "";
+    const quantity = searchParams.get("quantity") || "";
     const subject = searchParams.get("subject") || (product ? "product-inquiry" : "");
     const message = product
       ? [
@@ -33,6 +35,8 @@ export default function ContactForm() {
           ``,
           `I'd like to inquire about:`,
           `Product: ${product}`,
+          color ? `Color: ${color}` : null,
+          quantity ? `Quantity: ${quantity}` : null,
           category ? `Category: ${category}` : null,
           price ? `Listed price: ${price}` : null,
           ``,
