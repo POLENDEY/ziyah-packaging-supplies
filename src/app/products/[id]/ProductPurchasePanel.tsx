@@ -8,6 +8,11 @@ import {
   getProductHref,
   type Product,
 } from "@/data/products";
+import {
+  formatPeso,
+  parsePeso,
+  useProductQueue,
+} from "@/app/components/ProductQueueProvider";
 import styles from "./detail.module.css";
 
 type Props = {
@@ -19,11 +24,15 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
   const router = useRouter();
   const [qty, setQty] = useState(1);
   const [descOpen, setDescOpen] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+  const { itemCount, inquireHref: queueInquireHref, addToQueue } = useProductQueue();
 
   const hasColorPicker = variants.length > 1 && variants.every((v) => v.color);
   const showColor = Boolean(product.color);
   const title = product.displayName || product.name;
-  const inquireHref = useMemo(
+  const unitPrice = parsePeso(product.price);
+  const currentLineTotal = unitPrice * qty;
+  const singleInquireHref = useMemo(
     () => buildInquireHref(product, { quantity: qty }),
     [product, qty]
   );
@@ -31,6 +40,25 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
   const selectColor = (variant: Product) => {
     if (variant.id === product.id) return;
     router.push(getProductHref(variant));
+  };
+
+  const handleAddToQueue = () => {
+    addToQueue(
+      {
+        productId: product.id,
+        name: product.name,
+        displayName: title,
+        color: product.color,
+        category: product.category,
+        unitPrice,
+        unitPriceLabel: product.price,
+        quantity: qty,
+        image: product.images[0] || "",
+      },
+      { openCart: true }
+    );
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1600);
   };
 
   const renderSwatch = (
@@ -131,11 +159,25 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
             +
           </button>
         </div>
+        <p className={styles.lineTotal} aria-live="polite">
+          Line total: <strong>{formatPeso(currentLineTotal)}</strong>
+          <span>
+            ({qty} × {product.price})
+          </span>
+        </p>
       </div>
 
       <div className={styles.ctaStack}>
-        <Link href={inquireHref} className={styles.primary}>
-          Inquire about this product
+        <button type="button" className={styles.addQueue} onClick={handleAddToQueue}>
+          {justAdded ? "Added to cart" : "Add to cart"}
+        </button>
+        <Link
+          href={itemCount > 0 ? queueInquireHref : singleInquireHref}
+          className={styles.primary}
+        >
+          {itemCount > 0
+            ? `Inquire about cart (${itemCount})`
+            : "Inquire about this product"}
         </Link>
         <Link href="/quote" className={styles.secondary}>
           Request wholesale quote

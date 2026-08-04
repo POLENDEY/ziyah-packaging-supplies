@@ -18,23 +18,33 @@ export default function ProductsClient() {
   const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeType, setActiveType] = useState("All");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     const raw = searchParams.get("category");
-    if (!raw) return;
-    const match = productCategories.find(
-      (cat) => cat.toLowerCase() === decodeURIComponent(raw).toLowerCase()
-    );
-    if (match) setActiveCategory(match);
+    if (raw) {
+      const match = productCategories.find(
+        (cat) => cat.toLowerCase() === decodeURIComponent(raw).toLowerCase()
+      );
+      if (match) setActiveCategory(match);
+    }
+    const q = searchParams.get("q");
+    setQuery(q?.trim() ?? "");
   }, [searchParams]);
 
   const filtered = useMemo(() => {
+    const q = query.toLowerCase();
     return products.filter((p) => {
       const catMatch = activeCategory === "All" || p.category === activeCategory;
       const typeMatch = activeType === "All" || p.type === activeType;
-      return catMatch && typeMatch;
+      const textMatch =
+        !q ||
+        [p.name, p.category, p.desc, p.longDesc].some((field) =>
+          field.toLowerCase().includes(q)
+        );
+      return catMatch && typeMatch && textMatch;
     });
-  }, [activeCategory, activeType]);
+  }, [activeCategory, activeType, query]);
 
   return (
     <>

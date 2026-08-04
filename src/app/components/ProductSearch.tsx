@@ -76,9 +76,18 @@ export default function ProductSearch({
       }
       return;
     }
-    if (e.key === "Enter" && results[0]) {
+    if (e.key === "Enter") {
       e.preventDefault();
-      goTo(getProductHref(results[0]));
+      const q = query.trim();
+      if (results[0] && q.length < 2) {
+        goTo(getProductHref(results[0]));
+        return;
+      }
+      if (q) {
+        goTo(`/products?q=${encodeURIComponent(q)}`);
+        return;
+      }
+      if (results[0]) goTo(getProductHref(results[0]));
     }
   };
 

@@ -7,6 +7,7 @@ import {
   getProductById,
   getProductFaqs,
   getProductImageAlt,
+  getProductMetaDescription,
   getSiteOrigin,
   products,
 } from "@/data/products";
@@ -19,6 +20,10 @@ import styles from "./detail.module.css";
 type Props = {
   params: Promise<{ id: string }>;
 };
+
+/** Pre-render every product at build time (SSG). */
+export const dynamic = "force-static";
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return products.map((product) => ({ id: String(product.id) }));
@@ -38,26 +43,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alt: getProductImageAlt(product.name, src, i),
   }));
   const titleName = product.displayName || product.name;
+  const metaDescription = getProductMetaDescription(product);
 
   return {
-    title: `${product.name} | Buy Food Packaging Philippines`,
-    description: `Buy ${titleName} from ${SITE.name}. ${product.desc} ${product.dimensions}. Nationwide delivery across the Philippines. Wholesale & pickup in Pasay City.`,
+    // absolute avoids double brand from root title.template
+    title: {
+      absolute: `${product.name} | Buy Food Packaging Philippines | ${SITE.name}`,
+    },
+    description: metaDescription,
     keywords: [
       product.name,
       titleName,
       product.category,
       product.color,
-      "Ziyah Packaging Supplies",
-      "food packaging Philippines",
-      "wholesale packaging",
-      "bento box Philippines",
-      "sushi tray Philippines",
+      ...SITE.seoKeywords,
+      "buy online Philippines",
+      "wholesale packaging Pasay",
     ].filter(Boolean) as string[],
     alternates: { canonical: `/products/${product.id}` },
     openGraph: {
       type: "website",
+      locale: "en_PH",
+      siteName: SITE.name,
       title: `${product.name} | ${SITE.name}`,
-      description: product.longDesc,
+      description: product.longDesc.slice(0, 200),
       images: absoluteImages,
       url: `/products/${product.id}`,
     },
@@ -78,6 +87,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function parsePrice(value: string) {
+  const n = Number(value.replace(/[^\d.]/g, ""));
+  return Number.isFinite(n) ? n : undefined;
+}
+
 export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
   const product = getProductById(Number(id));
@@ -88,6 +102,13 @@ export default async function ProductDetailPage({ params }: Props) {
   const origin = getSiteOrigin();
   const productUrl = absoluteAssetUrl(`/products/${product.id}`);
   const titleName = product.displayName || product.name;
+
+  const tierPrices = product.priceTiers
+    .map((t) => parsePrice(t.perPiece))
+    .filter((n): n is number => n !== undefined);
+  const lowPrice = tierPrices.length ? Math.min(...tierPrices) : parsePrice(product.price);
+  const highPrice = tierPrices.length ? Math.max(...tierPrices) : parsePrice(product.price);
+  const priceValidUntil = `${new Date().getFullYear() + 1}-12-31`;
 
   const imageObjects = product.images.map((src, i) => ({
     "@type": "ImageObject",
@@ -151,12 +172,15 @@ export default async function ProductDetailPage({ params }: Props) {
           value: spec.value,
         })),
         offers: {
-          "@type": "Offer",
+          "@type": "AggregateOffer",
           url: productUrl,
           priceCurrency: "PHP",
-          price: product.price.replace(/[^\d.]/g, "") || undefined,
+          lowPrice: lowPrice,
+          highPrice: highPrice,
+          offerCount: product.priceTiers.length,
           availability: "https://schema.org/InStock",
           itemCondition: "https://schema.org/NewCondition",
+          priceValidUntil,
           seller: {
             "@type": "Organization",
             name: SITE.name,

@@ -5,10 +5,18 @@ import ContactForm from "./ContactForm";
 import { SITE } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: "Contact Ziyah Packaging Supplies | Pasay City Store",
+  title: "Contact Us | Food Packaging Store Pasay City",
   description:
-    "Visit our Pasay City store or message Ziyah Packaging Supplies for product questions, pickup, and nationwide delivery across the Philippines.",
+    "Contact Ziyah Packaging Supplies in Pasay City for product questions, store pickup, wholesale orders, and nationwide food packaging delivery across the Philippines.",
+  keywords: [...SITE.seoKeywords, "contact packaging supplier Pasay", "food packaging store near me"],
   alternates: { canonical: "/contact" },
+  openGraph: {
+    title: "Contact Ziyah Packaging Supplies | Pasay City",
+    description:
+      "Visit our F.B. Harrison St store or message us for nationwide packaging delivery.",
+    images: [{ url: "/logo.png", alt: SITE.name }],
+    url: "/contact",
+  },
 };
 
 export default function ContactPage() {
@@ -16,11 +24,10 @@ export default function ContactPage() {
     <main className={styles.main}>
       <header className={styles.pageHeader}>
         <div className={styles.container}>
-          <h1>Contact Our Packaging Team</h1>
+          <h1>Contact Our Food Packaging Team in Pasay City</h1>
           <p>
-            Reach us for product questions, store visits, and delivery coordination —
-            serving food businesses nationwide from our home base in Pasay City,
-            Philippines.
+            Ask about bento boxes, sushi trays, wholesale rates, store pickup, or nationwide
+            delivery — we help food businesses across the Philippines find the right packaging.
           </p>
         </div>
       </header>

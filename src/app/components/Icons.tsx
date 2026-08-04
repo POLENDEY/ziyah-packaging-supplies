@@ -252,3 +252,14 @@ export function IconArrowRight(props: IconProps) {
     </Icon>
   );
 }
+
+export function IconCart(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6 6h15l-1.5 9h-11z" />
+      <path d="M6 6 5 3H2" />
+      <circle cx="9" cy="20" r="1.25" />
+      <circle cx="17" cy="20" r="1.25" />
+    </Icon>
+  );
+}

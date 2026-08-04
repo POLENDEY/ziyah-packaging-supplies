@@ -1,8 +1,7 @@
 ﻿"use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./ChatBot.module.css";
-import { SITE } from "@/data/site";
 
 interface Message {
   id: number;
@@ -10,32 +9,15 @@ interface Message {
   text: string;
 }
 
-const FAQ: { pattern: RegExp; answer: string }[] = [
-  { pattern: /hello|hi|hey|good (morning|afternoon|evening)/i, answer: "Hi there! Welcome to Ziyah Packaging Supplies. How can I help you today?" },
-  { pattern: /bento|bento box/i, answer: "We carry 3-compartment, 5-compartment, and kraft paper bento boxes. Prices start at ₱8 per piece. Check our Products page for details!" },
-  { pattern: /sushi|sushi tray/i, answer: "We have clear OPS sushi trays (small and large) and premium matte-black display trays. Prices start at ₱10 per piece." },
-  { pattern: /clamshell/i, answer: "We offer clear PET and black-base clamshell containers in 6-inch and 9-inch sizes, plus round burger clamshells. Starting at ₱6 per piece." },
-  { pattern: /cup|cups|lid/i, answer: "We carry 16oz and 22oz clear disposable cups plus dome lids. Starting at ₱2 per piece for lids." },
-  { pattern: /tray|food tray/i, answer: "We have foam trays, PP trays with lids, and aluminum foil trays for catering. Starting at ₱4 per piece." },
-  { pattern: /wrap|film|cling|baking paper/i, answer: "We carry PVC cling wrap, shrink wrap film, and greaseproof baking paper. Starting at ₱120 per roll." },
-  { pattern: /price|cost|how much|magkano/i, answer: "You can see product pricing on our Products page. For bulk rates, send a request on Contact or Get a Quote and our team will follow up." },
-  { pattern: /bulk|wholesale|order/i, answer: "Yes, we accommodate bulk and wholesale orders! Use Get a Quote or our Contact page for a custom quote." },
-  { pattern: /shopee|online store|shop online/i, answer: `You can shop our products on Shopee: ${SITE.social.shopee.href}` },
-  { pattern: /facebook|social|page/i, answer: `Follow us on Facebook: ${SITE.social.facebook.href}` },
-  { pattern: /deliver|shipping|nationwide|philippines/i, answer: `We serve nationwide across the Philippines. Call ${SITE.phone}, email ${SITE.email}, or use Contact / Get a Quote. You can also shop on Shopee.` },
-  { pattern: /address|location|where/i, answer: `We are at ${SITE.addressShort}. Plus code: ${SITE.plusCode}.` },
-  { pattern: /hour|open|close/i, answer: `Hours: ${SITE.hoursSummary}.` },
-  { pattern: /phone|contact|number|call|viber|email/i, answer: `Call/Viber/SMS ${SITE.phone} or email ${SITE.email}. You can also use our Contact page.` },
-  { pattern: /disposable/i, answer: "Most of our products are disposable and food-grade safe. We also carry reusable options. Check the Products page for type filters." },
-  { pattern: /eco|environment|biodegradable/i, answer: "We offer eco-friendly options like kraft paper bento boxes and biodegradable alternatives!" },
-  { pattern: /thank|thanks/i, answer: "You are welcome! Is there anything else I can help you with?" },
-  { pattern: /bye|goodbye/i, answer: "Goodbye! Feel free to come back anytime. Have a great day!" },
-];
-
 const GREETING =
-  "Hi! I’m the Ziyah support assistant. Ask me about products, pricing, location, or delivery — I’m happy to help.";
+  "Hi! I'm Ziyah Support — your packaging assistant. Ask me about bento boxes, sushi trays, wholesale pricing, delivery, or our Pasay store. How can I help?";
 
-const FALLBACK = `Happy to help you find the right packaging. Browse our Products page, request a quote, or reach us at ${SITE.phone} / ${SITE.email}.`;
+const QUICK = [
+  "Pricing for hard bento boxes",
+  "Do you deliver nationwide?",
+  "Store location and hours",
+  "Help me pick a sushi tray",
+];
 
 let idCounter = 1;
 
@@ -47,31 +29,80 @@ export default function ChatBot() {
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const busyRef = useRef(false);
+  const messagesRef = useRef(messages);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     if (open) {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, open]);
+  }, [messages, open, typing]);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
-    const userMsg: Message = { id: idCounter++, from: "user", text };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
+  const sendMessage = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || busyRef.current) return;
+
+    busyRef.current = true;
     setTyping(true);
+    setInput("");
 
-    const match = FAQ.find((f) => f.pattern.test(text));
-    const reply = match ? match.answer : FALLBACK;
+    const userMsg: Message = { id: idCounter++, from: "user", text: trimmed };
+    const nextMessages = [...messagesRef.current, userMsg];
+    messagesRef.current = nextMessages;
+    setMessages(nextMessages);
 
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { id: idCounter++, from: "bot", text: reply }]);
+    try {
+      // Send conversation without the static greeting (avoids Gemini role issues + loops)
+      const payloadMessages = nextMessages
+        .filter((m) => !(m.from === "bot" && m.text === GREETING))
+        .map((m) => ({
+          role: m.from === "user" ? "user" : "assistant",
+          content: m.text,
+        }));
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: payloadMessages }),
+      });
+
+      const data = (await res.json()) as { reply?: string };
+      let reply =
+        data.reply?.trim() ||
+        "Sorry, I couldn't answer that just now. Please try again or use Contact / Get a Quote.";
+
+      const lastBot = [...nextMessages]
+        .reverse()
+        .find((m) => m.from === "bot" && m.text !== GREETING)?.text;
+      if (lastBot && reply === lastBot) {
+        reply = `${reply}\n\nIf you'd like, tell me the product size or quantity and I'll get more specific.`;
+      }
+
+      const botMsg: Message = { id: idCounter++, from: "bot", text: reply };
+      const withBot = [...messagesRef.current, botMsg];
+      messagesRef.current = withBot;
+      setMessages(withBot);
+    } catch {
+      const botMsg: Message = {
+        id: idCounter++,
+        from: "bot",
+        text: "Connection issue — please try again in a moment, or reach us through Contact.",
+      };
+      const withBot = [...messagesRef.current, botMsg];
+      messagesRef.current = withBot;
+      setMessages(withBot);
+    } finally {
       setTyping(false);
-    }, 700);
+      busyRef.current = false;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") sendMessage(input);
+    if (e.key === "Enter") void sendMessage(input);
   };
 
   return (
@@ -100,7 +131,7 @@ export default function ChatBot() {
             <div>
               <div className={styles.headerName}>Ziyah Support</div>
               <div className={styles.headerStatus}>
-                <span className={styles.dot} /> Online
+                <span className={styles.dot} /> Online · site catalog
               </div>
             </div>
           </div>
@@ -133,8 +164,14 @@ export default function ChatBot() {
         </div>
 
         <div className={styles.quickReplies}>
-          {["Pricing", "Delivery", "Location", "Bulk order"].map((q) => (
-            <button key={q} className={styles.quickBtn} onClick={() => sendMessage(q)}>
+          {QUICK.map((q) => (
+            <button
+              key={q}
+              type="button"
+              className={styles.quickBtn}
+              disabled={typing}
+              onClick={() => void sendMessage(q)}
+            >
               {q}
             </button>
           ))}
@@ -144,12 +181,19 @@ export default function ChatBot() {
           <input
             type="text"
             className={styles.input}
-            placeholder="Type a message..."
+            placeholder="Ask about products, prices, delivery..."
             value={input}
+            disabled={typing}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <button className={styles.sendBtn} onClick={() => sendMessage(input)} aria-label="Send">
+          <button
+            type="button"
+            className={styles.sendBtn}
+            onClick={() => void sendMessage(input)}
+            disabled={typing || !input.trim()}
+            aria-label="Send"
+          >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="22" y1="2" x2="11" y2="13" />
               <polygon points="22 2 15 22 11 13 2 9 22 2" />

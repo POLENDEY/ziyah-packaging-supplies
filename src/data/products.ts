@@ -1,6 +1,10 @@
+import { getSiteOrigin, SITE } from "@/data/site";
+
 const IMG = "/dummy-post-square-1.jpg";
 const SAMPLE_PRODUCT_VIDEO = "https://www.w3schools.com/html/movie.mp4";
 const RST = "/round-sushi-tray";
+
+export { getSiteOrigin };
 
 /** Top view first (products grid), then flat view (detail gallery). */
 function roundSushiImages(sizeKey: string, withDivision = false) {
@@ -54,13 +58,43 @@ type Draft = Omit<
   images?: string[];
 };
 
+/** Human, keyword-rich product story unique per SKU (SSG SEO body copy). */
+function composeLongDesc(d: Draft): string {
+  const title = d.displayName ?? d.name;
+  const colorBit = d.color ? ` in ${d.color}` : "";
+  const box = d.priceTiers.find((t) => /box/i.test(t.quantity));
+  const pack = d.priceTiers.find((t) => /pack/i.test(t.quantity));
+  const priceNote = box
+    ? ` Box rate starts around ${box.perPiece} per piece${pack ? ` (packs from ${pack.price})` : ""}.`
+    : "";
+
+  if (d.category === "Hard Bento Clear") {
+    return `Looking for a clear hard bento box with lid in the Philippines? The ${title}${colorBit} from ${SITE.name} is a food-grade takeout container built for meal prep, catering, and restaurant plating. Transparent walls make it easy to show off rice, proteins, and sides without mixing flavors — sized ${d.dimensions}. Ideal for cafés, cloud kitchens, and home food businesses that need reliable disposable meal packaging with wholesale options.${priceNote} Order online or pick up in Pasay City for nationwide delivery across the Philippines.`;
+  }
+  if (d.category === "Hard Bento Black") {
+    return `Shop black hard bento boxes for premium takeout presentation. The ${title}${colorBit} from ${SITE.name} pairs a sleek black base with a clear lid so your plated meals look sharp on delivery apps and catering trays. Food-grade disposable packaging sized ${d.dimensions} — a favorite for restaurants, meal-prep brands, and event caterers nationwide.${priceNote} Available by piece, pack, or full box with pickup at our Pasay City store or delivery across the Philippines.`;
+  }
+  if (d.category === "Bento Boxes") {
+    return `Everyday takeout packaging that customers recognize: the ${title} features a red exterior and black interior with a clear lid — classic Filipino meal-box style for silog sets, packed lunches, and delivery orders. From ${SITE.name} in Pasay City, this disposable bento (${d.dimensions}) is food-grade and sold with practical wholesale tiers for small kitchens and high-volume kitchens alike.${priceNote} Buy online or inquire for bulk food packaging delivery nationwide in the Philippines.`;
+  }
+  if (d.category === "Round Sushi Trays") {
+    const div = /division/i.test(d.name)
+      ? " Internal divisions help separate sushi, sashimi, and sides in one elegant round tray."
+      : " The gold-pattern black tray with lid keeps rolls neat for retail and catering.";
+    return `Buy round sushi trays with lids in the Philippines — the ${title} from ${SITE.name} is sized ${d.dimensions} for sushi sets, sashimi platters, and Japanese-inspired takeout.${div} Food-grade disposable packaging trusted by sushi bars, hotels, and home businesses.${priceNote} Wholesale packs and boxes available; pick up in Pasay City or request nationwide delivery.`;
+  }
+  // Rectangular sushi trays
+  const model = d.specs.find((s) => s.label === "Model")?.value;
+  return `Need rectangular sushi trays with lids for plated sets? The ${title}${model ? ` (${model})` : ""} from ${SITE.name} is a black gold-pattern disposable tray sized ${d.dimensions} — built for sushi rolls, nigiri lines, and party platters. Food packaging wholesalers and restaurants across the Philippines order these for consistent presentation and stackable storage.${priceNote} Available from our Pasay City store with nationwide delivery options.`;
+}
+
 function buildProducts(drafts: Draft[]): Product[] {
   return drafts.map((d, index) => ({
     id: index + 1,
     name: d.name,
     category: d.category,
     desc: d.desc,
-    longDesc: d.longDesc,
+    longDesc: composeLongDesc(d),
     type: "Disposable",
     price: d.boxPerPiece,
     unit: "/ piece",
@@ -731,27 +765,48 @@ export type ProductFaq = { question: string; answer: string };
 
 export function getProductFaqs(product: Product): ProductFaq[] {
   const label = product.displayName || product.name;
-  const brand = "Ziyah Packaging Supplies";
-  return [
+  const brand = SITE.name;
+  const color = product.color;
+  const lowest = product.priceTiers.at(-1);
+  const box = product.priceTiers.find((t) => /box/i.test(t.quantity));
+
+  const faqs: ProductFaq[] = [
     {
-      question: `Is the ${label} food-grade and safe for takeout?`,
-      answer: `Yes. ${label} from ${brand} is made for food service use — suitable for takeout, meal prep, and restaurant plating. Confirm your menu needs with our team for the best fit.`,
+      question: `Where can I buy ${label} in the Philippines?`,
+      answer: `You can buy ${label} from ${brand} online, via Messenger/Shopee, or at our Pasay City store on F.B. Harrison St. We supply restaurants, caterers, and home food businesses nationwide — not Metro Manila only.`,
     },
     {
-      question: `Do you deliver ${label} nationwide in the Philippines?`,
-      answer: `Yes. We serve businesses nationwide across the Philippines. You can also pick up at our Pasay City store (Unit 103, Doña Adela Apartment, F.B. Harrison St) during store hours.`,
+      question: `Is ${label} food-grade packaging for takeout and meal prep?`,
+      answer: `Yes. ${label} is sold as food-service packaging for takeout, delivery, catering, and meal prep. Specs include ${product.specs
+        .map((s) => `${s.label.toLowerCase()} ${s.value}`)
+        .join(", ")}. Size: ${product.dimensions}.`,
     },
     {
-      question: `Can I order ${label} in bulk or wholesale?`,
-      answer: `Absolutely. Volume pricing is available by pack and box. Share your quantity and preferred color${product.color ? ` (currently ${product.color})` : ""} — we’ll prepare a clear wholesale quote.`,
-    },
-    {
-      question: `What are the dimensions of ${label}?`,
-      answer: `${label} measures ${product.dimensions}. Specs: ${product.specs
-        .map((s) => `${s.label} ${s.value}`)
-        .join(", ")}.`,
+      question: `Do you deliver ${label} nationwide?`,
+      answer: `Yes — ${brand} offers nationwide delivery across the Philippines. Prefer same-day? Visit our Pasay City pickup point (${SITE.addressShort.split(",").slice(0, 2).join(",")}). Store hours: ${SITE.hoursSummary}.`,
     },
   ];
+
+  if (product.category.includes("Bento") || product.category.includes("Hard Bento")) {
+    faqs.push({
+      question: `What meal types fit the ${label}${color ? ` (${color})` : ""}?`,
+      answer: `This ${product.category.toLowerCase()} works well for silog sets, rice meals with sides, packed lunches, and catering trays${color ? ` — the ${color} finish helps your brand look consistent on delivery photos` : ""}. Need help matching divisions to your menu? Message us for free packaging guidance.`,
+    });
+  } else {
+    faqs.push({
+      question: `Is ${label} good for sushi shops and catering platters?`,
+      answer: `Absolutely. ${label} is a disposable sushi tray with lid designed for sushi bars, hotels, and party platters. The black gold-pattern look photographs well for menus and online orders. Size reference: ${product.dimensions}.`,
+    });
+  }
+
+  faqs.push({
+    question: `How much does ${label} cost wholesale vs small orders?`,
+    answer: `Pricing depends on quantity. Box rate is about ${product.price} per piece${box ? ` (${box.quantity} for ${box.price})` : ""}${
+      lowest ? `. Smaller packs start around ${lowest.perPiece} per piece (${lowest.quantity} for ${lowest.price})` : ""
+    }. Request a wholesale quote for larger monthly volume.`,
+  });
+
+  return faqs;
 }
 
 export function getProductHref(product: Product | number) {
@@ -775,13 +830,6 @@ export function buildInquireHref(
   return `/contact?${params.toString()}`;
 }
 
-export function getSiteOrigin() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    "https://ziyahpackagingsupplies.com"
-  ).replace(/\/$/, "");
-}
-
 export function absoluteAssetUrl(path: string) {
   if (/^https?:\/\//i.test(path)) return path;
   return `${getSiteOrigin()}${path.startsWith("/") ? path : `/${path}`}`;
@@ -800,5 +848,12 @@ export function getProductImageAlt(
   } else if (file.includes("top")) {
     view = "top view";
   }
-  return `${productName} — ${view} | Ziyah Packaging Supplies food packaging Philippines`;
+  return `${productName} — ${view} | food packaging Philippines | ${SITE.name}`;
+}
+
+/** Meta description helper (human + searchable, ~155 chars). */
+export function getProductMetaDescription(product: Product) {
+  const title = product.displayName || product.name;
+  const base = `Buy ${title} from ${SITE.name}. ${product.desc} Size ${product.dimensions}. Wholesale & nationwide delivery from Pasay City, Philippines.`;
+  return base.length > 160 ? `${base.slice(0, 157)}…` : base;
 }

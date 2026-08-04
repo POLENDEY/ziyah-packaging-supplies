@@ -6,10 +6,13 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import styles from "./Navbar.module.css";
 import ProductSearch from "./ProductSearch";
+import { IconCart } from "./Icons";
+import { useProductQueue } from "./ProductQueueProvider";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { itemCount, ready, openCart } = useProductQueue();
 
   const isAdminRoute = pathname?.startsWith("/ziyah-admin") || pathname?.startsWith("/admin");
   if (isAdminRoute) return null;
@@ -20,6 +23,27 @@ export default function Navbar() {
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
+
+  const cartButton = (
+    <button
+      type="button"
+      className={styles.cartBtn}
+      onClick={() => {
+        setIsOpen(false);
+        openCart();
+      }}
+      aria-label={
+        ready && itemCount > 0
+          ? `Open shopping cart, ${itemCount} items`
+          : "Open shopping cart"
+      }
+    >
+      <IconCart size={22} />
+      {ready && itemCount > 0 ? (
+        <span className={styles.cartCount}>{itemCount > 99 ? "99+" : itemCount}</span>
+      ) : null}
+    </button>
+  );
 
   return (
     <nav className={styles.nav}>
@@ -55,17 +79,21 @@ export default function Navbar() {
           <Link href="/quote" className={styles.ctaBtn}>
             Get a Quote
           </Link>
+          {cartButton}
         </div>
 
-        <button
-          className={`${styles.burger} ${isOpen ? styles.burgerActive : ""}`}
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        <div className={styles.mobileActions}>
+          {cartButton}
+          <button
+            className={`${styles.burger} ${isOpen ? styles.burgerActive : ""}`}
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
       </div>
 
       <div

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import styles from "./page.module.css";
 import {
@@ -13,6 +13,13 @@ import {
 } from "../components/Icons";
 import SocialLinks from "../components/SocialLinks";
 import { SITE } from "@/data/site";
+import {
+  buildQueueMessage,
+  formatPeso,
+  queueGrandTotal,
+  queueItemCount,
+  readQueueFromStorage,
+} from "@/lib/productQueue";
 
 export default function ContactForm() {
   const searchParams = useSearchParams();
@@ -21,8 +28,40 @@ export default function ContactForm() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [queueSummary, setQueueSummary] = useState<{
+    count: number;
+    totalLabel: string;
+    message: string;
+  } | null>(null);
+
+  const fromQueue = searchParams.get("from") === "queue";
+
+  useEffect(() => {
+    if (!fromQueue) {
+      setQueueSummary(null);
+      return;
+    }
+    const items = readQueueFromStorage();
+    if (items.length === 0) {
+      setQueueSummary(null);
+      return;
+    }
+    setQueueSummary({
+      count: queueItemCount(items),
+      totalLabel: formatPeso(queueGrandTotal(items)),
+      message: buildQueueMessage(items),
+    });
+  }, [fromQueue]);
 
   const prefill = useMemo(() => {
+    if (fromQueue && queueSummary?.message) {
+      return {
+        product: `Shopping cart (${queueSummary.count} pcs · ${queueSummary.totalLabel})`,
+        subject: "product-queue",
+        message: queueSummary.message,
+      };
+    }
+
     const product = searchParams.get("product") || "";
     const category = searchParams.get("category") || "";
     const price = searchParams.get("price") || "";
@@ -46,7 +85,7 @@ export default function ContactForm() {
           .join("\n")
       : "";
     return { product, subject, message };
-  }, [searchParams]);
+  }, [searchParams, fromQueue, queueSummary]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -212,7 +251,11 @@ export default function ContactForm() {
           </div>
         )}
 
-        <form className={styles.form} onSubmit={handleSubmit} key={prefill.product || "blank"}>
+        <form
+          className={styles.form}
+          onSubmit={handleSubmit}
+          key={prefill.message ? `${prefill.subject}-${prefill.product}` : "blank"}
+        >
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label htmlFor="name">Full Name *</label>
@@ -237,9 +280,10 @@ export default function ContactForm() {
 
           <div className={styles.formGroup}>
             <label htmlFor="subject">Inquiry Type</label>
-            <select id="subject" name="subject" defaultValue={prefill.subject}>
+            <select id="subject" name="subject" defaultValue={prefill.subject || ""}>
               <option value="">Select an inquiry type</option>
               <option value="product-inquiry">Product Inquiry</option>
+              <option value="product-queue">Product Queue Inquiry</option>
               <option value="delivery">Delivery & Logistics</option>
               <option value="pricing">Pricing & Availability</option>
               <option value="other">Other</option>

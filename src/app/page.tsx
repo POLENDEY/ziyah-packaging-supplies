@@ -21,26 +21,31 @@ import {
   IconTray,
   IconTruck,
 } from "./components/Icons";
-import { SITE } from "@/data/site";
+import { SITE, getSiteOrigin } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: "Ziyah Packaging Supplies | Buy Food Packaging Philippines",
+  title: {
+    absolute: `${SITE.name} | Buy Food Packaging Philippines Nationwide`,
+  },
   description:
-    "Ziyah Packaging Supplies — food packaging in the Philippines. Shop bento boxes, sushi trays, and wholesale packaging with nationwide delivery from Pasay City.",
-  keywords: [
-    "Ziyah Packaging Supplies",
-    "food packaging Philippines",
-    "bento boxes",
-    "sushi trays",
-    "wholesale packaging",
-    "Pasay City packaging",
-    "nationwide delivery Philippines",
-  ],
+    "Buy food packaging in the Philippines from Ziyah Packaging Supplies — bento boxes, sushi trays, and wholesale takeout containers. Pickup in Pasay City or delivery nationwide.",
+  keywords: [...SITE.seoKeywords],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Ziyah Packaging Supplies | Food Packaging Philippines",
+    title: `${SITE.name} | Food Packaging Philippines`,
     description:
-      "Buy bento boxes, sushi trays, and wholesale food packaging. Nationwide delivery across the Philippines.",
+      "Shop bento boxes, sushi trays, and wholesale food packaging. Nationwide delivery across the Philippines from our Pasay City store.",
+    images: [{ url: "/logo.png", alt: SITE.name }],
+    url: "/",
+    locale: "en_PH",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} | Food Packaging Philippines`,
+    description:
+      "Food-grade bento boxes and sushi trays for restaurants and home businesses nationwide.",
+    images: ["/logo.png"],
   },
 };
 
@@ -101,13 +106,15 @@ const whyUs = [
 ];
 
 export default function Home() {
+  const origin = getSiteOrigin();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    "@id": `${origin}/#localbusiness`,
     name: SITE.name,
     description:
-      "Ziyah Packaging Supplies sells food packaging in the Philippines — bento boxes, sushi trays, and wholesale packaging with nationwide delivery from Pasay City.",
-    image: `${process.env.NEXT_PUBLIC_SITE_URL || "https://ziyahpackagingsupplies.com"}/logo.png`,
+      "Ziyah Packaging Supplies sells food-grade packaging in the Philippines — bento boxes, sushi trays, and wholesale takeout containers with nationwide delivery from Pasay City.",
+    image: `${origin}/logo.png`,
     email: SITE.email,
     telephone: SITE.phone,
     address: {
@@ -115,20 +122,51 @@ export default function Home() {
       streetAddress: "Unit 103, Doña Adela Apartment, 2247 F.B. Harrison St",
       addressLocality: "Pasay City",
       addressRegion: "Metro Manila",
+      postalCode: "1300",
       addressCountry: "PH",
     },
-    areaServed: "Philippines",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://ziyahpackagingsupplies.com",
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 14.5495,
+      longitude: 120.9927,
+    },
+    areaServed: {
+      "@type": "Country",
+      name: "Philippines",
+    },
+    url: origin,
+    priceRange: "₱",
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Thursday", "Friday", "Saturday"],
+        opens: "08:00",
+        closes: "18:00",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: "Wednesday",
+        opens: "08:00",
+        closes: "18:30",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: "Sunday",
+        opens: "08:00",
+        closes: "14:30",
+      },
+    ],
     sameAs: [
       SITE.social.facebook.href,
       SITE.social.messenger.href,
       SITE.social.shopee.href,
     ],
     knowsAbout: [
-      "food packaging",
+      "food packaging Philippines",
       "bento boxes",
       "sushi trays",
-      "wholesale packaging Philippines",
+      "wholesale packaging",
+      "takeout containers",
     ],
   };
 
@@ -151,12 +189,12 @@ export default function Home() {
             <p className={styles.heroBrand}>Ziyah Packaging Supplies</p>
             <div className={styles.heroBadge}>Pasay City · Nationwide PH</div>
             <h1 className={styles.heroTitle}>
-              Food Packaging{" "}
-              <span>for Growing Brands</span>
+              Buy Food Packaging{" "}
+              <span>Nationwide in the Philippines</span>
             </h1>
             <p className={styles.heroDesc}>
-              Bento boxes, sushi trays, and wholesale packaging — delivered nationwide
-              across the Philippines.
+              Food-grade bento boxes, sushi trays, and wholesale takeout packaging —
+              from our Pasay City store to kitchens across the country.
             </p>
             <div className={styles.heroActions}>
               <Link href="/products" className={styles.btnPrimary}>
@@ -181,10 +219,10 @@ export default function Home() {
       <section className={styles.section} data-reveal>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Shop Packaging by Category</h2>
+            <h2>Shop Food Packaging by Category</h2>
             <p>
-              Find the right food packaging for takeout, meal prep, catering, and retail
-              — ready for businesses nationwide.
+              Find disposable bento boxes and sushi trays for takeout, meal prep, catering,
+              and retail — ready for food businesses nationwide across the Philippines.
             </p>
           </div>
           <div className={styles.categoryGrid}>
@@ -207,10 +245,11 @@ export default function Home() {
       <section className={`${styles.section} ${styles.sectionAlt}`} data-reveal>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Why Food Businesses Choose Ziyah</h2>
+            <h2>Why Food Businesses Buy from Ziyah Packaging Supplies</h2>
             <p>
-              We&apos;ve been serving packaging needs across the Philippines with quality,
-              consistency, and practical guidance for every order size.
+              We help restaurants, caterers, and home kitchens choose food-grade packaging
+              that fits the menu — with clear wholesale options and delivery across the
+              Philippines.
             </p>
           </div>
           <div className={styles.whyGrid}>

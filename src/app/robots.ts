@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ziyah-packaging-supplies.vercel.app";
+import { getSiteOrigin } from "@/data/site";
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = getSiteOrigin();
   return {
     rules: [
       {

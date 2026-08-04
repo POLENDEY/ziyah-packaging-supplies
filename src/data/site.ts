@@ -1,6 +1,26 @@
+/** Canonical public origin (no trailing slash). Used by sitemap, OG, JSON-LD. */
+export function getSiteOrigin() {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    "https://ziyah-packaging-supplies.vercel.app"
+  ).replace(/\/$/, "");
+}
+
 export const SITE = {
   name: "Ziyah Packaging Supplies",
-  tagline: "Premium food packaging for businesses nationwide",
+  tagline: "Food-grade packaging for restaurants and home businesses nationwide",
+  seoKeywords: [
+    "Ziyah Packaging Supplies",
+    "food packaging Philippines",
+    "buy bento box Philippines",
+    "wholesale food packaging",
+    "sushi tray with lid Philippines",
+    "hard bento box Pasay",
+    "disposable meal containers Philippines",
+    "takeout packaging wholesale",
+    "food packaging Pasay City",
+    "nationwide packaging delivery Philippines",
+  ],
   phone: "0966 847 3419",
   phoneHref: "tel:09668473419",
   email: "ziyahpackagingsupplies@gmail.com",

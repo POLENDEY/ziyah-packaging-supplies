@@ -56,7 +56,7 @@ export default function ProductGallery({ images, name, video }: Props) {
     width: number;
   }>({ active: false, startX: 0, delta: 0, width: 1 });
   const active = slides[index] ?? slides[0];
-  const canSwipe = slides.length > 1 && !videoPlaying;
+  const canSwipe = slides.length > 1;
 
   useEffect(() => {
     setVideoPlaying(false);
@@ -85,10 +85,14 @@ export default function ProductGallery({ images, name, video }: Props) {
   const prev = () => goTo(index - 1);
   const next = () => goTo(index + 1);
 
-  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+  const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
     if (!canSwipe) return;
-    // Don't fight native video controls while playing
-    if ((e.target as HTMLElement).closest("video")) return;
+    // While video plays, only the swipe overlay starts a drag (controls stay usable)
+    const fromSwipeLayer = (e.currentTarget as HTMLElement).classList.contains(
+      styles.videoSwipeLayer
+    );
+    if (videoPlaying && !fromSwipeLayer) return;
+
     const width = mainRef.current?.clientWidth || 1;
     dragRef.current = {
       active: true,
@@ -102,14 +106,14 @@ export default function ProductGallery({ images, name, video }: Props) {
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
-  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+  const onPointerMove = (e: ReactPointerEvent<HTMLElement>) => {
     if (!dragRef.current.active) return;
     const delta = e.clientX - dragRef.current.startX;
     dragRef.current.delta = delta;
     setDragOffset(delta);
   };
 
-  const endDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+  const endDrag = (e: ReactPointerEvent<HTMLElement>) => {
     if (!dragRef.current.active) return;
     const { delta, width } = dragRef.current;
     dragRef.current.active = false;
@@ -167,19 +171,30 @@ export default function ProductGallery({ images, name, video }: Props) {
       >
         {active?.type === "video" ? (
           videoPlaying ? (
-            <video
-              ref={videoRef}
-              key={active.src}
-              className={styles.video}
-              src={active.src}
-              controls
-              controlsList="nodownload"
-              disablePictureInPicture
-              playsInline
-              poster={poster}
-              onEnded={() => setVideoPlaying(false)}
-              onContextMenu={blockSave}
-            />
+            <div className={styles.videoStage}>
+              <video
+                ref={videoRef}
+                key={active.src}
+                className={styles.video}
+                src={active.src}
+                controls
+                controlsList="nodownload"
+                disablePictureInPicture
+                playsInline
+                poster={poster}
+                onEnded={() => setVideoPlaying(false)}
+                onContextMenu={blockSave}
+              />
+              {/* Swipe catcher over the video frame; bottom strip left for native controls */}
+              <div
+                className={styles.videoSwipeLayer}
+                aria-hidden="true"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+              />
+            </div>
           ) : (
             <button
               type="button"

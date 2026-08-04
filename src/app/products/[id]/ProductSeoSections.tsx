@@ -40,13 +40,24 @@ export default function ProductSeoSections({ product }: Props) {
         </p>
       </section>
 
+      <section className={styles.seoSection} aria-labelledby="about-product-heading">
+        <h2 id="about-product-heading">About this {product.category.toLowerCase()}</h2>
+        <p className={styles.seoBody}>{product.longDesc}</p>
+        <p className={styles.seoBody}>
+          Looking for food packaging suppliers near Pasay or wholesale takeout containers
+          for your kitchen? {SITE.name} helps restaurants, caterers, and home businesses
+          choose the right disposable meal packaging — then ships nationwide across the
+          Philippines.
+        </p>
+      </section>
+
       <section className={styles.seoSection} aria-labelledby="key-features-heading">
-        <h2 id="key-features-heading">Key features</h2>
+        <h2 id="key-features-heading">Key features of {title}</h2>
         <ul className={styles.featureList}>
           <li>
             <span className={styles.featureLabel}>Product</span>
             <span>
-              <strong>{title}</strong> — {product.desc}
+              <strong>{product.name}</strong> — {product.desc}
             </span>
           </li>
           <li>
@@ -64,17 +75,25 @@ export default function ProductSeoSections({ product }: Props) {
             </li>
           ))}
           <li>
+            <span className={styles.featureLabel}>Best for</span>
+            <span>
+              Takeout, meal prep, catering, and food delivery brands across the Philippines
+            </span>
+          </li>
+          <li>
             <span className={styles.featureLabel}>Sold by</span>
             <span>
-              <strong>{SITE.name}</strong> — restaurants &amp; food brands
-              nationwide across the Philippines
+              <strong>{SITE.name}</strong> — food packaging store in Pasay City with
+              nationwide delivery
             </span>
           </li>
         </ul>
       </section>
 
       <section className={styles.seoSection} aria-labelledby="faq-heading">
-        <h2 id="faq-heading">Frequently asked questions</h2>
+        <h2 id="faq-heading">
+          Frequently asked questions about {title}
+        </h2>
         <div className={styles.faqList}>
           {faqs.map((faq) => (
             <details key={faq.question} className={styles.faqItem}>
@@ -90,10 +109,12 @@ export default function ProductSeoSections({ product }: Props) {
           className={styles.seoSection}
           aria-labelledby="related-heading"
         >
-          <h2 id="related-heading">You may also like</h2>
+          <h2 id="related-heading">
+            More {product.category.toLowerCase()} you can buy online
+          </h2>
           <p className={styles.relatedIntro}>
-            More {product.category.toLowerCase()} and packaging options from{" "}
-            {SITE.name}.
+            Explore related food packaging from {SITE.name} — bento boxes, sushi trays,
+            and wholesale meal containers for businesses nationwide.
           </p>
           <div className={styles.relatedGrid}>
             {related.map((item) => (
@@ -125,7 +146,7 @@ export default function ProductSeoSections({ product }: Props) {
 
       <div className={styles.pageFooterNav}>
         <Link href="/products" className={styles.backLink}>
-          ← Back to products
+          ← Back to all food packaging products
         </Link>
       </div>
     </div>

@@ -4,7 +4,8 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ChatBot from "./components/ChatBot";
-import { SITE } from "@/data/site";
+import AppProviders from "./components/AppProviders";
+import { getSiteOrigin, SITE } from "@/data/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,22 +17,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteOrigin = getSiteOrigin();
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(siteOrigin),
   title: {
-    default: `${SITE.name} | Food Packaging Nationwide Philippines`,
+    default: `${SITE.name} | Buy Food Packaging Philippines Nationwide`,
     template: `%s | ${SITE.name}`,
   },
   description:
-    "Food-grade packaging for restaurants, caterers, and home businesses nationwide across the Philippines. Bento boxes, trays, cups, and wrapping supplies.",
-  keywords: [
-    "food packaging Philippines",
-    "bento boxes",
-    "sushi trays",
-    "disposable containers",
-    "wholesale packaging Pasay",
-    "Ziyah Packaging Supplies",
-  ],
+    "Buy food-grade packaging in the Philippines — bento boxes, sushi trays, and wholesale takeout containers from Ziyah Packaging Supplies in Pasay City. Nationwide delivery.",
+  keywords: [...SITE.seoKeywords],
+  authors: [{ name: SITE.name }],
+  creator: SITE.name,
+  publisher: SITE.name,
+  category: "shopping",
   icons: {
     icon: [{ url: "/logo.png", type: "image/png" }],
     apple: [{ url: "/logo.png" }],
@@ -41,11 +41,74 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_PH",
     siteName: SITE.name,
-    title: `${SITE.name} | Food Packaging Nationwide`,
+    title: `${SITE.name} | Food Packaging Philippines`,
     description:
-      "Premium food packaging supplies for businesses across the Philippines.",
+      "Shop bento boxes, sushi trays, and wholesale food packaging. Pickup in Pasay City or delivery nationwide across the Philippines.",
     images: [{ url: "/logo.png", width: 512, height: 512, alt: SITE.name }],
+    url: siteOrigin,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} | Food Packaging Philippines`,
+    description:
+      "Food-grade bento boxes and sushi trays for restaurants and home businesses nationwide.",
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
+
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteOrigin}/#organization`,
+      name: SITE.name,
+      url: siteOrigin,
+      logo: `${siteOrigin}/logo.png`,
+      email: SITE.email,
+      telephone: SITE.phone,
+      sameAs: [
+        SITE.social.facebook.href,
+        SITE.social.messenger.href,
+        SITE.social.shopee.href,
+      ],
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "Unit 103, Doña Adela Apartment, 2247 F.B. Harrison St",
+        addressLocality: "Pasay City",
+        addressRegion: "Metro Manila",
+        addressCountry: "PH",
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteOrigin}/#website`,
+      url: siteOrigin,
+      name: SITE.name,
+      description: SITE.tagline,
+      publisher: { "@id": `${siteOrigin}/#organization` },
+      inLanguage: "en-PH",
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${siteOrigin}/products?q={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -54,12 +117,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en-PH" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        <Navbar />
-        {children}
-        <Footer />
-        <ChatBot />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
+        <AppProviders>
+          <Navbar />
+          {children}
+          <Footer />
+          <ChatBot />
+        </AppProviders>
       </body>
     </html>
   );

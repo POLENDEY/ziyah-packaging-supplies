@@ -1,22 +1,23 @@
 import type { MetadataRoute } from "next";
 import { products } from "@/data/products";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ziyah-packaging-supplies.vercel.app";
+import { getSiteOrigin } from "@/data/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const siteUrl = getSiteOrigin();
+  // Stable-ish date for crawlers (rebuild refreshes)
   const lastModified = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
-    "",
-    "/products",
-    "/about",
-    "/contact",
-    "/quote",
-  ].map((path) => ({
+    { path: "", priority: 1, changeFrequency: "weekly" as const },
+    { path: "/products", priority: 0.9, changeFrequency: "weekly" as const },
+    { path: "/about", priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/contact", priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/quote", priority: 0.7, changeFrequency: "monthly" as const },
+  ].map(({ path, priority, changeFrequency }) => ({
     url: `${siteUrl}${path || "/"}`,
     lastModified,
-    changeFrequency: path === "" || path === "/products" ? "weekly" : "monthly",
-    priority: path === "" ? 1 : path === "/products" ? 0.9 : 0.7,
+    changeFrequency,
+    priority,
   }));
 
   const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({

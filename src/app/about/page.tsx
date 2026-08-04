@@ -13,10 +13,18 @@ import AboutMarqueeBands from "./AboutMarqueeBands";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "About Ziyah Packaging Supplies | Nationwide Food Packaging PH",
+  title: "About Us | Food Packaging Supplier Pasay & Nationwide PH",
   description:
-    "Learn about Ziyah Packaging Supplies in Pasay City — food-grade packaging partner for restaurants and home businesses nationwide across the Philippines.",
+    "Meet Ziyah Packaging Supplies — your food packaging partner in Pasay City. Food-grade bento boxes and sushi trays for restaurants and home businesses nationwide in the Philippines.",
+  keywords: [...SITE.seoKeywords, "about Ziyah Packaging", "packaging supplier Pasay"],
   alternates: { canonical: "/about" },
+  openGraph: {
+    title: "About Ziyah Packaging Supplies",
+    description:
+      "Food-grade packaging from Pasay City with nationwide delivery across the Philippines.",
+    images: [{ url: "/logo.png", alt: SITE.name }],
+    url: "/about",
+  },
 };
 
 const collections = [
@@ -48,7 +56,7 @@ export default function AboutPage() {
       <section className={styles.hero}>
         <div className={styles.heroInner}>
           <p className={styles.heroEyebrow}>Food packaging · Pasay &amp; nationwide</p>
-          <h1>Meet Ziyah Packaging Supplies</h1>
+          <h1>Ziyah Packaging Supplies — Food Packaging from Pasay, Nationwide</h1>
           <p className={styles.heroLead}>
             From our store in Pasay City, we supply food-grade bento boxes, sushi trays,
             and takeout packaging to restaurants, caterers, and home businesses across
