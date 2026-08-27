@@ -36,7 +36,6 @@
   --shadow: 0 4px 24px rgba(27, 25, 49, 0.1);
   --shadow-lg: 0 8px 40px rgba(27, 25, 49, 0.16);
   --transition: 0.22s ease;
-  --font-display: var(--font-katsuno), "Katsuno Japan", Georgia, serif;
 }
 
 html {
@@ -59,29 +58,6 @@ body {
   font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* Display headings — Katsuno Japan */
-h1,
-h2,
-h3,
-.font-display {
-  font-family: var(--font-display) !important;
-  font-weight: 400 !important;
-  letter-spacing: 0.01em;
-  font-synthesis: none;
-}
-
-h1 em,
-h1 i,
-h2 em,
-h2 i,
-h3 em,
-h3 i,
-.font-display-italic {
-  font-family: var(--font-display) !important;
-  font-style: italic !important;
-  font-weight: 400 !important;
 }
 
 * {

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -16,23 +15,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const katsunoJapan = localFont({
-  src: [
-    {
-      path: "../fonts/KatsunoJapan.ttf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../fonts/KatsunoJapan-Italic.ttf",
-      weight: "400",
-      style: "italic",
-    },
-  ],
-  variable: "--font-katsuno",
-  display: "swap",
 });
 
 const siteOrigin = getSiteOrigin();
@@ -140,7 +122,7 @@ export default function RootLayout({
   return (
     <html
       lang="en-PH"
-      className={`${geistSans.variable} ${geistMono.variable} ${katsunoJapan.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body>
         <script
