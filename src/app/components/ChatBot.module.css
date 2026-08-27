@@ -14,14 +14,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 20px rgba(13, 124, 106, 0.4);
+    box-shadow: 0 4px 20px rgba(27, 25, 49, 0.4);
     transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
 }
 
 .fab:hover {
     background: var(--primary-dark);
     transform: scale(1.08);
-    box-shadow: 0 6px 28px rgba(13, 124, 106, 0.5);
+    box-shadow: 0 6px 28px rgba(27, 25, 49, 0.5);
 }
 
 .fabOpen {
@@ -224,7 +224,7 @@
     padding: 5px 12px;
     background: var(--primary-xlight);
     color: var(--primary-dark);
-    border: 1px solid rgba(13, 124, 106, 0.2);
+    border: 1px solid rgba(27, 25, 49, 0.2);
     border-radius: 100px;
     font-size: 12px;
     font-weight: 600;

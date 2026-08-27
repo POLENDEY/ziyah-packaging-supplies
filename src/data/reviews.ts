@@ -30,7 +30,7 @@ export const reviews: Review[] = [
     id: 3,
     name: "Aira Mendoza",
     role: "Sushi stall · Pasay",
-    rating: 4,
+    rating: 5,
     photo: "/logo.png",
     quote:
       "Clear sushi trays show the food beautifully. Great guidance when we needed the right sizes.",

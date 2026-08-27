@@ -34,7 +34,7 @@ export default function HeroFulfillmentScene() {
       if (!ctx) return null;
       ctx.fillStyle = "#241c28";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#fd4425";
+      ctx.fillStyle = "#ed9e59";
       ctx.fillRect(0, canvas.height - 18, canvas.width, 18);
       ctx.fillStyle = "#ffffff";
       ctx.font = "700 58px Segoe UI, Arial, sans-serif";
@@ -72,7 +72,7 @@ export default function HeroFulfillmentScene() {
       const height = mount.clientHeight || 560;
 
       const scene = new THREE.Scene();
-      scene.fog = new THREE.Fog(0x4a3352, 16, 48);
+      scene.fog = new THREE.Fog(0x1b1931, 16, 48);
 
       const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
       camera.position.set(1.8, 7.6, 15.5);
@@ -91,35 +91,35 @@ export default function HeroFulfillmentScene() {
       renderer.toneMappingExposure = 1.15;
       mount.appendChild(renderer.domElement);
 
-      scene.add(new THREE.HemisphereLight(0xffe8df, 0x2a1c2e, 0.85));
+      scene.add(new THREE.HemisphereLight(0xe9bcb9, 0x1b1931, 0.85));
       const key = new THREE.DirectionalLight(0xfff5ec, 1.35);
       key.position.set(7, 16, 9);
       scene.add(key);
-      const rim = new THREE.DirectionalLight(0xfd4425, 0.42);
+      const rim = new THREE.DirectionalLight(0xed9e59, 0.42);
       rim.position.set(-10, 6, -4);
       scene.add(rim);
       const storeLamp = new THREE.PointLight(0xffb08a, 1.4, 10, 2);
       storeLamp.position.set(-7, 2.4, 1.4);
       scene.add(storeLamp);
       const homeLamp = new THREE.PointLight(0xffd4a8, 1.1, 9, 2);
-      homeLamp.position.set(7.2, 2.2, 1.2);
+      homeLamp.position.set(7.8, 2.5, -3.5);
       scene.add(homeLamp);
 
       const matPlum = new THREE.MeshStandardMaterial({
-        color: 0x6a4a72,
+        color: 0x662249,
         roughness: 0.42,
         metalness: 0.22,
       });
       const matPlumDeep = new THREE.MeshStandardMaterial({
-        color: 0x412c47,
+        color: 0x1b1931,
         roughness: 0.5,
         metalness: 0.18,
       });
       const matCoral = new THREE.MeshStandardMaterial({
-        color: 0xfd4425,
+        color: 0xed9e59,
         roughness: 0.38,
         metalness: 0.2,
-        emissive: 0xfd4425,
+        emissive: 0xed9e59,
         emissiveIntensity: 0.08,
       });
       const matCream = new THREE.MeshStandardMaterial({
@@ -154,7 +154,7 @@ export default function HeroFulfillmentScene() {
       const ground = new THREE.Mesh(
         new THREE.CircleGeometry(18, 64),
         new THREE.MeshStandardMaterial({
-          color: 0x3d2a44,
+          color: 0x1b1931,
           roughness: 0.92,
           metalness: 0.05,
         })
@@ -165,7 +165,7 @@ export default function HeroFulfillmentScene() {
       const plaza = new THREE.Mesh(
         new THREE.RingGeometry(5.5, 11.5, 64),
         new THREE.MeshStandardMaterial({
-          color: 0x524057,
+          color: 0x2a1838,
           roughness: 0.88,
           metalness: 0.08,
         })
@@ -174,13 +174,13 @@ export default function HeroFulfillmentScene() {
       plaza.position.y = 0.01;
       scene.add(plaza);
 
-      // Road
+      // Road (darker asphalt so yards read clearly beside it)
       const road = new THREE.Mesh(
         new THREE.PlaneGeometry(24, 2.2),
         new THREE.MeshStandardMaterial({
-          color: 0x241824,
-          roughness: 0.85,
-          metalness: 0.12,
+          color: 0x0e0c18,
+          roughness: 0.88,
+          metalness: 0.1,
         })
       );
       road.rotation.x = -Math.PI / 2;
@@ -201,7 +201,7 @@ export default function HeroFulfillmentScene() {
         const dash = new THREE.Mesh(
           new THREE.PlaneGeometry(0.85, 0.12),
           new THREE.MeshBasicMaterial({
-            color: 0xff8a6a,
+            color: 0xed9e59,
             transparent: true,
             opacity: 0.75,
           })
@@ -223,7 +223,7 @@ export default function HeroFulfillmentScene() {
         const canopy = new THREE.Mesh(
           new THREE.SphereGeometry(0.55, 12, 12),
           new THREE.MeshStandardMaterial({
-            color: 0x7d5a86,
+            color: 0x662249,
             roughness: 0.7,
             metalness: 0.05,
           })
@@ -233,7 +233,7 @@ export default function HeroFulfillmentScene() {
         g.position.set(x, 0, z);
         return g;
       };
-      scene.add(makeTree(-3.8, -2.6), makeTree(2.6, -2.8), makeTree(5.2, -2.2));
+      scene.add(makeTree(-3.8, -2.6), makeTree(2.6, -3.2), makeTree(5.0, -4.8));
 
       // Store
       const store = new THREE.Group();
@@ -285,80 +285,344 @@ export default function HeroFulfillmentScene() {
       store.position.set(-7.5, 0, -0.9);
       scene.add(store);
 
-      // Home
+      // Home — improved cottage with porch, framed windows, chimney
+      const matWall = new THREE.MeshStandardMaterial({
+        color: 0xf4f1ec,
+        roughness: 0.62,
+        metalness: 0.04,
+      });
+      const matWallShade = new THREE.MeshStandardMaterial({
+        color: 0xe4ddd4,
+        roughness: 0.68,
+        metalness: 0.04,
+      });
+      const matRoof = new THREE.MeshStandardMaterial({
+        color: 0xed9e59,
+        roughness: 0.42,
+        metalness: 0.12,
+        emissive: 0xed9e59,
+        emissiveIntensity: 0.04,
+      });
+      const matRoofTrim = new THREE.MeshStandardMaterial({
+        color: 0xf7fff8,
+        roughness: 0.4,
+        metalness: 0.08,
+      });
+      const matBrick = new THREE.MeshStandardMaterial({
+        color: 0x8a6a62,
+        roughness: 0.78,
+        metalness: 0.05,
+      });
+      const matFrame = new THREE.MeshStandardMaterial({
+        color: 0x44174e,
+        roughness: 0.48,
+        metalness: 0.15,
+      });
+      const matWarmWin = new THREE.MeshBasicMaterial({
+        color: 0xffc98a,
+        toneMapped: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2,
+      });
+      const matWinMullion = new THREE.MeshBasicMaterial({
+        color: 0xf7ecea,
+      });
+      const matPorch = new THREE.MeshStandardMaterial({
+        color: 0xd9cfc2,
+        roughness: 0.7,
+        metalness: 0.04,
+      });
+      const matPath = new THREE.MeshStandardMaterial({
+        color: 0xc4b8a8,
+        roughness: 0.82,
+        metalness: 0.03,
+      });
+
       const home = new THREE.Group();
+      const HOME_BODY_W = 2.75;
+      const HOME_BODY_D = 2.15;
+      const HOME_HALF_W = HOME_BODY_W / 2;
+      const HOME_HALF_D = HOME_BODY_D / 2;
+
+      // Foundation plinth
+      const foundation = new THREE.Mesh(
+        new THREE.BoxGeometry(3.05, 0.22, 2.55),
+        matBrick
+      );
+      foundation.position.y = 0.11;
+      home.add(foundation);
+
+      // Main body + slight rear offset wing for depth
       const homeBody = new THREE.Mesh(
-        new THREE.BoxGeometry(2.7, 1.95, 2.2),
-        matCream
+        new THREE.BoxGeometry(HOME_BODY_W, 1.85, HOME_BODY_D),
+        matWall
       );
-      homeBody.position.y = 0.98;
+      homeBody.position.y = 1.15;
       home.add(homeBody);
-      const homeTrim = new THREE.Mesh(
-        new THREE.BoxGeometry(2.85, 0.12, 2.35),
-        matGold
+      const homeWing = new THREE.Mesh(
+        new THREE.BoxGeometry(1.15, 1.45, 0.95),
+        matWallShade
       );
-      homeTrim.position.y = 0.12;
-      home.add(homeTrim);
-      const roof = new THREE.Mesh(
-        new THREE.ConeGeometry(2.05, 1.05, 4),
-        matCoral
+      homeWing.position.set(-0.95, 0.95, -0.85);
+      home.add(homeWing);
+
+      // Eave band under roof
+      const eaveBand = new THREE.Mesh(
+        new THREE.BoxGeometry(2.95, 0.1, 2.35),
+        matFrame
       );
-      roof.position.y = 2.35;
+      eaveBand.position.y = 2.1;
+      home.add(eaveBand);
+
+      // Main pyramid roof with overhang
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(2.15, 1.15, 4), matRoof);
+      roof.position.y = 2.72;
       roof.rotation.y = Math.PI / 4;
       home.add(roof);
-      // Front porch + door (package lands here)
-      const porch = new THREE.Mesh(
-        new THREE.BoxGeometry(1.4, 0.12, 0.7),
-        matSand
+
+      // Wing roof
+      const wingRoof = new THREE.Mesh(
+        new THREE.ConeGeometry(1.05, 0.7, 4),
+        matRoof
       );
-      porch.position.set(0, 0.06, 1.45);
-      home.add(porch);
-      const doormat = new THREE.Mesh(
-        new THREE.BoxGeometry(0.7, 0.04, 0.4),
-        matCoral
+      wingRoof.position.set(-0.95, 1.95, -0.85);
+      wingRoof.rotation.y = Math.PI / 4;
+      home.add(wingRoof);
+
+      // Ridge / hip trim lines on main roof
+      const ridgeGeo = new THREE.BoxGeometry(0.06, 0.06, 2.35);
+      for (let i = 0; i < 4; i++) {
+        const ridge = new THREE.Mesh(ridgeGeo, matRoofTrim);
+        ridge.position.y = 2.55;
+        ridge.rotation.y = (Math.PI / 2) * i + Math.PI / 4;
+        ridge.position.x = Math.sin((Math.PI / 2) * i) * 0.55;
+        ridge.position.z = Math.cos((Math.PI / 2) * i) * 0.55;
+        home.add(ridge);
+      }
+      const peakCap = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 8, 8),
+        matRoofTrim
       );
-      doormat.position.set(0, 0.13, 1.55);
-      home.add(doormat);
-      const homeDoorPivot = new THREE.Group();
-      homeDoorPivot.position.set(-0.29, 0.55, 1.12);
-      const homeDoor = new THREE.Mesh(
-        new THREE.BoxGeometry(0.58, 1.1, 0.08),
+      peakCap.position.y = 3.28;
+      home.add(peakCap);
+
+      // Chimney
+      const chimney = new THREE.Mesh(
+        new THREE.BoxGeometry(0.38, 0.85, 0.38),
+        matBrick
+      );
+      chimney.position.set(0.85, 2.95, -0.35);
+      home.add(chimney);
+      const chimneyCap = new THREE.Mesh(
+        new THREE.BoxGeometry(0.48, 0.08, 0.48),
+        matFrame
+      );
+      chimneyCap.position.set(0.85, 3.4, -0.35);
+      home.add(chimneyCap);
+      const chimneyTop = new THREE.Mesh(
+        new THREE.BoxGeometry(0.28, 0.12, 0.28),
         matDark
       );
-      homeDoor.position.set(0.29, 0, 0);
+      chimneyTop.position.set(0.85, 3.5, -0.35);
+      home.add(chimneyTop);
+
+      // Front porch platform + step
+      const porch = new THREE.Mesh(
+        new THREE.BoxGeometry(1.85, 0.14, 0.85),
+        matPorch
+      );
+      porch.position.set(0, 0.28, 1.5);
+      home.add(porch);
+      const porchStep = new THREE.Mesh(
+        new THREE.BoxGeometry(1.1, 0.12, 0.38),
+        matSand
+      );
+      porchStep.position.set(0, 0.14, 1.95);
+      home.add(porchStep);
+
+      // Porch posts + beam
+      const postGeo = new THREE.CylinderGeometry(0.05, 0.06, 1.55, 8);
+      const postL = new THREE.Mesh(postGeo, matFrame);
+      postL.position.set(-0.75, 1.05, 1.8);
+      home.add(postL);
+      const postR = new THREE.Mesh(postGeo, matFrame);
+      postR.position.set(0.75, 1.05, 1.8);
+      home.add(postR);
+      const porchBeam = new THREE.Mesh(
+        new THREE.BoxGeometry(1.7, 0.1, 0.12),
+        matFrame
+      );
+      porchBeam.position.set(0, 1.82, 1.8);
+      home.add(porchBeam);
+      const porchRoof = new THREE.Mesh(
+        new THREE.BoxGeometry(1.95, 0.08, 0.95),
+        matRoof
+      );
+      porchRoof.position.set(0, 1.92, 1.55);
+      porchRoof.rotation.x = -0.12;
+      home.add(porchRoof);
+
+      // Doormat (package drop visual)
+      const doormat = new THREE.Mesh(
+        new THREE.BoxGeometry(0.72, 0.035, 0.42),
+        matCoral
+      );
+      doormat.position.set(0, 0.37, 1.62);
+      home.add(doormat);
+
+      // Door frame + hinged door
+      const doorFrame = new THREE.Mesh(
+        new THREE.BoxGeometry(0.78, 1.35, 0.1),
+        matFrame
+      );
+      doorFrame.position.set(0, 1.0, HOME_HALF_D + 0.02);
+      home.add(doorFrame);
+      const homeDoorPivot = new THREE.Group();
+      homeDoorPivot.position.set(-0.3, 0.98, HOME_HALF_D + 0.08);
+      const homeDoor = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 1.22, 0.07),
+        matDark
+      );
+      homeDoor.position.set(0.3, 0, 0);
       homeDoorPivot.add(homeDoor);
+      const doorPanel = new THREE.Mesh(
+        new THREE.BoxGeometry(0.42, 0.45, 0.02),
+        matPlumDeep
+      );
+      doorPanel.position.set(0.3, 0.22, 0.045);
+      homeDoorPivot.add(doorPanel);
+      const doorPanelLow = doorPanel.clone();
+      doorPanelLow.position.y = -0.28;
+      homeDoorPivot.add(doorPanelLow);
       const doorKnob = new THREE.Mesh(
-        new THREE.SphereGeometry(0.04, 8, 8),
+        new THREE.SphereGeometry(0.045, 10, 10),
         matGold
       );
-      doorKnob.position.set(0.48, 0, 0.06);
+      doorKnob.position.set(0.5, 0, 0.06);
       homeDoorPivot.add(doorKnob);
       home.add(homeDoorPivot);
-      const homeWin = new THREE.Mesh(
-        new THREE.BoxGeometry(0.7, 0.55, 0.06),
+
+      // Windows recessed into walls (no floating panes / z-fight shimmer)
+      const addWindow = (
+        x: number,
+        y: number,
+        z: number,
+        w: number,
+        h: number,
+        rotY = 0
+      ) => {
+        const group = new THREE.Group();
+        group.position.set(x, y, z);
+        group.rotation.y = rotY;
+
+        // Carve a shallow recess so the pane sits inside the wall
+        const recess = new THREE.Mesh(
+          new THREE.BoxGeometry(w + 0.14, h + 0.14, 0.08),
+          matFrame
+        );
+        recess.position.z = -0.04;
+        group.add(recess);
+
+        const frame = new THREE.Mesh(
+          new THREE.BoxGeometry(w + 0.08, h + 0.08, 0.04),
+          matFrame
+        );
+        frame.position.z = -0.01;
+        group.add(frame);
+
+        const glass = new THREE.Mesh(
+          new THREE.BoxGeometry(w * 0.88, h * 0.88, 0.02),
+          matWarmWin
+        );
+        glass.position.z = 0.005;
+        glass.renderOrder = 1;
+        group.add(glass);
+
+        const mullionV = new THREE.Mesh(
+          new THREE.BoxGeometry(0.03, h * 0.85, 0.02),
+          matWinMullion
+        );
+        mullionV.position.z = 0.018;
+        group.add(mullionV);
+        const mullionH = new THREE.Mesh(
+          new THREE.BoxGeometry(w * 0.85, 0.03, 0.02),
+          matWinMullion
+        );
+        mullionH.position.z = 0.018;
+        group.add(mullionH);
+
+        const sill = new THREE.Mesh(
+          new THREE.BoxGeometry(w + 0.14, 0.05, 0.08),
+          matSand
+        );
+        sill.position.set(0, -(h / 2) - 0.04, 0.01);
+        group.add(sill);
+        home.add(group);
+      };
+
+      // Inset past the wall face so panes never float in front
+      const winInset = 0.06;
+      addWindow(0.78, 1.35, HOME_HALF_D - winInset, 0.58, 0.5);
+      addWindow(-0.9, 1.38, HOME_HALF_D - winInset, 0.46, 0.4);
+      addWindow(HOME_HALF_W - winInset, 1.35, 0.2, 0.52, 0.46, Math.PI / 2);
+      addWindow(-(HOME_HALF_W - winInset), 1.3, 0.15, 0.48, 0.42, -Math.PI / 2);
+
+      // Front walkway stays on the yard (does not cross the road)
+      const path = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.04, 0.7),
+        matPath
+      );
+      path.position.set(0, 0.04, 2.05);
+      home.add(path);
+
+      // Planter boxes flanking porch
+      const planterGeo = new THREE.BoxGeometry(0.35, 0.28, 0.35);
+      const planterL = new THREE.Mesh(planterGeo, matBrick);
+      planterL.position.set(-1.15, 0.28, 1.55);
+      home.add(planterL);
+      const planterR = planterL.clone();
+      planterR.position.x = 1.15;
+      home.add(planterR);
+      const bushGeo = new THREE.SphereGeometry(0.22, 10, 10);
+      const bushL = new THREE.Mesh(bushGeo, matCoral);
+      bushL.position.set(-1.15, 0.55, 1.55);
+      home.add(bushL);
+      const bushR = bushL.clone();
+      bushR.position.x = 1.15;
+      home.add(bushR);
+
+      // Soft porch light
+      const porchLight = new THREE.PointLight(0xffd4a8, 0.55, 4, 2);
+      porchLight.position.set(0, 1.7, 1.7);
+      home.add(porchLight);
+
+      // Yard pad under the house so it clearly sits off the road
+      const yard = new THREE.Mesh(
+        new THREE.BoxGeometry(5.2, 0.05, 4.2),
         new THREE.MeshStandardMaterial({
-          color: 0xffe8d2,
-          emissive: 0xffc07a,
-          emissiveIntensity: 0.35,
-          roughness: 0.3,
+          color: 0x4a3050,
+          roughness: 0.94,
+          metalness: 0.04,
         })
       );
-      homeWin.position.set(0.85, 1.25, 1.12);
-      home.add(homeWin);
-      home.position.set(7.5, 0, -2.0);
+      yard.position.set(0, 0.015, 0.35);
+      home.add(yard);
+
+      // House on the lawn, well behind the road (road ≈ z -0.35 → 1.85)
+      home.position.set(7.8, 0, -4.35);
       scene.add(home);
 
-      // Drop target: doormat at front door, facing the roadside
-      const homeDropWorld = new THREE.Vector3(7.5, 0.32, 0.65);
-
+      // Drop target: doormat at front door (local 0, 0.37, 1.62)
+      const homeDropWorld = new THREE.Vector3(7.8, 0.42, -2.73);
       // Brand plum delivery van
       const matVan = new THREE.MeshStandardMaterial({
-        color: 0x5a3d62,
+        color: 0x662249,
         roughness: 0.48,
         metalness: 0.18,
       });
       const matVanDeep = new THREE.MeshStandardMaterial({
-        color: 0x412c47,
+        color: 0x1b1931,
         roughness: 0.45,
         metalness: 0.22,
       });
@@ -378,15 +642,15 @@ export default function HeroFulfillmentScene() {
         metalness: 0.05,
       });
       const matShirt = new THREE.MeshStandardMaterial({
-        color: 0xe23a2e,
+        color: 0xed9e59,
         roughness: 0.55,
         metalness: 0.08,
       });
       const matTail = new THREE.MeshStandardMaterial({
-        color: 0xe01820,
+        color: 0x662249,
         roughness: 0.4,
         metalness: 0.2,
-        emissive: 0xe01820,
+        emissive: 0x662249,
         emissiveIntensity: 0.25,
       });
 
@@ -833,7 +1097,8 @@ export default function HeroFulfillmentScene() {
         }
 
         store.position.y = Math.sin(elapsed * 0.65) * 0.02;
-        home.position.y = Math.sin(elapsed * 0.65 + 1.1) * 0.02;
+        // Keep home planted (no bob) so windows stay flush with the walls
+        home.position.y = 0;
         storeLamp.intensity = 1.25 + Math.sin(elapsed * 2.2) * 0.2;
         homeLamp.intensity = 1.0 + Math.sin(elapsed * 1.8 + 0.5) * 0.15;
 

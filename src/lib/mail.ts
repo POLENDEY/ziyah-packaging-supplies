@@ -54,7 +54,7 @@ export async function sendInquiryNotification(inquiry: InquiryEmailPayload) {
     ].join("\n"),
     html: `
       <div style="font-family:Segoe UI,Arial,sans-serif;line-height:1.5;color:#241c28">
-        <h2 style="margin:0 0 12px;color:#412c47">New website inquiry</h2>
+        <h2 style="margin:0 0 12px;color:#1b1931">New website inquiry</h2>
         <p style="margin:0 0 8px"><strong>Name:</strong> ${escapeHtml(inquiry.name)}</p>
         <p style="margin:0 0 8px"><strong>Email:</strong> ${escapeHtml(inquiry.email)}</p>
         <p style="margin:0 0 8px"><strong>Phone:</strong> ${escapeHtml(phone)}</p>

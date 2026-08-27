@@ -1,5 +1,5 @@
 .quoteHeader {
-  background: linear-gradient(135deg, #2a1c2e 0%, var(--primary-dark) 45%, var(--primary) 100%);
+  background: linear-gradient(135deg, #1b1931 0%, var(--primary-dark) 45%, var(--primary) 100%);
 }
 
 .eyebrow {
@@ -25,7 +25,7 @@
 
 .benefits {
   background: linear-gradient(180deg, #fff 0%, var(--primary-xlight) 100%);
-  border: 1px solid rgba(65, 44, 71, 0.1);
+  border: 1px solid rgba(27, 25, 49, 0.1);
   border-radius: 16px;
   padding: 32px 28px;
   box-shadow: var(--shadow);
@@ -56,8 +56,8 @@
   margin-top: 24px;
   padding: 16px;
   border-radius: 12px;
-  background: rgba(65, 44, 71, 0.05);
-  border: 1px solid rgba(65, 44, 71, 0.08);
+  background: rgba(27, 25, 49, 0.05);
+  border: 1px solid rgba(27, 25, 49, 0.08);
 }
 
 .benefitNote strong {

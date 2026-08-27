@@ -5,7 +5,7 @@
   justify-content: center;
   padding: 120px 24px 80px;
   background:
-    radial-gradient(ellipse at top, rgba(253, 68, 37, 0.12), transparent 55%),
+    radial-gradient(ellipse at top, rgba(163, 64, 84, 0.12), transparent 55%),
     linear-gradient(160deg, var(--primary-xlight) 0%, var(--background) 55%);
   min-height: calc(100vh - 70px);
 }

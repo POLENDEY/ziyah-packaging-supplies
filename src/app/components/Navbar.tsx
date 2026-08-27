@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import styles from "./Navbar.module.css";
 import ProductSearch from "./ProductSearch";
+import BrandWordmark from "./BrandWordmark";
 import { IconCart } from "./Icons";
 import { useProductQueue } from "./ProductQueueProvider";
 
@@ -55,10 +56,10 @@ export default function Navbar() {
             width={44}
             height={44}
             priority
+            className={styles.logoIcon}
           />
           <div className={styles.logoText}>
-            <span className={styles.logoName}>ZIYAH PACKAGING</span>
-            <span className={styles.logoSub}>Supplies</span>
+            <BrandWordmark variant="onLight" size="sm" />
           </div>
         </Link>
 

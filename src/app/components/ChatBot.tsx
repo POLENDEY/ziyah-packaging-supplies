@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./ChatBot.module.css";
@@ -10,7 +10,7 @@ interface Message {
 }
 
 const GREETING =
-  "Hi! I'm Ziyah Support — your packaging assistant. Ask me about bento boxes, sushi trays, wholesale pricing, delivery, or our Pasay store. How can I help?";
+  "Hi! I'm Ziyah Support - your packaging assistant. Ask me about bento boxes, sushi trays, wholesale pricing, delivery, or our Pasay store. How can I help?";
 
 const QUICK = [
   "Pricing for hard bento boxes",
@@ -90,7 +90,7 @@ export default function ChatBot() {
       const botMsg: Message = {
         id: idCounter++,
         from: "bot",
-        text: "Connection issue — please try again in a moment, or reach us through Contact.",
+        text: "Connection issue - please try again in a moment, or reach us through Contact.",
       };
       const withBot = [...messagesRef.current, botMsg];
       messagesRef.current = withBot;
@@ -131,7 +131,7 @@ export default function ChatBot() {
             <div>
               <div className={styles.headerName}>Ziyah Support</div>
               <div className={styles.headerStatus}>
-                <span className={styles.dot} /> Online · site catalog
+                <span className={styles.dot} /> Online - site catalog
               </div>
             </div>
           </div>

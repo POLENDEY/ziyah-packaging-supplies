@@ -3,6 +3,7 @@ import Image from "next/image";
 import styles from "./Footer.module.css";
 import { IconClock, IconMail, IconMapPin, IconPhone } from "./Icons";
 import SocialLinks from "./SocialLinks";
+import BrandWordmark from "./BrandWordmark";
 import { SITE } from "@/data/site";
 
 export default function Footer() {
@@ -18,9 +19,10 @@ export default function Footer() {
                   alt="Ziyah Packaging Supplies"
                   width={52}
                   height={52}
+                  className={styles.brandIcon}
                 />
                 <div>
-                  <div className={styles.brandName}>ZIYAH PACKAGING</div>
+                  <BrandWordmark variant="onDark" size="md" />
                   <div className={styles.brandSub}>Supplies · Philippines</div>
                 </div>
               </div>

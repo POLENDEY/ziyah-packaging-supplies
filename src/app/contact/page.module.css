@@ -45,7 +45,7 @@
     background: linear-gradient(180deg, #fff 0%, var(--primary-xlight) 100%);
     border-radius: 16px;
     padding: 36px 32px;
-    border: 1px solid rgba(65, 44, 71, 0.1);
+    border: 1px solid rgba(27, 25, 49, 0.1);
     box-shadow: var(--shadow);
 }
 
@@ -108,7 +108,7 @@
 
 .divider {
     height: 1px;
-    background: rgba(13, 124, 106, 0.1);
+    background: rgba(27, 25, 49, 0.1);
     margin: 28px 0;
 }
 
@@ -184,7 +184,7 @@
     outline: none;
     background: #fff;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(65, 44, 71, 0.12);
+    box-shadow: 0 0 0 4px rgba(27, 25, 49, 0.12);
 }
 
 .submitBtn {
@@ -198,12 +198,12 @@
     cursor: pointer;
     transition: transform var(--transition), box-shadow var(--transition);
     align-self: flex-start;
-    box-shadow: 0 8px 20px rgba(253, 68, 37, 0.28);
+    box-shadow: 0 8px 20px rgba(163, 64, 84, 0.28);
 }
 
 .submitBtn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(253, 68, 37, 0.35);
+    box-shadow: 0 12px 28px rgba(163, 64, 84, 0.35);
 }
 
 .submitBtn:disabled {
@@ -263,7 +263,7 @@
 .prefillNote {
     background: var(--accent-light);
     color: var(--secondary);
-    border: 1px solid rgba(253, 68, 37, 0.25);
+    border: 1px solid rgba(163, 64, 84, 0.25);
     border-radius: 8px;
     padding: 12px 14px;
     font-size: 14px;
@@ -326,7 +326,7 @@
 
 .divider {
     height: 1px;
-    background: rgba(65, 44, 71, 0.12);
+    background: rgba(27, 25, 49, 0.12);
     margin: 28px 0;
 }
 
@@ -335,7 +335,7 @@
 .formGroup textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(65, 44, 71, 0.12);
+    box-shadow: 0 0 0 3px rgba(27, 25, 49, 0.12);
 }
 
 /* Responsive */

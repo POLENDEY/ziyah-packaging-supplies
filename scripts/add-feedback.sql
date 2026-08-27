@@ -13,7 +13,7 @@ INSERT INTO public.feedback (id, name, role, rating, photo, quote)
 VALUES
   (1, 'Maria Santos', 'Café owner · Makati', 5, '/logo.png', 'Our takeout looks more premium since we switched to Ziyah bento boxes. Fast replies and consistent stock.'),
   (2, 'James Rivera', 'Catering lead · Quezon City', 5, '/dummy-post-square-1.jpg', 'Reliable trays and lids for big events. Nationwide delivery made restocking simple for our team.'),
-  (3, 'Aira Mendoza', 'Sushi stall · Pasay', 4, '/logo.png', 'Clear sushi trays show the food beautifully. Great guidance when we needed the right sizes.'),
+  (3, 'Aira Mendoza', 'Sushi stall · Pasay', 5, '/logo.png', 'Clear sushi trays show the food beautifully. Great guidance when we needed the right sizes.'),
   (4, 'Kenji Ong', 'Meal-prep brand · Cebu', 5, '/dummy-post-square-1.jpg', 'Wholesale pricing that works for our volume. Packaging quality holds up through delivery.')
 ON CONFLICT (id) DO NOTHING;
 

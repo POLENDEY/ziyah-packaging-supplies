@@ -29,7 +29,7 @@
 
 .dark .link {
   background: var(--primary-xlight);
-  border: 1px solid rgba(65, 44, 71, 0.12);
+  border: 1px solid rgba(27, 25, 49, 0.12);
   color: var(--primary-dark);
 }
 

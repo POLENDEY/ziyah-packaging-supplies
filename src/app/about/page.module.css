@@ -19,7 +19,7 @@
 
 /* ——— Hero story ——— */
 .hero {
-  background: linear-gradient(160deg, #2a1c2e 0%, #412c47 55%, #5a3d62 100%);
+  background: linear-gradient(160deg, #1b1931 0%, #44174e 40%, #662249 70%, #a34054 100%);
   color: #fff;
   padding: clamp(72px, 12vw, 120px) 24px;
   text-align: center;
@@ -319,7 +319,7 @@
   place-items: center;
   background: #fff;
   color: var(--primary-dark);
-  border: 1px solid rgba(65, 44, 71, 0.1);
+  border: 1px solid rgba(27, 25, 49, 0.1);
 }
 
 .locationItem strong {
@@ -406,7 +406,7 @@
 .btnGhost {
   background: #fff;
   color: var(--primary-dark);
-  border: 1.5px solid rgba(65, 44, 71, 0.15);
+  border: 1.5px solid rgba(27, 25, 49, 0.15);
 }
 
 .btnGhost:hover {
@@ -416,10 +416,10 @@
 .mapEmbed {
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(65, 44, 71, 0.1);
+  border: 1px solid rgba(27, 25, 49, 0.1);
   background: #fff;
   min-height: 420px;
-  box-shadow: 0 12px 40px rgba(65, 44, 71, 0.08);
+  box-shadow: 0 12px 40px rgba(27, 25, 49, 0.08);
 }
 
 .mapEmbed iframe {

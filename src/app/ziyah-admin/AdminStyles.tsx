@@ -9,7 +9,7 @@ export default function AdminStyles() {
         display: none !important;
       }
       body {
-        background: linear-gradient(160deg, #f4eef5 0%, #faf7fb 40%, #fff 100%);
+        background: linear-gradient(160deg, #f7ecea 0%, #faf5f4 40%, #fff 100%);
       }
     `}</style>
   );

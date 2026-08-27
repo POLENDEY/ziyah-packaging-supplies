@@ -61,8 +61,29 @@
   cursor: grabbing;
 }
 
+.slideTrack {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+.slide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .image {
   object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slideTrack {
+    transition: none !important;
+  }
 }
 
 .video {
@@ -125,7 +146,7 @@
 }
 
 .videoPoster:hover .playLarge {
-  background: rgba(253, 68, 37, 0.92);
+  background: rgba(163, 64, 84, 0.92);
   transform: translate(-50%, -50%) scale(1.06);
 }
 
@@ -418,7 +439,7 @@
   border: 1px solid var(--gray-200);
   border-radius: 16px;
   background: linear-gradient(180deg, #faf9fa 0%, #fff 48%);
-  box-shadow: 0 8px 24px rgba(65, 44, 71, 0.06);
+  box-shadow: 0 8px 24px rgba(27, 25, 49, 0.06);
   overflow: hidden;
 }
 

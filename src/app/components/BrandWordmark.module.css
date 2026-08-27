@@ -1,0 +1,53 @@
+.mark {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.22em;
+  line-height: 0;
+}
+
+.ziyah,
+.packaging {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  border-radius: 0 !important;
+  object-fit: contain !important;
+  box-shadow: none !important;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Source SVGs are white fills */
+.onDark .ziyah,
+.onDark .packaging {
+  filter: none;
+}
+
+.onLight .ziyah,
+.onLight .packaging {
+  filter: brightness(0) saturate(100%);
+}
+
+.sm {
+  width: 118px;
+}
+
+.md {
+  width: 168px;
+}
+
+.lg {
+  width: min(100%, 360px);
+}
+
+@media (max-width: 640px) {
+  .sm {
+    width: 100px;
+  }
+
+  .lg {
+    width: min(100%, 280px);
+  }
+}

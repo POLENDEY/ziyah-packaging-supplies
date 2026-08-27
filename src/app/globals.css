@@ -1,34 +1,42 @@
 :root {
-  /* Brand palette – derived from Ziyah logo (plum + coral) */
-  --primary: #5a3d62;
-  --primary-dark: #412c47;
-  --primary-light: #7a5a84;
-  --primary-xlight: #f4eef5;
-  --accent: #fd4425;
-  --accent-dark: #d9361c;
-  --accent-light: #ffe8e3;
-  --secondary: #7b1e1d;
+  /* Brand palette */
+  --color-ink: #1b1931;
+  --color-plum: #44174e;
+  --color-berry: #662249;
+  --color-rose: #a34054;
+  --color-apricot: #ed9e59;
+  --color-blush: #e9bcb9;
 
-  /* Neutrals */
+  --primary: #662249;
+  --primary-dark: #1b1931;
+  --primary-light: #a34054;
+  --primary-xlight: #f7ecea;
+  --accent: #a34054;
+  --accent-dark: #662249;
+  --accent-light: #f6e4e0;
+  --secondary: #44174e;
+
+  /* Neutrals (ink/blush-tinted) */
   --background: #ffffff;
-  --foreground: #2a1c2e;
-  --surface: #faf7fb;
-  --gray-50: #f8f6f9;
-  --gray-100: #ece7ee;
-  --gray-200: #d5cdd9;
-  --gray-300: #b0a4b6;
-  --gray-400: #7a6d82;
-  --gray-500: #5c4f63;
-  --gray-600: #463a4c;
-  --gray-700: #342a39;
-  --gray-800: #241c28;
-  --gray-900: #160f19;
+  --foreground: #1b1931;
+  --surface: #f7ecea;
+  --gray-50: #faf5f4;
+  --gray-100: #efe4e2;
+  --gray-200: #dccfcb;
+  --gray-300: #b9aaa7;
+  --gray-400: #8a7c7a;
+  --gray-500: #6a5c5a;
+  --gray-600: #4a4248;
+  --gray-700: #352f3a;
+  --gray-800: #262230;
+  --gray-900: #1b1931;
 
   /* Utility */
   --radius: 10px;
-  --shadow: 0 4px 24px rgba(65, 44, 71, 0.10);
-  --shadow-lg: 0 8px 40px rgba(65, 44, 71, 0.16);
+  --shadow: 0 4px 24px rgba(27, 25, 49, 0.1);
+  --shadow-lg: 0 8px 40px rgba(27, 25, 49, 0.16);
   --transition: 0.22s ease;
+  --font-display: var(--font-katsuno), "Katsuno Japan", Georgia, serif;
 }
 
 html {
@@ -51,6 +59,29 @@ body {
   font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Display headings — Katsuno Japan */
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.01em;
+  font-synthesis: none;
+}
+
+h1 em,
+h1 i,
+h2 em,
+h2 i,
+h3 em,
+h3 i,
+.font-display-italic {
+  font-family: var(--font-display) !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
 }
 
 * {

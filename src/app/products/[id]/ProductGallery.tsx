@@ -6,14 +6,17 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type SyntheticEvent,
+  type TransitionEvent,
 } from "react";
 import ProtectedProductImage from "@/app/components/ProtectedProductImage";
 import { getProductImageAlt } from "@/data/products";
 import styles from "./detail.module.css";
 
 const CLICK_THRESHOLD = 8;
+const SWIPE_RATIO = 0.18;
 
 type Props = {
   images: string[];
@@ -24,6 +27,8 @@ type Props = {
 type Slide =
   | { type: "video"; src: string }
   | { type: "image"; src: string; alt: string };
+
+type AnimDir = "prev" | "next" | null;
 
 export default function ProductGallery({ images, name, video }: Props) {
   const slides = useMemo<Slide[]>(() => {
@@ -46,17 +51,31 @@ export default function ProductGallery({ images, name, video }: Props) {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [animDir, setAnimDir] = useState<AnimDir>(null);
+  const [snap, setSnap] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const suppressClickRef = useRef(false);
+  const animatingRef = useRef(false);
+  const pendingIndexRef = useRef<number | null>(null);
   const dragRef = useRef<{
     active: boolean;
     startX: number;
     delta: number;
     width: number;
   }>({ active: false, startX: 0, delta: 0, width: 1 });
-  const active = slides[index] ?? slides[0];
+
   const canSwipe = slides.length > 1;
+  const len = slides.length;
+
+  const slideAt = useCallback(
+    (i: number) => slides[((i % len) + len) % len],
+    [slides, len]
+  );
+
+  const prevSlide = canSwipe ? slideAt(index - 1) : null;
+  const currSlide = slides[index] ?? slides[0];
+  const nextSlide = canSwipe ? slideAt(index + 1) : null;
 
   useEffect(() => {
     setVideoPlaying(false);
@@ -73,21 +92,63 @@ export default function ProductGallery({ images, name, video }: Props) {
     el.play().catch(() => {});
   }, [videoPlaying]);
 
-  const goTo = useCallback(
-    (nextIndex: number) => {
-      const len = slides.length;
-      if (len < 2) return;
-      setIndex(((nextIndex % len) + len) % len);
+  const finishAnimation = useCallback(
+    (dir: "prev" | "next") => {
+      const pending = pendingIndexRef.current;
+      pendingIndexRef.current = null;
+
+      setSnap(true);
+      if (pending !== null) {
+        setIndex(((pending % len) + len) % len);
+      } else {
+        setIndex((i) =>
+          dir === "next" ? (i + 1) % len : (i - 1 + len) % len
+        );
+      }
+      setAnimDir(null);
+      setDragOffset(0);
+      animatingRef.current = false;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setSnap(false));
+      });
     },
-    [slides.length]
+    [len]
   );
 
-  const prev = () => goTo(index - 1);
-  const next = () => goTo(index + 1);
+  const startSlide = useCallback(
+    (dir: "prev" | "next", targetIndex?: number) => {
+      if (!canSwipe || animatingRef.current) return;
+      animatingRef.current = true;
+      pendingIndexRef.current =
+        typeof targetIndex === "number" ? targetIndex : null;
+      setDragging(false);
+      setDragOffset(0);
+      setAnimDir(dir);
+    },
+    [canSwipe]
+  );
+
+  const goTo = useCallback(
+    (nextIndex: number) => {
+      if (!canSwipe || animatingRef.current) return;
+      const target = ((nextIndex % len) + len) % len;
+      if (target === index) return;
+
+      const forwardDist = (target - index + len) % len;
+      const backwardDist = (index - target + len) % len;
+      const dir: "prev" | "next" =
+        forwardDist <= backwardDist ? "next" : "prev";
+      startSlide(dir, target);
+    },
+    [canSwipe, index, len, startSlide]
+  );
+
+  const prev = () => startSlide("prev");
+  const next = () => startSlide("next");
 
   const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
-    if (!canSwipe) return;
-    // While video plays, only the swipe overlay starts a drag (controls stay usable)
+    if (!canSwipe || animatingRef.current) return;
     const fromSwipeLayer = (e.currentTarget as HTMLElement).classList.contains(
       styles.videoSwipeLayer
     );
@@ -118,19 +179,37 @@ export default function ProductGallery({ images, name, video }: Props) {
     const { delta, width } = dragRef.current;
     dragRef.current.active = false;
     setDragging(false);
-    setDragOffset(0);
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
       /* already released */
     }
 
-    if (Math.abs(delta) < CLICK_THRESHOLD) return;
+    if (Math.abs(delta) < CLICK_THRESHOLD) {
+      setDragOffset(0);
+      return;
+    }
 
     suppressClickRef.current = true;
-    const threshold = width * 0.18;
-    if (delta <= -threshold) next();
-    else if (delta >= threshold) prev();
+    const threshold = width * SWIPE_RATIO;
+    if (delta <= -threshold) {
+      animatingRef.current = true;
+      setAnimDir("next");
+      setDragOffset(0);
+    } else if (delta >= threshold) {
+      animatingRef.current = true;
+      setAnimDir("prev");
+      setDragOffset(0);
+    } else {
+      setDragOffset(0);
+    }
+  };
+
+  const onTrackTransitionEnd = (e: TransitionEvent<HTMLDivElement>) => {
+    if (e.propertyName !== "transform") return;
+    if (animDir === "next" || animDir === "prev") {
+      finishAnimation(animDir);
+    }
   };
 
   const startVideo = () => {
@@ -145,38 +224,32 @@ export default function ProductGallery({ images, name, video }: Props) {
     event.preventDefault();
   };
 
-  const swipeStyle =
-    canSwipe && dragging
-      ? {
-          transform: `translateX(${dragOffset * 0.35}px)`,
-          transition: "none",
-        }
-      : {
-          transform: "translateX(0)",
-          transition: dragging
-            ? "none"
-            : "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
-        };
+  const trackStyle: CSSProperties = (() => {
+    if (!canSwipe) return {};
 
-  return (
-    <div className={styles.gallery} onContextMenu={blockSave}>
-      <div
-        ref={mainRef}
-        className={`${styles.mainImage} ${canSwipe ? styles.mainImageSwipe : ""}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        style={swipeStyle}
-      >
-        {active?.type === "video" ? (
-          videoPlaying ? (
+    let x = "translateX(-100%)";
+    if (animDir === "next") x = "translateX(-200%)";
+    else if (animDir === "prev") x = "translateX(0%)";
+    else if (dragging) x = `translateX(calc(-100% + ${dragOffset}px))`;
+
+    const transition =
+      snap || dragging || !canSwipe
+        ? "none"
+        : "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)";
+
+    return { transform: x, transition };
+  })();
+
+  const renderSlide = (slide: Slide, key: string, isCurrent: boolean) => {
+    if (slide.type === "video") {
+      if (isCurrent && videoPlaying) {
+        return (
+          <div key={key} className={styles.slide}>
             <div className={styles.videoStage}>
               <video
                 ref={videoRef}
-                key={active.src}
                 className={styles.video}
-                src={active.src}
+                src={slide.src}
                 controls
                 controlsList="nodownload"
                 disablePictureInPicture
@@ -185,7 +258,6 @@ export default function ProductGallery({ images, name, video }: Props) {
                 onEnded={() => setVideoPlaying(false)}
                 onContextMenu={blockSave}
               />
-              {/* Swipe catcher over the video frame; bottom strip left for native controls */}
               <div
                 className={styles.videoSwipeLayer}
                 aria-hidden="true"
@@ -195,35 +267,72 @@ export default function ProductGallery({ images, name, video }: Props) {
                 onPointerCancel={endDrag}
               />
             </div>
-          ) : (
-            <button
-              type="button"
-              className={styles.videoPoster}
-              onClick={startVideo}
-              aria-label={`Play video for ${name}`}
-            >
-              <ProtectedProductImage
-                src={poster}
-                alt={posterAlt}
-                fill
-                sizes="(max-width: 900px) 100vw, 520px"
-                className={styles.image}
-                priority
-              />
-              <span className={styles.playLarge} aria-hidden="true">
-                ▶
-              </span>
-            </button>
-          )
+          </div>
+        );
+      }
+
+      return (
+        <div key={key} className={styles.slide}>
+          <button
+            type="button"
+            className={styles.videoPoster}
+            onClick={isCurrent ? startVideo : undefined}
+            tabIndex={isCurrent ? 0 : -1}
+            aria-label={`Play video for ${name}`}
+            aria-hidden={!isCurrent}
+          >
+            <ProtectedProductImage
+              src={poster}
+              alt={posterAlt}
+              fill
+              sizes="(max-width: 900px) 100vw, 520px"
+              className={styles.image}
+              priority={isCurrent}
+            />
+            <span className={styles.playLarge} aria-hidden="true">
+              ▶
+            </span>
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div key={key} className={styles.slide}>
+        <ProtectedProductImage
+          src={slide.src}
+          alt={slide.alt}
+          fill
+          sizes="(max-width: 900px) 100vw, 520px"
+          className={styles.image}
+          priority={isCurrent}
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div className={styles.gallery} onContextMenu={blockSave}>
+      <div
+        ref={mainRef}
+        className={`${styles.mainImage} ${canSwipe ? styles.mainImageSwipe : ""}`}
+        onPointerDown={canSwipe && !videoPlaying ? onPointerDown : undefined}
+        onPointerMove={canSwipe && !videoPlaying ? onPointerMove : undefined}
+        onPointerUp={canSwipe && !videoPlaying ? endDrag : undefined}
+        onPointerCancel={canSwipe && !videoPlaying ? endDrag : undefined}
+      >
+        {canSwipe && prevSlide && nextSlide ? (
+          <div
+            className={styles.slideTrack}
+            style={trackStyle}
+            onTransitionEnd={onTrackTransitionEnd}
+          >
+            {renderSlide(prevSlide, `prev-${index}`, false)}
+            {renderSlide(currSlide, `curr-${index}`, true)}
+            {renderSlide(nextSlide, `next-${index}`, false)}
+          </div>
         ) : (
-          <ProtectedProductImage
-            src={active?.src || poster}
-            alt={active?.type === "image" ? active.alt : posterAlt}
-            fill
-            sizes="(max-width: 900px) 100vw, 520px"
-            className={styles.image}
-            priority
-          />
+          renderSlide(currSlide, `only-${index}`, true)
         )}
       </div>
 
@@ -246,7 +355,7 @@ export default function ProductGallery({ images, name, video }: Props) {
                 key={`${slide.type}-${slide.src}-${i}`}
                 type="button"
                 className={`${styles.thumb} ${i === index ? styles.thumbActive : ""}`}
-                onClick={() => setIndex(i)}
+                onClick={() => goTo(i)}
                 aria-label={
                   slide.type === "video"
                     ? "View product video"

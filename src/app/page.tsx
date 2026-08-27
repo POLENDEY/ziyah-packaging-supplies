@@ -6,6 +6,7 @@ import PromoBannerSlider from "./components/PromoBannerSlider";
 import FeedbackSection from "./components/FeedbackSection";
 import HeroFulfillmentScene from "./components/HeroFulfillmentScene";
 import HomeScrollEffects from "./components/HomeScrollEffects";
+import BrandWordmark from "./components/BrandWordmark";
 import {
   IconArrowRight,
   IconBento,
@@ -186,7 +187,9 @@ export default function Home() {
         <div className={styles.heroOverlay} aria-hidden="true" />
         <div className={styles.heroInner}>
           <div className={styles.heroContent} data-reveal>
-            <p className={styles.heroBrand}>Ziyah Packaging Supplies</p>
+            <div className={styles.heroBrand}>
+              <BrandWordmark variant="onDark" size="lg" />
+            </div>
             <div className={styles.heroBadge}>Pasay City · Nationwide PH</div>
             <h1 className={styles.heroTitle}>
               Buy Food Packaging{" "}
