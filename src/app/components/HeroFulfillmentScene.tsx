@@ -285,7 +285,7 @@ export default function HeroFulfillmentScene() {
       store.position.set(-7.5, 0, -0.9);
       scene.add(store);
 
-      // Home — improved cottage with porch, framed windows, chimney
+      // Home — cottage with solid trim, shutters, fence, mailbox (no glass)
       const matWall = new THREE.MeshStandardMaterial({
         color: 0xf4f1ec,
         roughness: 0.62,
@@ -318,15 +318,15 @@ export default function HeroFulfillmentScene() {
         roughness: 0.48,
         metalness: 0.15,
       });
-      const matWarmWin = new THREE.MeshBasicMaterial({
-        color: 0xffc98a,
-        toneMapped: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -2,
-        polygonOffsetUnits: -2,
+      const matShutter = new THREE.MeshStandardMaterial({
+        color: 0xe9bcb9,
+        roughness: 0.55,
+        metalness: 0.06,
       });
-      const matWinMullion = new THREE.MeshBasicMaterial({
-        color: 0xf7ecea,
+      const matBay = new THREE.MeshStandardMaterial({
+        color: 0x662249,
+        roughness: 0.55,
+        metalness: 0.1,
       });
       const matPorch = new THREE.MeshStandardMaterial({
         color: 0xd9cfc2,
@@ -337,6 +337,11 @@ export default function HeroFulfillmentScene() {
         color: 0xc4b8a8,
         roughness: 0.82,
         metalness: 0.03,
+      });
+      const matFence = new THREE.MeshStandardMaterial({
+        color: 0xf0e8e0,
+        roughness: 0.58,
+        metalness: 0.05,
       });
 
       const home = new THREE.Group();
@@ -366,6 +371,37 @@ export default function HeroFulfillmentScene() {
       );
       homeWing.position.set(-0.95, 0.95, -0.85);
       home.add(homeWing);
+
+      // Corner boards (siding read)
+      const cornerGeo = new THREE.BoxGeometry(0.1, 1.85, 0.1);
+      const corners: [number, number][] = [
+        [HOME_HALF_W - 0.02, HOME_HALF_D - 0.02],
+        [-(HOME_HALF_W - 0.02), HOME_HALF_D - 0.02],
+        [HOME_HALF_W - 0.02, -(HOME_HALF_D - 0.02)],
+        [-(HOME_HALF_W - 0.02), -(HOME_HALF_D - 0.02)],
+      ];
+      for (const [cx, cz] of corners) {
+        const board = new THREE.Mesh(cornerGeo, matFrame);
+        board.position.set(cx, 1.15, cz);
+        home.add(board);
+      }
+
+      // Mid-height belt course
+      const beltFront = new THREE.Mesh(
+        new THREE.BoxGeometry(HOME_BODY_W + 0.04, 0.08, 0.06),
+        matFrame
+      );
+      beltFront.position.set(0, 1.05, HOME_HALF_D + 0.01);
+      home.add(beltFront);
+      const beltRight = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.08, HOME_BODY_D + 0.04),
+        matFrame
+      );
+      beltRight.position.set(HOME_HALF_W + 0.01, 1.05, 0);
+      home.add(beltRight);
+      const beltLeft = beltRight.clone();
+      beltLeft.position.x = -(HOME_HALF_W + 0.01);
+      home.add(beltLeft);
 
       // Eave band under roof
       const eaveBand = new THREE.Mesh(
@@ -503,70 +539,105 @@ export default function HeroFulfillmentScene() {
       homeDoorPivot.add(doorKnob);
       home.add(homeDoorPivot);
 
-      // Windows recessed into walls (no floating panes / z-fight shimmer)
-      const addWindow = (
+      // Solid window bays: recessed plum panel + cream shutters + sill (+ optional box)
+      const addBay = (
         x: number,
         y: number,
         z: number,
         w: number,
         h: number,
-        rotY = 0
+        rotY = 0,
+        withBox = false
       ) => {
         const group = new THREE.Group();
         group.position.set(x, y, z);
         group.rotation.y = rotY;
 
-        // Carve a shallow recess so the pane sits inside the wall
-        const recess = new THREE.Mesh(
-          new THREE.BoxGeometry(w + 0.14, h + 0.14, 0.08),
-          matFrame
-        );
-        recess.position.z = -0.04;
-        group.add(recess);
-
         const frame = new THREE.Mesh(
-          new THREE.BoxGeometry(w + 0.08, h + 0.08, 0.04),
+          new THREE.BoxGeometry(w + 0.1, h + 0.1, 0.05),
           matFrame
         );
-        frame.position.z = -0.01;
+        frame.position.z = -0.02;
         group.add(frame);
 
-        const glass = new THREE.Mesh(
-          new THREE.BoxGeometry(w * 0.88, h * 0.88, 0.02),
-          matWarmWin
+        const panel = new THREE.Mesh(
+          new THREE.BoxGeometry(w * 0.86, h * 0.86, 0.03),
+          matBay
         );
-        glass.position.z = 0.005;
-        glass.renderOrder = 1;
-        group.add(glass);
+        panel.position.z = 0.01;
+        group.add(panel);
 
-        const mullionV = new THREE.Mesh(
-          new THREE.BoxGeometry(0.03, h * 0.85, 0.02),
-          matWinMullion
+        // Cross mullion (solid cream, not glass)
+        const mullV = new THREE.Mesh(
+          new THREE.BoxGeometry(0.04, h * 0.82, 0.02),
+          matShutter
         );
-        mullionV.position.z = 0.018;
-        group.add(mullionV);
-        const mullionH = new THREE.Mesh(
-          new THREE.BoxGeometry(w * 0.85, 0.03, 0.02),
-          matWinMullion
+        mullV.position.z = 0.025;
+        group.add(mullV);
+        const mullH = new THREE.Mesh(
+          new THREE.BoxGeometry(w * 0.82, 0.04, 0.02),
+          matShutter
         );
-        mullionH.position.z = 0.018;
-        group.add(mullionH);
+        mullH.position.z = 0.025;
+        group.add(mullH);
+
+        const shutterW = 0.14;
+        const shutL = new THREE.Mesh(
+          new THREE.BoxGeometry(shutterW, h * 0.95, 0.04),
+          matShutter
+        );
+        shutL.position.set(-(w / 2 + shutterW / 2 + 0.02), 0, 0.03);
+        group.add(shutL);
+        const shutR = shutL.clone();
+        shutR.position.x = w / 2 + shutterW / 2 + 0.02;
+        group.add(shutR);
+
+        // Shutter slat lines
+        for (const sx of [
+          -(w / 2 + shutterW / 2 + 0.02),
+          w / 2 + shutterW / 2 + 0.02,
+        ]) {
+          for (let i = -1; i <= 1; i++) {
+            const slat = new THREE.Mesh(
+              new THREE.BoxGeometry(shutterW * 0.85, 0.025, 0.015),
+              matFrame
+            );
+            slat.position.set(sx, i * 0.12, 0.055);
+            group.add(slat);
+          }
+        }
 
         const sill = new THREE.Mesh(
-          new THREE.BoxGeometry(w + 0.14, 0.05, 0.08),
+          new THREE.BoxGeometry(w + shutterW * 2 + 0.22, 0.06, 0.1),
           matSand
         );
-        sill.position.set(0, -(h / 2) - 0.04, 0.01);
+        sill.position.set(0, -(h / 2) - 0.05, 0.02);
         group.add(sill);
+
+        if (withBox) {
+          const box = new THREE.Mesh(
+            new THREE.BoxGeometry(w * 0.9, 0.14, 0.22),
+            matCoral
+          );
+          box.position.set(0, -(h / 2) - 0.18, 0.12);
+          group.add(box);
+          for (const fx of [-0.12, 0, 0.12]) {
+            const bloom = new THREE.Mesh(
+              new THREE.SphereGeometry(0.05, 8, 8),
+              matPlum
+            );
+            bloom.position.set(fx, -(h / 2) - 0.08, 0.12);
+            group.add(bloom);
+          }
+        }
+
         home.add(group);
       };
 
-      // Inset past the wall face so panes never float in front
-      const winInset = 0.06;
-      addWindow(0.78, 1.35, HOME_HALF_D - winInset, 0.58, 0.5);
-      addWindow(-0.9, 1.38, HOME_HALF_D - winInset, 0.46, 0.4);
-      addWindow(HOME_HALF_W - winInset, 1.35, 0.2, 0.52, 0.46, Math.PI / 2);
-      addWindow(-(HOME_HALF_W - winInset), 1.3, 0.15, 0.48, 0.42, -Math.PI / 2);
+      const bayInset = 0.04;
+      addBay(0.85, 1.45, HOME_HALF_D + bayInset, 0.48, 0.42, 0, true);
+      addBay(-0.95, 1.48, HOME_HALF_D + bayInset, 0.4, 0.36, 0, true);
+      addBay(HOME_HALF_W + bayInset, 1.42, 0.25, 0.44, 0.4, Math.PI / 2, false);
 
       // Front walkway stays on the yard (does not cross the road)
       const path = new THREE.Mesh(
@@ -608,6 +679,65 @@ export default function HeroFulfillmentScene() {
       );
       yard.position.set(0, 0.015, 0.35);
       home.add(yard);
+
+      // Short picket fence along front of yard (gap for walkway)
+      const fenceRail = (x: number, z: number, len: number) => {
+        const rail = new THREE.Mesh(
+          new THREE.BoxGeometry(len, 0.05, 0.04),
+          matFence
+        );
+        rail.position.set(x, 0.28, z);
+        home.add(rail);
+        const railLow = rail.clone();
+        railLow.position.y = 0.14;
+        home.add(railLow);
+        const picketCount = Math.max(2, Math.round(len / 0.22));
+        for (let i = 0; i < picketCount; i++) {
+          const t = picketCount === 1 ? 0.5 : i / (picketCount - 1);
+          const px = x - len / 2 + t * len;
+          const picket = new THREE.Mesh(
+            new THREE.BoxGeometry(0.05, 0.42, 0.04),
+            matFence
+          );
+          picket.position.set(px, 0.24, z);
+          home.add(picket);
+          const tip = new THREE.Mesh(
+            new THREE.ConeGeometry(0.035, 0.08, 4),
+            matFence
+          );
+          tip.position.set(px, 0.48, z);
+          tip.rotation.y = Math.PI / 4;
+          home.add(tip);
+        }
+      };
+      fenceRail(-1.55, 2.35, 1.4);
+      fenceRail(1.55, 2.35, 1.4);
+
+      // Mailbox by walkway
+      const mailPost = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.035, 0.04, 0.7, 8),
+        matFrame
+      );
+      mailPost.position.set(0.85, 0.38, 2.15);
+      home.add(mailPost);
+      const mailBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.28, 0.18, 0.2),
+        matPlumDeep
+      );
+      mailBox.position.set(0.85, 0.78, 2.15);
+      home.add(mailBox);
+      const mailFlag = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 0.04, 0.02),
+        matCoral
+      );
+      mailFlag.position.set(1.02, 0.82, 2.15);
+      home.add(mailFlag);
+      const mailCap = new THREE.Mesh(
+        new THREE.BoxGeometry(0.3, 0.04, 0.22),
+        matFrame
+      );
+      mailCap.position.set(0.85, 0.9, 2.15);
+      home.add(mailCap);
 
       // House on the lawn, well behind the road (road ≈ z -0.35 → 1.85)
       home.position.set(7.8, 0, -4.35);
@@ -1097,7 +1227,7 @@ export default function HeroFulfillmentScene() {
         }
 
         store.position.y = Math.sin(elapsed * 0.65) * 0.02;
-        // Keep home planted (no bob) so windows stay flush with the walls
+        // Keep home planted (no bob)
         home.position.y = 0;
         storeLamp.intensity = 1.25 + Math.sin(elapsed * 2.2) * 0.2;
         homeLamp.intensity = 1.0 + Math.sin(elapsed * 1.8 + 0.5) * 0.15;

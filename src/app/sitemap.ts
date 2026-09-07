@@ -1,20 +1,20 @@
 import type { MetadataRoute } from "next";
 import { products } from "@/data/products";
-import { getSiteOrigin } from "@/data/site";
+import { SITE_ORIGIN, getSiteOrigin } from "@/data/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = getSiteOrigin();
-  // Stable-ish date for crawlers (rebuild refreshes)
+  // Always emit the public custom domain (www), not a preview host
+  const siteUrl = getSiteOrigin() || SITE_ORIGIN;
   const lastModified = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
-    { path: "", priority: 1, changeFrequency: "weekly" as const },
+    { path: "/", priority: 1, changeFrequency: "weekly" as const },
     { path: "/products", priority: 0.9, changeFrequency: "weekly" as const },
     { path: "/about", priority: 0.7, changeFrequency: "monthly" as const },
     { path: "/contact", priority: 0.7, changeFrequency: "monthly" as const },
     { path: "/quote", priority: 0.7, changeFrequency: "monthly" as const },
   ].map(({ path, priority, changeFrequency }) => ({
-    url: `${siteUrl}${path || "/"}`,
+    url: `${siteUrl}${path}`,
     lastModified,
     changeFrequency,
     priority,
@@ -23,7 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${siteUrl}/products/${product.id}`,
     lastModified,
-    changeFrequency: "weekly",
+    changeFrequency: "weekly" as const,
     priority: 0.8,
   }));
 

@@ -7,6 +7,7 @@ import {
   lineTotal,
   useProductQueue,
 } from "./ProductQueueProvider";
+import QtyInput from "./QtyInput";
 import styles from "./CartDrawer.module.css";
 
 export default function CartDrawer() {
@@ -124,7 +125,13 @@ export default function CartDrawer() {
                         >
                           −
                         </button>
-                        <span>{item.quantity}</span>
+                        <QtyInput
+                          value={item.quantity}
+                          min={1}
+                          max={9999}
+                          aria-label={`Quantity for ${item.displayName || item.name}`}
+                          onChange={(n) => updateQuantity(item.productId, n)}
+                        />
                         <button
                           type="button"
                           aria-label={`Increase ${item.displayName}`}

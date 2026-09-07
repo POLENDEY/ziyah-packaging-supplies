@@ -1,9 +1,31 @@
 /** Canonical public origin (no trailing slash). Used by sitemap, OG, JSON-LD. */
+export const SITE_ORIGIN = "https://www.ziyahpackagingsupplies.com";
+
+function isUsablePublicOrigin(url: string) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return false;
+    const host = parsed.hostname.toLowerCase();
+    if (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "0.0.0.0" ||
+      host.endsWith(".local") ||
+      /vercel\.app$/i.test(host)
+    ) {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function getSiteOrigin() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    "https://ziyah-packaging-supplies.vercel.app"
-  ).replace(/\/$/, "");
+  const fromEnv = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+  if (isUsablePublicOrigin(fromEnv)) return fromEnv;
+  return SITE_ORIGIN;
 }
 
 export const SITE = {

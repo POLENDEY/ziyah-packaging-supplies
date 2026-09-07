@@ -13,6 +13,7 @@ import {
   parsePeso,
   useProductQueue,
 } from "@/app/components/ProductQueueProvider";
+import QtyInput from "@/app/components/QtyInput";
 import styles from "./detail.module.css";
 
 type Props = {
@@ -150,7 +151,13 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
           >
             −
           </button>
-          <span aria-live="polite">{qty}</span>
+          <QtyInput
+            value={qty}
+            min={1}
+            max={9999}
+            aria-label="Quantity"
+            onChange={setQty}
+          />
           <button
             type="button"
             aria-label="Increase quantity"

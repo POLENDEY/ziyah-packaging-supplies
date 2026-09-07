@@ -247,15 +247,35 @@
   background: var(--gray-50);
 }
 
-.qty span {
+.qty input {
+  width: 40px;
   min-width: 34px;
+  height: 32px;
+  margin: 0;
+  padding: 0 2px;
+  border: none;
+  border-left: 1px solid var(--gray-100);
+  border-right: 1px solid var(--gray-100);
+  border-radius: 0;
+  background: transparent;
   text-align: center;
   font-size: 13px;
   font-weight: 700;
   color: var(--primary-dark);
-  border-left: 1px solid var(--gray-100);
-  border-right: 1px solid var(--gray-100);
-  line-height: 32px;
+  font-family: inherit;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.qty input:focus {
+  outline: none;
+  background: var(--gray-50);
+}
+
+.qty input::-webkit-outer-spin-button,
+.qty input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
 }
 
 .lineSum {
