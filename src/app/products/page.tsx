@@ -8,7 +8,7 @@ import { getSiteOrigin, SITE } from "@/data/site";
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
-  title: "Buy Food Packaging Products | Bento Boxes & Sushi Trays PH",
+  title: "Shop Food Packaging | Bento Boxes & Sushi Trays PH",
   description:
     "Shop food packaging in the Philippines: clear and black hard bento boxes, red-and-black meal bentos, round and rectangular sushi trays. Wholesale pricing from Pasay City with nationwide delivery.",
   keywords: [

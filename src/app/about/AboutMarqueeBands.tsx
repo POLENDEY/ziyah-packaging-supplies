@@ -1,10 +1,38 @@
 import styles from "./page.module.css";
 
-/** Site-wide placeholder — not catalog/pricelist product shots. */
-const DUMMY = "/dummy-post-square-1.jpg";
+const MARQUEE_IMAGES = [
+  "/about-page-marquee/IMG_0207.webp",
+  "/about-page-marquee/IMG_0592.webp",
+  "/about-page-marquee/IMG_1288.webp",
+  "/about-page-marquee/IMG_2213.webp",
+  "/about-page-marquee/IMG_2729.webp",
+  "/about-page-marquee/IMG_2744.webp",
+  "/about-page-marquee/IMG_2786.webp",
+  "/about-page-marquee/IMG_5618.webp",
+  "/about-page-marquee/IMG_5956.webp",
+  "/about-page-marquee/IMG_5992.webp",
+  "/about-page-marquee/IMG_6178.webp",
+  "/about-page-marquee/IMG_6179.webp",
+  "/about-page-marquee/IMG_6261.webp",
+  "/about-page-marquee/IMG_6452.webp",
+  "/about-page-marquee/IMG_6616.webp",
+  "/about-page-marquee/IMG_6821.webp",
+  "/about-page-marquee/IMG_7599.webp",
+  "/about-page-marquee/IMG_8368.webp",
+  "/about-page-marquee/IMG_8384.webp",
+  "/about-page-marquee/IMG_8481.webp",
+  "/about-page-marquee/IMG_8510.webp",
+  "/about-page-marquee/IMG_8517.webp",
+  "/about-page-marquee/IMG_8612.webp",
+  "/about-page-marquee/IMG_8640.webp",
+  "/about-page-marquee/IMG_9276.MP.webp",
+  "/about-page-marquee/IMG_9300.webp",
+  "/about-page-marquee/IMG_9474.MP.webp",
+] as const;
 
-const DUMMY_A = Array.from({ length: 8 }, () => DUMMY);
-const DUMMY_B = Array.from({ length: 8 }, () => DUMMY);
+const MID = Math.ceil(MARQUEE_IMAGES.length / 2);
+const IMAGES_A = MARQUEE_IMAGES.slice(0, MID);
+const IMAGES_B = MARQUEE_IMAGES.slice(MID);
 
 const LOGOS_A = [
   "Shopee",
@@ -54,7 +82,7 @@ function ImageTrack({
   images,
   reverse,
 }: {
-  images: string[];
+  images: readonly string[];
   reverse?: boolean;
 }) {
   const loop = [...images, ...images];
@@ -65,22 +93,24 @@ function ImageTrack({
     >
       <div className={styles.imageTrack}>
         {loop.map((src, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={`${src}-${i}`}
-            src={src}
-            alt=""
-            className={styles.marqueeImg}
-            loading="lazy"
-            draggable={false}
-          />
+          <figure key={`${src}-${i}`} className={styles.marqueeFrame}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt=""
+              className={styles.marqueeImg}
+              loading="lazy"
+              draggable={false}
+            />
+            <span className={styles.marqueeMist} />
+          </figure>
         ))}
       </div>
     </div>
   );
 }
 
-/** Slanted dual loop marquees (Musso-style), using dummy images only. */
+/** Slanted dual loop marquees with About page photos. */
 export default function AboutMarqueeBands() {
   return (
     <section className={styles.marqueeStack} aria-label="Brand highlights">
@@ -90,7 +120,7 @@ export default function AboutMarqueeBands() {
           className={`${styles.logoMarquee} ${styles.logoMarqueeCoral}`}
           reverse
         />
-        <ImageTrack images={DUMMY_A} />
+        <ImageTrack images={IMAGES_A} />
       </div>
 
       <div className={`${styles.marqueeBand} ${styles.marqueeBandDown}`}>
@@ -98,7 +128,7 @@ export default function AboutMarqueeBands() {
           items={LOGOS_B}
           className={`${styles.logoMarquee} ${styles.logoMarqueeDark}`}
         />
-        <ImageTrack images={DUMMY_B} reverse />
+        <ImageTrack images={IMAGES_B} reverse />
       </div>
     </section>
   );

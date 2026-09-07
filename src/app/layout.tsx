@@ -5,7 +5,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ChatBot from "./components/ChatBot";
 import AppProviders from "./components/AppProviders";
-import { getSiteOrigin, SITE } from "@/data/site";
+import { getSiteOrigin, SITE, SITE_SITELINKS } from "@/data/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +32,7 @@ export const metadata: Metadata = {
   creator: SITE.name,
   publisher: SITE.name,
   category: "shopping",
+  applicationName: SITE.name,
   icons: {
     icon: [{ url: "/logo.png", type: "image/png" }],
     apple: [{ url: "/logo.png" }],
@@ -74,11 +75,21 @@ const orgJsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Organization",
+      "@type": ["Organization", "Store"],
       "@id": `${siteOrigin}/#organization`,
       name: SITE.name,
+      alternateName: ["Ziyah Packaging", "Ziyah Packaging Supplies PH"],
+      legalName: SITE.name,
       url: siteOrigin,
-      logo: `${siteOrigin}/logo.png`,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteOrigin}/logo.png`,
+        width: 512,
+        height: 512,
+      },
+      image: `${siteOrigin}/logo.png`,
+      description: SITE.tagline,
+      slogan: "Food-grade packaging for kitchens nationwide across the Philippines",
       email: SITE.email,
       telephone: SITE.phone,
       sameAs: [
@@ -91,14 +102,36 @@ const orgJsonLd = {
         streetAddress: "Unit 103, Doña Adela Apartment, 2247 F.B. Harrison St",
         addressLocality: "Pasay City",
         addressRegion: "Metro Manila",
+        postalCode: "1300",
         addressCountry: "PH",
       },
+      areaServed: {
+        "@type": "Country",
+        name: "Philippines",
+      },
+      knowsAbout: [
+        "food packaging Philippines",
+        "bento boxes",
+        "sushi trays",
+        "wholesale takeout packaging",
+        "hard bento boxes",
+      ],
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          telephone: SITE.phone,
+          contactType: "customer service",
+          areaServed: "PH",
+          availableLanguage: ["English", "Filipino"],
+        },
+      ],
     },
     {
       "@type": "WebSite",
       "@id": `${siteOrigin}/#website`,
       url: siteOrigin,
       name: SITE.name,
+      alternateName: "Ziyah Packaging Supplies",
       description: SITE.tagline,
       publisher: { "@id": `${siteOrigin}/#organization` },
       inLanguage: "en-PH",
@@ -110,6 +143,39 @@ const orgJsonLd = {
         },
         "query-input": "required name=search_term_string",
       },
+      hasPart: SITE_SITELINKS.map((link, index) => ({
+        "@type": "WebPage",
+        "@id": `${siteOrigin}${link.path.split("?")[0]}#sitelink-${index}`,
+        url: `${siteOrigin}${link.path}`,
+        name: link.name,
+        description: link.description,
+        isPartOf: { "@id": `${siteOrigin}/#website` },
+      })),
+    },
+    {
+      "@type": "ItemList",
+      "@id": `${siteOrigin}/#sitelinks`,
+      name: `${SITE.name} main pages`,
+      itemListOrder: "https://schema.org/ItemListOrderAscending",
+      numberOfItems: SITE_SITELINKS.length,
+      itemListElement: SITE_SITELINKS.map((link, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: link.name,
+        url: `${siteOrigin}${link.path}`,
+        description: link.description,
+      })),
+    },
+    {
+      "@type": "SiteNavigationElement",
+      "@id": `${siteOrigin}/#primary-nav`,
+      name: "Primary navigation",
+      hasPart: SITE_SITELINKS.map((link) => ({
+        "@type": "WebPage",
+        name: link.name,
+        url: `${siteOrigin}${link.path}`,
+        description: link.description,
+      })),
     },
   ],
 };

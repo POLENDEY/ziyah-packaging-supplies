@@ -22,7 +22,7 @@ import {
   IconTray,
   IconTruck,
 } from "./components/Icons";
-import { SITE, getSiteOrigin } from "@/data/site";
+import { SITE, SITE_SITELINKS, getSiteOrigin } from "@/data/site";
 
 export const metadata: Metadata = {
   title: {
@@ -108,7 +108,7 @@ const whyUs = [
 
 export default function Home() {
   const origin = getSiteOrigin();
-  const jsonLd = {
+  const localBusinessLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${origin}/#localbusiness`,
@@ -171,12 +171,50 @@ export default function Home() {
     ],
   };
 
+  const categoryListLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Shop food packaging by category",
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    numberOfItems: categories.length,
+    itemListElement: categories.map((cat, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: cat.name,
+      url: `${origin}${cat.href}`,
+      description: cat.desc,
+    })),
+  };
+
+  const sitelinksLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${SITE.name} popular pages`,
+    itemListOrder: "https://schema.org/ItemListOrderAscending",
+    numberOfItems: SITE_SITELINKS.length,
+    itemListElement: SITE_SITELINKS.map((link, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: link.name,
+      url: `${origin}${link.path}`,
+      description: link.description,
+    })),
+  };
+
   return (
     <main className={styles.main}>
       <HomeScrollEffects />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(categoryListLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(sitelinksLd) }}
       />
 
       <section className={styles.hero}>

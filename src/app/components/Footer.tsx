@@ -4,9 +4,17 @@ import styles from "./Footer.module.css";
 import { IconClock, IconMail, IconMapPin, IconPhone } from "./Icons";
 import SocialLinks from "./SocialLinks";
 import BrandWordmark from "./BrandWordmark";
-import { SITE } from "@/data/site";
+import { SITE, SITE_SITELINKS } from "@/data/site";
 
 export default function Footer() {
+  const shopLinks = SITE_SITELINKS.filter((link) =>
+    ["/products", "/quote"].some(
+      (prefix) => link.path === prefix || link.path.startsWith("/products")
+    )
+  );
+  const companyLinks = SITE_SITELINKS.filter((link) =>
+    ["/about", "/contact"].includes(link.path)
+  );
   return (
     <footer className={styles.footer}>
       <div className={styles.mainContent}>
@@ -39,10 +47,11 @@ export default function Footer() {
             <div className={styles.column}>
               <h4 className={styles.title}>Shop</h4>
               <div className={styles.links}>
-                <Link href="/products">All Products</Link>
-                <Link href="/products?category=bento">Bento Boxes</Link>
-                <Link href="/products?category=sushi">Sushi Trays</Link>
-                <Link href="/products?category=cups">Cups & Lids</Link>
+                {shopLinks.map((link) => (
+                  <Link key={link.path} href={link.path}>
+                    {link.name}
+                  </Link>
+                ))}
                 <a
                   href={SITE.social.shopee.href}
                   target="_blank"
@@ -50,7 +59,6 @@ export default function Footer() {
                 >
                   Shop on Shopee
                 </a>
-                <Link href="/quote">Get a Quote</Link>
               </div>
             </div>
 
@@ -58,8 +66,11 @@ export default function Footer() {
               <h4 className={styles.title}>Company</h4>
               <div className={styles.links}>
                 <Link href="/">Home</Link>
-                <Link href="/about">About Us</Link>
-                <Link href="/contact">Contact</Link>
+                {companyLinks.map((link) => (
+                  <Link key={link.path} href={link.path}>
+                    {link.name}
+                  </Link>
+                ))}
                 <a
                   href={SITE.social.facebook.href}
                   target="_blank"
@@ -74,7 +85,6 @@ export default function Footer() {
                 >
                   Chat on Messenger
                 </a>
-                <Link href="/quote">Wholesale Quote</Link>
               </div>
             </div>
 

@@ -5,7 +5,7 @@ import QuoteForm from "./QuoteForm";
 import { SITE } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: "Wholesale Packaging Quote | Bulk Food Packaging Philippines",
+  title: "Wholesale Quote | Bulk Food Packaging Philippines",
   description:
     "Request a wholesale food packaging quote from Ziyah Packaging Supplies. Bulk bento boxes and sushi trays for restaurants and brands nationwide in the Philippines.",
   keywords: [...SITE.seoKeywords, "wholesale packaging quote", "bulk bento box supplier"],

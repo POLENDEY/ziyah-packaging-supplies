@@ -84,6 +84,48 @@ export const SITE = {
   },
 } as const;
 
+/**
+ * Primary destinations Google may surface as brand sitelinks.
+ * Names are short, business-specific, and match real crawlable pages.
+ */
+export const SITE_SITELINKS = [
+  {
+    name: "Shop All Products",
+    path: "/products",
+    description: "Browse food-grade bento boxes, sushi trays, and takeout packaging.",
+  },
+  {
+    name: "Bento Boxes",
+    path: "/products?category=Bento%20Boxes",
+    description: "Red-and-black meal bento boxes with clear lids for takeout.",
+  },
+  {
+    name: "Hard Bento Clear",
+    path: "/products?category=Hard%20Bento%20Clear",
+    description: "Clear hard bento boxes with lids — 2 to 5 divisions.",
+  },
+  {
+    name: "Sushi Trays",
+    path: "/products?category=Round%20Sushi%20Trays",
+    description: "Round sushi trays with lids for plated sets and stalls.",
+  },
+  {
+    name: "Wholesale Quote",
+    path: "/quote",
+    description: "Request bulk packaging pricing for restaurants and brands.",
+  },
+  {
+    name: "Contact Store",
+    path: "/contact",
+    description: "Visit our Pasay City store or message us for nationwide delivery.",
+  },
+  {
+    name: "About Us",
+    path: "/about",
+    description: "Learn about Ziyah Packaging Supplies in Pasay City, Philippines.",
+  },
+] as const;
+
 export const PROMO_MESSAGES = [
   "Nationwide delivery across the Philippines",
   "Bulk & wholesale pricing available",

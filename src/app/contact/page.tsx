@@ -5,7 +5,7 @@ import ContactForm from "./ContactForm";
 import { SITE } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: "Contact Us | Food Packaging Store Pasay City",
+  title: "Contact Store | Food Packaging Pasay City",
   description:
     "Contact Ziyah Packaging Supplies in Pasay City for product questions, store pickup, wholesale orders, and nationwide food packaging delivery across the Philippines.",
   keywords: [...SITE.seoKeywords, "contact packaging supplier Pasay", "food packaging store near me"],
