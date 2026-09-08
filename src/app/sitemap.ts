@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
+import { CATEGORY_LANDINGS } from "@/data/categories";
 import { getProductImageUrls, products } from "@/data/products";
 import { SITE_ORIGIN, SITE_SITELINKS, getSiteOrigin } from "@/data/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // Always emit the public custom domain (www), not a preview host
   const siteUrl = getSiteOrigin() || SITE_ORIGIN;
   const lastModified = new Date();
 
@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/products", priority: 0.9, changeFrequency: "weekly" as const },
     { path: "/about", priority: 0.7, changeFrequency: "monthly" as const },
     { path: "/contact", priority: 0.7, changeFrequency: "monthly" as const },
-    { path: "/quote", priority: 0.8, changeFrequency: "monthly" as const },
+    { path: "/quote", priority: 0.85, changeFrequency: "monthly" as const },
   ].map(({ path, priority, changeFrequency }) => ({
     url: `${siteUrl}${path}`,
     lastModified,
@@ -20,13 +20,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority,
   }));
 
-  const sitelinkRoutes: MetadataRoute.Sitemap = SITE_SITELINKS.filter((link) =>
-    link.path.includes("?")
+  const categoryRoutes: MetadataRoute.Sitemap = CATEGORY_LANDINGS.map((c) => ({
+    url: `${siteUrl}/products/${c.slug}`,
+    lastModified,
+    changeFrequency: "weekly" as const,
+    priority: 0.88,
+  }));
+
+  const sitelinkExtras: MetadataRoute.Sitemap = SITE_SITELINKS.filter(
+    (link) =>
+      !link.path.includes("?") &&
+      !staticRoutes.some((r) => r.url === `${siteUrl}${link.path}`) &&
+      !categoryRoutes.some((r) => r.url === `${siteUrl}${link.path}`)
   ).map((link) => ({
     url: `${siteUrl}${link.path}`,
     lastModified,
     changeFrequency: "weekly" as const,
-    priority: 0.85,
+    priority: 0.8,
   }));
 
   const productRoutes: MetadataRoute.Sitemap = products.map((product) => ({
@@ -34,9 +44,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified,
     changeFrequency: "weekly" as const,
     priority: 0.8,
-    // Helps Google Image Search discover product photos on each PDP
     images: getProductImageUrls(product),
   }));
 
-  return [...staticRoutes, ...sitelinkRoutes, ...productRoutes];
+  return [
+    ...staticRoutes,
+    ...categoryRoutes,
+    ...sitelinkExtras,
+    ...productRoutes,
+  ];
 }

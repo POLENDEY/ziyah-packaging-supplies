@@ -55,31 +55,31 @@ const categories = [
     name: "Hard Bento Clear",
     desc: "Clear hard bento boxes with lids — 2 to 5 divisions, 1000ml.",
     Icon: IconBento,
-    href: "/products?category=Hard%20Bento%20Clear",
+    href: "/products/hard-bento-clear",
   },
   {
     name: "Bento Boxes",
     desc: "Red outside, black inside bento boxes with clear lids for everyday takeout.",
     Icon: IconPackage,
-    href: "/products?category=Bento%20Boxes",
+    href: "/products/bento-boxes",
   },
   {
     name: "Hard Bento Black",
     desc: "Black hard bento boxes with lids — premium meal presentation.",
     Icon: IconBento,
-    href: "/products?category=Hard%20Bento%20Black",
+    href: "/products/hard-bento-black",
   },
   {
     name: "Round Sushi Trays",
     desc: "Round black sushi trays with gold pattern and lids — multiple sizes.",
     Icon: IconSushi,
-    href: "/products?category=Round%20Sushi%20Trays",
+    href: "/products/round-sushi-trays",
   },
   {
     name: "Rectangular Sushi Trays",
     desc: "RE-ST series rectangular sushi trays with lids for plated sets.",
     Icon: IconTray,
-    href: "/products?category=Rectangular%20Sushi%20Trays",
+    href: "/products/rectangular-sushi-trays",
   },
 ];
 

@@ -86,7 +86,7 @@ export const SITE = {
 
 /**
  * Primary destinations Google may surface as brand sitelinks.
- * Names are short, business-specific, and match real crawlable pages.
+ * Clean URLs + unique titles/descriptions help Google pick these.
  */
 export const SITE_SITELINKS = [
   {
@@ -96,18 +96,28 @@ export const SITE_SITELINKS = [
   },
   {
     name: "Bento Boxes",
-    path: "/products?category=Bento%20Boxes",
+    path: "/products/bento-boxes",
     description: "Red-and-black meal bento boxes with clear lids for takeout.",
   },
   {
     name: "Hard Bento Clear",
-    path: "/products?category=Hard%20Bento%20Clear",
+    path: "/products/hard-bento-clear",
     description: "Clear hard bento boxes with lids — 2 to 5 divisions.",
   },
   {
-    name: "Sushi Trays",
-    path: "/products?category=Round%20Sushi%20Trays",
+    name: "Hard Bento Black",
+    path: "/products/hard-bento-black",
+    description: "Black hard bento boxes for premium meal presentation.",
+  },
+  {
+    name: "Round Sushi Trays",
+    path: "/products/round-sushi-trays",
     description: "Round sushi trays with lids for plated sets and stalls.",
+  },
+  {
+    name: "Rectangular Sushi Trays",
+    path: "/products/rectangular-sushi-trays",
+    description: "RE-ST rectangular sushi trays with lids for catering sets.",
   },
   {
     name: "Wholesale Quote",

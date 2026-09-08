@@ -31,22 +31,22 @@ const collections = [
   {
     name: "Hard Bento Clear",
     desc: "Clear hard bento with lids — 2 to 5 divisions.",
-    href: "/products?category=Hard%20Bento%20Clear",
+    href: "/products/hard-bento-clear",
   },
   {
     name: "Bento Boxes",
     desc: "Red outside, black inside — everyday takeout.",
-    href: "/products?category=Bento%20Boxes",
+    href: "/products/bento-boxes",
   },
   {
     name: "Hard Bento Black",
     desc: "Black hard bento for premium meal presentation.",
-    href: "/products?category=Hard%20Bento%20Black",
+    href: "/products/hard-bento-black",
   },
   {
     name: "Sushi Trays",
     desc: "Round & rectangular trays with lids.",
-    href: "/products?category=Round%20Sushi%20Trays",
+    href: "/products/round-sushi-trays",
   },
 ];
 

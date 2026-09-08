@@ -13,24 +13,40 @@ import {
   productCategories,
   products,
 } from "@/data/products";
+import { getCategoryHref } from "@/data/categories";
 
-export default function ProductsClient() {
+type Props = {
+  initialCategory?: string;
+  /** When true, hide category chips and keep the filter fixed */
+  lockCategory?: boolean;
+};
+
+export default function ProductsClient({
+  initialCategory = "All",
+  lockCategory = false,
+}: Props) {
   const searchParams = useSearchParams();
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [activeType, setActiveType] = useState("All");
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    const raw = searchParams.get("category");
-    if (raw) {
-      const match = productCategories.find(
-        (cat) => cat.toLowerCase() === decodeURIComponent(raw).toLowerCase()
-      );
-      if (match) setActiveCategory(match);
+    if (lockCategory) {
+      setActiveCategory(initialCategory);
+    } else {
+      const raw = searchParams.get("category");
+      if (raw) {
+        const match = productCategories.find(
+          (cat) => cat.toLowerCase() === decodeURIComponent(raw).toLowerCase()
+        );
+        if (match) setActiveCategory(match);
+      } else {
+        setActiveCategory("All");
+      }
     }
     const q = searchParams.get("q");
     setQuery(q?.trim() ?? "");
-  }, [searchParams]);
+  }, [searchParams, lockCategory, initialCategory]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();
@@ -51,18 +67,34 @@ export default function ProductsClient() {
       <div className={styles.filtersSection}>
         <div className={styles.container}>
           <div className={styles.filtersInner}>
-            <span className={styles.filterLabel}>Category:</span>
-            {productCategories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                className={`${styles.filterBtn} ${activeCategory === cat ? styles.filterBtnActive : ""}`}
-                onClick={() => setActiveCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-            <span className={styles.filterLabel} style={{ marginLeft: 12 }}>
+            {!lockCategory && (
+              <>
+                <span className={styles.filterLabel}>Category:</span>
+                {productCategories.map((cat) =>
+                  cat === "All" ? (
+                    <Link
+                      key={cat}
+                      href="/products"
+                      className={`${styles.filterBtn} ${activeCategory === cat ? styles.filterBtnActive : ""}`}
+                    >
+                      {cat}
+                    </Link>
+                  ) : (
+                    <Link
+                      key={cat}
+                      href={getCategoryHref(cat)}
+                      className={`${styles.filterBtn} ${activeCategory === cat ? styles.filterBtnActive : ""}`}
+                    >
+                      {cat}
+                    </Link>
+                  )
+                )}
+              </>
+            )}
+            <span
+              className={styles.filterLabel}
+              style={lockCategory ? undefined : { marginLeft: 12 }}
+            >
               Type:
             </span>
             {["All", "Disposable", "Reusable"].map((t) => (
