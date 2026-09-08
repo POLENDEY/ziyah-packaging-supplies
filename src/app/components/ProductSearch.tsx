@@ -174,7 +174,11 @@ export default function ProductSearch({
                 <span className={styles.thumb}>
                   <ProtectedProductImage
                     src={product.images[0]}
-                    alt={getProductImageAlt(product.name, product.images[0], 0)}
+                    alt={getProductImageAlt(product.name, product.images[0], 0, {
+                      category: product.category,
+                      color: product.color,
+                      dimensions: product.dimensions,
+                    })}
                     width={40}
                     height={40}
                   />

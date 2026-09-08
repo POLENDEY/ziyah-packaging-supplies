@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     title: "Get a Wholesale Packaging Quote | Ziyah",
     description:
       "Share your product list and volume — clear bulk pricing for food businesses nationwide.",
-    images: [{ url: "/logo.png", alt: SITE.name }],
+    images: [{ url: "/logo-512.png", alt: SITE.name }],
     url: "/quote",
   },
 };

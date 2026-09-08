@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { products } from "@/data/products";
+import { getProductImageUrls, products } from "@/data/products";
 import { SITE_ORIGIN, SITE_SITELINKS, getSiteOrigin } from "@/data/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -34,6 +34,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified,
     changeFrequency: "weekly" as const,
     priority: 0.8,
+    // Helps Google Image Search discover product photos on each PDP
+    images: getProductImageUrls(product),
   }));
 
   return [...staticRoutes, ...sitelinkRoutes, ...productRoutes];

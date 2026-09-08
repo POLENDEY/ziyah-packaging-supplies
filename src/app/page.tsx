@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     title: `${SITE.name} | Food Packaging Philippines`,
     description:
       "Shop bento boxes, sushi trays, and wholesale food packaging. Nationwide delivery across the Philippines from our Pasay City store.",
-    images: [{ url: "/logo.png", alt: SITE.name }],
+    images: [{ url: "/logo-512.png", width: 512, height: 512, alt: SITE.name }],
     url: "/",
     locale: "en_PH",
     type: "website",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     title: `${SITE.name} | Food Packaging Philippines`,
     description:
       "Food-grade bento boxes and sushi trays for restaurants and home businesses nationwide.",
-    images: ["/logo.png"],
+    images: ["/logo-512.png"],
   },
 };
 
@@ -115,7 +115,7 @@ export default function Home() {
     name: SITE.name,
     description:
       "Ziyah Packaging Supplies sells food-grade packaging in the Philippines — bento boxes, sushi trays, and wholesale takeout containers with nationwide delivery from Pasay City.",
-    image: `${origin}/logo.png`,
+    image: `${origin}/logo-512.png`,
     email: SITE.email,
     telephone: SITE.phone,
     address: {

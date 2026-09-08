@@ -36,11 +36,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Product Not Found" };
   }
 
+  const imageMeta = {
+    category: product.category,
+    color: product.color,
+    dimensions: product.dimensions,
+  };
   const primaryImage = product.images[0];
-  const imageAlt = getProductImageAlt(product.name, primaryImage, 0);
+  const imageAlt = getProductImageAlt(product.name, primaryImage, 0, imageMeta);
   const absoluteImages = product.images.map((src, i) => ({
     url: absoluteAssetUrl(src),
-    alt: getProductImageAlt(product.name, src, i),
+    alt: getProductImageAlt(product.name, src, i, imageMeta),
   }));
   const titleName = product.displayName || product.name;
   const metaDescription = getProductMetaDescription(product);
@@ -110,13 +115,23 @@ export default async function ProductDetailPage({ params }: Props) {
   const highPrice = tierPrices.length ? Math.max(...tierPrices) : parsePrice(product.price);
   const priceValidUntil = `${new Date().getFullYear() + 1}-12-31`;
 
+  const imageMeta = {
+    category: product.category,
+    color: product.color,
+    dimensions: product.dimensions,
+  };
   const imageObjects = product.images.map((src, i) => ({
     "@type": "ImageObject",
     contentUrl: absoluteAssetUrl(src),
     url: absoluteAssetUrl(src),
-    name: getProductImageAlt(product.name, src, i),
-    description: getProductImageAlt(product.name, src, i),
-    caption: getProductImageAlt(product.name, src, i),
+    name: getProductImageAlt(product.name, src, i, imageMeta),
+    description: `${product.longDesc} ${getProductImageAlt(product.name, src, i, imageMeta)}`,
+    caption: getProductImageAlt(product.name, src, i, imageMeta),
+    encodingFormat: src.toLowerCase().endsWith(".webp")
+      ? "image/webp"
+      : src.toLowerCase().endsWith(".jpg") || src.toLowerCase().endsWith(".jpeg")
+        ? "image/jpeg"
+        : "image/png",
     representativeOfPage: i === 0,
   }));
 
@@ -229,6 +244,9 @@ export default async function ProductDetailPage({ params }: Props) {
             images={product.images}
             name={product.name}
             video={product.video}
+            category={product.category}
+            color={product.color}
+            dimensions={product.dimensions}
           />
 
           <ProductPurchasePanel product={product} variants={variants} />

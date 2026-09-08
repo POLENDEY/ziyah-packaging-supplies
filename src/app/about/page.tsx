@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: "About Ziyah Packaging Supplies",
     description:
       "Food-grade packaging from Pasay City with nationwide delivery across the Philippines.",
-    images: [{ url: "/logo.png", alt: SITE.name }],
+    images: [{ url: "/logo-512.png", alt: SITE.name }],
     url: "/about",
   },
 };

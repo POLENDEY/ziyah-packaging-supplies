@@ -34,10 +34,17 @@ export const metadata: Metadata = {
   category: "shopping",
   applicationName: SITE.name,
   icons: {
-    icon: [{ url: "/logo.png", type: "image/png" }],
-    apple: [{ url: "/logo.png" }],
-    shortcut: ["/logo.png"],
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/favicon.ico"],
   },
+  manifest: "/site.webmanifest",
   openGraph: {
     type: "website",
     locale: "en_PH",
@@ -45,7 +52,7 @@ export const metadata: Metadata = {
     title: `${SITE.name} | Food Packaging Philippines`,
     description:
       "Shop bento boxes, sushi trays, and wholesale food packaging. Pickup in Pasay City or delivery nationwide across the Philippines.",
-    images: [{ url: "/logo.png", width: 512, height: 512, alt: SITE.name }],
+    images: [{ url: "/logo-512.png", width: 512, height: 512, alt: SITE.name }],
     url: siteOrigin,
   },
   twitter: {
@@ -53,7 +60,7 @@ export const metadata: Metadata = {
     title: `${SITE.name} | Food Packaging Philippines`,
     description:
       "Food-grade bento boxes and sushi trays for restaurants and home businesses nationwide.",
-    images: ["/logo.png"],
+    images: ["/logo-512.png"],
   },
   robots: {
     index: true,
@@ -83,11 +90,11 @@ const orgJsonLd = {
       url: siteOrigin,
       logo: {
         "@type": "ImageObject",
-        url: `${siteOrigin}/logo.png`,
+        url: `${siteOrigin}/logo-512.png`,
         width: 512,
         height: 512,
       },
-      image: `${siteOrigin}/logo.png`,
+      image: `${siteOrigin}/logo-512.png`,
       description: SITE.tagline,
       slogan: "Food-grade packaging for kitchens nationwide across the Philippines",
       email: SITE.email,

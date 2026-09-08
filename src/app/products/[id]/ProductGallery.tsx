@@ -22,6 +22,9 @@ type Props = {
   images: string[];
   name: string;
   video?: string;
+  category?: string;
+  color?: string;
+  dimensions?: string;
 };
 
 type Slide =
@@ -30,7 +33,18 @@ type Slide =
 
 type AnimDir = "prev" | "next" | null;
 
-export default function ProductGallery({ images, name, video }: Props) {
+export default function ProductGallery({
+  images,
+  name,
+  video,
+  category,
+  color,
+  dimensions,
+}: Props) {
+  const imageMeta = useMemo(
+    () => ({ category, color, dimensions }),
+    [category, color, dimensions]
+  );
   const slides = useMemo<Slide[]>(() => {
     const imageList = images.length ? images : ["/dummy-post-square-1.jpg"];
     const list: Slide[] = [];
@@ -39,14 +53,14 @@ export default function ProductGallery({ images, name, video }: Props) {
       list.push({
         type: "image",
         src,
-        alt: getProductImageAlt(name, src, i),
+        alt: getProductImageAlt(name, src, i, imageMeta),
       })
     );
     return list;
-  }, [images, video, name]);
+  }, [images, video, name, imageMeta]);
 
   const poster = images[0] || "/dummy-post-square-1.jpg";
-  const posterAlt = getProductImageAlt(name, poster, 0);
+  const posterAlt = getProductImageAlt(name, poster, 0, imageMeta);
   const [index, setIndex] = useState(0);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -366,7 +380,7 @@ export default function ProductGallery({ images, name, video }: Props) {
                   <span className={styles.videoThumb}>
                     <ProtectedProductImage
                       src={poster}
-                      alt=""
+                      alt={posterAlt}
                       width={64}
                       height={64}
                     />
@@ -377,7 +391,7 @@ export default function ProductGallery({ images, name, video }: Props) {
                 ) : (
                   <ProtectedProductImage
                     src={slide.src}
-                    alt=""
+                    alt={slide.alt}
                     width={64}
                     height={64}
                   />

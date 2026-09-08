@@ -839,7 +839,12 @@ export function absoluteAssetUrl(path: string) {
 export function getProductImageAlt(
   productName: string,
   imageSrc: string,
-  index = 0
+  index = 0,
+  meta?: {
+    category?: string;
+    color?: string;
+    dimensions?: string;
+  }
 ) {
   const file = imageSrc.toLowerCase();
   let view = `product photo ${index + 1}`;
@@ -847,8 +852,25 @@ export function getProductImageAlt(
     view = "flat view";
   } else if (file.includes("top")) {
     view = "top view";
+  } else if (file.includes("side")) {
+    view = "side view";
   }
-  return `${productName} — ${view} | food packaging Philippines | ${SITE.name}`;
+
+  const details = [
+    meta?.category,
+    meta?.color ? `${meta.color} color` : null,
+    meta?.dimensions ? `size ${meta.dimensions}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const detailPart = details ? ` (${details})` : "";
+  return `${productName}${detailPart} — ${view}. Food-grade packaging for sale in the Philippines | ${SITE.name}`;
+}
+
+/** Absolute image URLs for sitemap / schema. */
+export function getProductImageUrls(product: Product): string[] {
+  return product.images.map((src) => absoluteAssetUrl(src));
 }
 
 /** Meta description helper (human + searchable, ~155 chars). */

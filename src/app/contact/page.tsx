@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     title: "Contact Ziyah Packaging Supplies | Pasay City",
     description:
       "Visit our F.B. Harrison St store or message us for nationwide packaging delivery.",
-    images: [{ url: "/logo.png", alt: SITE.name }],
+    images: [{ url: "/logo-512.png", alt: SITE.name }],
     url: "/contact",
   },
 };

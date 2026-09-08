@@ -10,6 +10,11 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         disallow: ["/ziyah-admin/", "/admin/", "/api/"],
       },
+      {
+        // Explicitly welcome Google Image indexing of product photos
+        userAgent: "Googlebot-Image",
+        allow: "/",
+      },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
     host: siteUrl,

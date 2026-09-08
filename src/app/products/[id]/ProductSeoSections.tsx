@@ -126,7 +126,11 @@ export default function ProductSeoSections({ product }: Props) {
                 <div className={styles.relatedMedia}>
                   <ProtectedProductImage
                     src={item.images[0]}
-                    alt={getProductImageAlt(item.name, item.images[0], 0)}
+                    alt={getProductImageAlt(item.name, item.images[0], 0, {
+                      category: item.category,
+                      color: item.color,
+                      dimensions: item.dimensions,
+                    })}
                     fill
                     sizes="(max-width: 700px) 50vw, 220px"
                     className={styles.relatedImage}

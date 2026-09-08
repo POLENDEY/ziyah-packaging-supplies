@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import styles from "./page.module.css";
 import ProductsClient from "./ProductsClient";
-import { absoluteAssetUrl, products } from "@/data/products";
+import { absoluteAssetUrl, getProductImageAlt, products } from "@/data/products";
 import { getSiteOrigin, SITE } from "@/data/site";
 
 export const dynamic = "force-static";
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     title: "Food Packaging Products for Sale | Ziyah Packaging Supplies",
     description:
       "Browse bento boxes and sushi trays with pack and box wholesale rates. Serving food businesses nationwide from Pasay City.",
-    images: [{ url: "/logo.png", alt: SITE.name }],
+    images: [{ url: "/logo-512.png", alt: SITE.name }],
     url: "/products",
     locale: "en_PH",
     type: "website",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     title: "Food Packaging Products | Ziyah Packaging Supplies",
     description:
       "Bento boxes, sushi trays, and wholesale takeout packaging — buy online in the Philippines.",
-    images: ["/logo.png"],
+    images: ["/logo-512.png"],
   },
 };
 
@@ -50,13 +50,47 @@ export default function ProductsPage() {
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: products.length,
+      itemListOrder: "https://schema.org/ItemListOrderAscending",
       itemListElement: products.map((product, index) => ({
         "@type": "ListItem",
         position: index + 1,
         url: absoluteAssetUrl(`/products/${product.id}`),
         name: product.name,
+        item: {
+          "@type": "Product",
+          "@id": `${absoluteAssetUrl(`/products/${product.id}`)}#product`,
+          name: product.name,
+          description: product.desc,
+          category: product.category,
+          image: product.images.map((src) => absoluteAssetUrl(src)),
+          brand: { "@type": "Brand", name: SITE.name },
+          url: absoluteAssetUrl(`/products/${product.id}`),
+        },
       })),
     },
+  };
+
+  const imageGalleryJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ImageGallery",
+    name: `${SITE.name} product photo catalog`,
+    description:
+      "Product photos of food-grade bento boxes and sushi trays sold by Ziyah Packaging Supplies in the Philippines.",
+    url: `${origin}/products`,
+    associatedMedia: products.flatMap((product) =>
+      product.images.map((src, i) => ({
+        "@type": "ImageObject",
+        contentUrl: absoluteAssetUrl(src),
+        url: absoluteAssetUrl(src),
+        name: getProductImageAlt(product.name, src, i, {
+          category: product.category,
+          color: product.color,
+          dimensions: product.dimensions,
+        }),
+        caption: `${product.name} — ${product.desc}`,
+        representativeOfPage: i === 0,
+      }))
+    ),
   };
 
   return (
@@ -64,6 +98,10 @@ export default function ProductsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(imageGalleryJsonLd) }}
       />
       <header className={styles.pageHeader}>
         <div className={styles.container}>

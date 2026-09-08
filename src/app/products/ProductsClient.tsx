@@ -100,7 +100,11 @@ export default function ProductsClient() {
                     <div className={styles.productImageWrap}>
                       <ProtectedProductImage
                         src={product.images[0]}
-                        alt={getProductImageAlt(product.name, product.images[0], 0)}
+                        alt={getProductImageAlt(product.name, product.images[0], 0, {
+                          category: product.category,
+                          color: product.color,
+                          dimensions: product.dimensions,
+                        })}
                         fill
                         sizes="(max-width: 480px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className={styles.productImage}
