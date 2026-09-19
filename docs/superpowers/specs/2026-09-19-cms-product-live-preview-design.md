@@ -53,6 +53,7 @@ When creating or editing a product, show a **toggleable live visual reference** 
 | FAQs | FAQ accordion (empty → same auto-generated FAQs as storefront) |
 | Category | About heading (“About this {category}”), badges |
 | Type / Color / Sizes | Purchase panel + features |
+| Color hex / secondary / variant group | Purchase panel swatches (siblings from same group when available in CMS list) |
 | Display price / tiers | Purchase panel pricing |
 | Images (cover first) | Gallery + cover thumb |
 | Published | Not shown in preview (admin-only) |
