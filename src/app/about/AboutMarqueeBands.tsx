@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "./page.module.css";
 
 const MARQUEE_IMAGES = [
@@ -94,12 +95,16 @@ function ImageTrack({
       <div className={styles.imageTrack}>
         {loop.map((src, i) => (
           <figure key={`${src}-${i}`} className={styles.marqueeFrame}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={src}
               alt=""
+              width={240}
+              height={300}
               className={styles.marqueeImg}
+              sizes="(max-width: 768px) 160px, 240px"
+              quality={70}
               loading="lazy"
+              decoding="async"
               draggable={false}
             />
             <span className={styles.marqueeMist} />

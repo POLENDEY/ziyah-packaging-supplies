@@ -4,8 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./admin.module.css";
 import type { Product, PriceTier, ProductFaq } from "@/data/products";
 import type { DbCategory } from "@/lib/catalog/types";
+import ProductColorFields from "./ProductColorFields";
+import ProductLivePreview from "./ProductLivePreview";
+import { formToPreviewProduct } from "./previewProduct";
 
 const PAGE_SIZE = 10;
+const PREVIEW_KEY = "ziyah-admin-product-preview";
 
 type FormState = {
   id?: number;
@@ -18,6 +22,9 @@ type FormState = {
   categoryId: number | "";
   type: "Disposable" | "Reusable";
   color: string;
+  colorHex: string;
+  colorHexSecondary: string;
+  variantGroup: string;
   dimensions: string;
   unit: string;
   price: string;
@@ -38,6 +45,9 @@ const emptyForm = (): FormState => ({
   categoryId: "",
   type: "Disposable",
   color: "",
+  colorHex: "",
+  colorHexSecondary: "",
+  variantGroup: "",
   dimensions: "",
   unit: "/ piece",
   price: "",
@@ -61,6 +71,31 @@ export default function ProductManager() {
   const [newCatName, setNewCatName] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [page, setPage] = useState(1);
+  const [showPreview, setShowPreview] = useState(false);
+  const [formBaseline, setFormBaseline] = useState<FormState | null>(null);
+  const [leavePromptOpen, setLeavePromptOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(PREVIEW_KEY);
+      if (stored === "1" || stored === "0") {
+        setShowPreview(stored === "1");
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+    setShowPreview(window.matchMedia("(min-width: 900px)").matches);
+  }, []);
+
+  const setPreviewEnabled = (on: boolean) => {
+    setShowPreview(on);
+    try {
+      localStorage.setItem(PREVIEW_KEY, on ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     if (categoryFilter === "All") return products;
@@ -77,6 +112,31 @@ export default function ProductManager() {
   useEffect(() => {
     setPage(1);
   }, [categoryFilter]);
+
+  const existingVariantGroups = useMemo(() => {
+    const groups = new Set<string>();
+    for (const p of products) {
+      if (p.variantGroup?.trim()) groups.add(p.variantGroup.trim());
+    }
+    return [...groups].sort();
+  }, [products]);
+
+  const selectedCategoryName =
+    categories.find((c) => c.id === form.categoryId)?.name || "";
+
+  const previewProduct = useMemo(
+    () => formToPreviewProduct(form, selectedCategoryName),
+    [form, selectedCategoryName]
+  );
+
+  const previewVariants = useMemo(() => {
+    const group = form.variantGroup.trim();
+    if (!group) return previewProduct.color ? [previewProduct] : [];
+    const others = products.filter(
+      (p) => p.variantGroup === group && p.id !== form.id
+    );
+    return [...others, previewProduct];
+  }, [form.variantGroup, form.id, products, previewProduct]);
 
   const load = async () => {
     setLoading(true);
@@ -102,13 +162,16 @@ export default function ProductManager() {
   };
 
   const startCreate = () => {
-    setForm(emptyForm());
+    const next = emptyForm();
+    setForm(next);
+    setFormBaseline(next);
     setMode("form");
     setMessage(null);
+    setLeavePromptOpen(false);
   };
 
   const startEdit = (p: Product) => {
-    setForm({
+    const next: FormState = {
       id: p.id,
       name: p.name,
       displayName: p.displayName || "",
@@ -119,6 +182,9 @@ export default function ProductManager() {
       categoryId: categoryIdForProduct(p),
       type: p.type,
       color: p.color || "",
+      colorHex: p.colorHex || "",
+      colorHexSecondary: p.colorHexSecondary || "",
+      variantGroup: p.variantGroup || "",
       dimensions: p.dimensions,
       unit: p.unit,
       price: p.price,
@@ -129,9 +195,12 @@ export default function ProductManager() {
       faqs: p.faqs?.length ? p.faqs : [{ question: "", answer: "" }],
       images: p.images || [],
       isPublished: true,
-    });
+    };
+    setForm(next);
+    setFormBaseline(next);
     setMode("form");
     setMessage(null);
+    setLeavePromptOpen(false);
   };
 
   const uploadFile = async (file: File) => {
@@ -185,16 +254,41 @@ export default function ProductManager() {
     setMessage({ type: "ok", text: "Category added" });
   };
 
-  const onSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.categoryId) {
-      setMessage({ type: "err", text: "Select a category" });
+  const isDirty = useMemo(() => {
+    if (!formBaseline) return false;
+    return JSON.stringify(form) !== JSON.stringify(formBaseline);
+  }, [form, formBaseline]);
+
+  const goToList = () => {
+    setLeavePromptOpen(false);
+    setFormBaseline(null);
+    setMode("list");
+  };
+
+  const requestBackToList = () => {
+    if (!isDirty) {
+      goToList();
       return;
+    }
+    setLeavePromptOpen(true);
+  };
+
+  const saveProduct = async (opts?: {
+    asDraft?: boolean;
+  }): Promise<boolean> => {
+    if (!form.categoryId) {
+      setMessage({ type: "err", text: "Select a category before saving" });
+      return false;
+    }
+    if (!form.name.trim()) {
+      setMessage({ type: "err", text: "Enter a title before saving" });
+      return false;
     }
     setSaving(true);
     setMessage(null);
+    const asDraft = opts?.asDraft === true;
     const payload = {
-      name: form.name,
+      name: form.name.trim() || "Untitled draft",
       displayName: form.displayName,
       description: form.description,
       longDescription: form.longDescription,
@@ -203,6 +297,9 @@ export default function ProductManager() {
       categoryId: form.categoryId,
       type: form.type,
       color: form.color,
+      colorHex: form.colorHex,
+      colorHexSecondary: form.colorHexSecondary.trim() || null,
+      variantGroup: form.variantGroup.trim() || null,
       dimensions: form.dimensions,
       unit: form.unit,
       price: form.price,
@@ -211,7 +308,7 @@ export default function ProductManager() {
       faqs: form.faqs.filter((f) => f.question.trim() && f.answer.trim()),
       images: form.images,
       videoUrl: null,
-      isPublished: form.isPublished,
+      isPublished: asDraft ? false : form.isPublished,
     };
     const res = await fetch(
       form.id ? `/api/admin/products/${form.id}` : "/api/admin/products",
@@ -225,11 +322,25 @@ export default function ProductManager() {
     setSaving(false);
     if (!res.ok) {
       setMessage({ type: "err", text: data.error || "Save failed" });
-      return;
+      return false;
     }
-    setMessage({ type: "ok", text: "Product saved" });
-    setMode("list");
+    setMessage({
+      type: "ok",
+      text: asDraft ? "Draft saved" : "Product saved",
+    });
+    goToList();
     load();
+    return true;
+  };
+
+  const onSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await saveProduct();
+  };
+
+  const onSaveDraftAndLeave = async () => {
+    const ok = await saveProduct({ asDraft: true });
+    if (!ok) setLeavePromptOpen(false);
   };
 
   const onDelete = async (id: number) => {
@@ -254,13 +365,23 @@ export default function ProductManager() {
               {form.id ? `Edit product #${form.id}` : "New product"}
             </h2>
           </div>
-          <button
-            type="button"
-            className={styles.secondaryBtn}
-            onClick={() => setMode("list")}
-          >
-            Back to list
-          </button>
+          <div className={styles.formHeaderActions}>
+            <label className={styles.previewToggle}>
+              <input
+                type="checkbox"
+                checked={showPreview}
+                onChange={(e) => setPreviewEnabled(e.target.checked)}
+              />
+              Show product preview
+            </label>
+            <button
+              type="button"
+              className={styles.secondaryBtn}
+              onClick={requestBackToList}
+            >
+              Back to list
+            </button>
+          </div>
         </div>
 
         {message && (
@@ -269,6 +390,11 @@ export default function ProductManager() {
           </p>
         )}
 
+        <div
+          className={
+            showPreview ? styles.formWithPreview : styles.formWithoutPreview
+          }
+        >
         <form className={styles.profileForm} onSubmit={onSave}>
           <div className={styles.formGroup}>
             <label>Title</label>
@@ -455,30 +581,32 @@ export default function ProductManager() {
               </button>
             </div>
           </div>
-          <div className={styles.formRow}>
-            <div className={styles.formGroup}>
-              <label>Type</label>
-              <select
-                value={form.type}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    type: e.target.value as "Disposable" | "Reusable",
-                  })
-                }
-              >
-                <option value="Disposable">Disposable</option>
-                <option value="Reusable">Reusable</option>
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label>Color</label>
-              <input
-                value={form.color}
-                onChange={(e) => setForm({ ...form, color: e.target.value })}
-              />
-            </div>
+          <div className={styles.formGroup}>
+            <label>Type</label>
+            <select
+              value={form.type}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  type: e.target.value as "Disposable" | "Reusable",
+                })
+              }
+            >
+              <option value="Disposable">Disposable</option>
+              <option value="Reusable">Reusable</option>
+            </select>
           </div>
+
+          <ProductColorFields
+            value={{
+              color: form.color,
+              colorHex: form.colorHex,
+              colorHexSecondary: form.colorHexSecondary,
+              variantGroup: form.variantGroup,
+            }}
+            onChange={(next) => setForm({ ...form, ...next })}
+            existingGroups={existingVariantGroups}
+          />
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Sizes / dimensions</label>
@@ -623,6 +751,61 @@ export default function ProductManager() {
             </button>
           </div>
         </form>
+        {showPreview && (
+          <ProductLivePreview
+            product={previewProduct}
+            variants={previewVariants}
+          />
+        )}
+        </div>
+
+        {leavePromptOpen && (
+          <div
+            className={styles.leaveOverlay}
+            role="presentation"
+            onClick={() => !saving && setLeavePromptOpen(false)}
+          >
+            <div
+              className={styles.leaveDialog}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="leave-dialog-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 id="leave-dialog-title">Save your progress?</h3>
+              <p>
+                You have unsaved changes. Save as a draft to continue later, or
+                leave without saving.
+              </p>
+              <div className={styles.leaveActions}>
+                <button
+                  type="button"
+                  className={styles.saveBtn}
+                  disabled={saving}
+                  onClick={onSaveDraftAndLeave}
+                >
+                  {saving ? "Saving…" : "Save as draft"}
+                </button>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  disabled={saving}
+                  onClick={goToList}
+                >
+                  Continue to exit
+                </button>
+                <button
+                  type="button"
+                  className={styles.linkBtn}
+                  disabled={saving}
+                  onClick={() => setLeavePromptOpen(false)}
+                >
+                  Stay on form
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

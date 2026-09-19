@@ -17,6 +17,8 @@ function parseBody(body: Record<string, unknown>): ProductWriteInput {
     type: body.type === "Reusable" ? "Reusable" : "Disposable",
     color: body.color != null ? String(body.color) : null,
     colorHex: body.colorHex != null ? String(body.colorHex) : null,
+    colorHexSecondary:
+      body.colorHexSecondary != null ? String(body.colorHexSecondary) : null,
     dimensions: String(body.dimensions || ""),
     unit: body.unit != null ? String(body.unit) : "/ piece",
     badge:

@@ -46,6 +46,8 @@ export type Product = {
   color?: string;
   /** Swatch hex for the color picker */
   colorHex?: string;
+  /** Second hex for split/combined swatches (e.g. Red & Black) */
+  colorHexSecondary?: string;
   /** Title without color suffix for PDP */
   displayName?: string;
   /** Optional “Best for” key-feature line (CMS) */
@@ -228,6 +230,7 @@ const drafts: Draft[] = [
     displayName: "1 Division Bento Box",
     color: "Red & Black",
     colorHex: "#e53935",
+    colorHexSecondary: "#1c141f",
     category: "Bento Boxes",
     desc: "Red outside, black inside bento with clear lid — 1 compartment.",
     longDesc:
@@ -252,6 +255,7 @@ const drafts: Draft[] = [
     variantGroup: "hard-bento-2div",
     color: "Red & Black",
     colorHex: "#e53935",
+    colorHexSecondary: "#1c141f",
     category: "Bento Boxes",
     desc: "Red outside, black inside bento with clear lid — 2 compartments.",
     longDesc:
@@ -276,6 +280,7 @@ const drafts: Draft[] = [
     variantGroup: "hard-bento-3div",
     color: "Red & Black",
     colorHex: "#e53935",
+    colorHexSecondary: "#1c141f",
     category: "Bento Boxes",
     desc: "Red outside, black inside bento with clear lid — 3 compartments.",
     longDesc:
@@ -300,6 +305,7 @@ const drafts: Draft[] = [
     variantGroup: "hard-bento-4div",
     color: "Red & Black",
     colorHex: "#e53935",
+    colorHexSecondary: "#1c141f",
     category: "Bento Boxes",
     desc: "Red outside, black inside bento with clear lid — 4 compartments.",
     longDesc:
@@ -324,6 +330,7 @@ const drafts: Draft[] = [
     variantGroup: "hard-bento-5div",
     color: "Red & Black",
     colorHex: "#e53935",
+    colorHexSecondary: "#1c141f",
     category: "Bento Boxes",
     desc: "Red outside, black inside bento with clear lid — 5 compartments.",
     longDesc:

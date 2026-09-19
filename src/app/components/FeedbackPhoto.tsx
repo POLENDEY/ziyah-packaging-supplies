@@ -12,12 +12,32 @@ type Props = {
 export function resolveFeedbackPhoto(src?: string | null) {
   const value = String(src || "").trim();
   if (!value || value === "/" || value === "#") return "/logo.png";
+
+  // Unwrap optimizer URLs accidentally pasted/saved from the browser
+  try {
+    if (value.includes("/_next/image")) {
+      const u = new URL(value, "http://localhost");
+      const inner = u.searchParams.get("url");
+      if (inner) return decodeURIComponent(inner);
+    }
+  } catch {
+    /* keep original */
+  }
+
   return value;
 }
 
 export function isRemotePhoto(src: string) {
   return /^https?:\/\//i.test(src);
 }
+
+const coverStyle = {
+  width: "100%",
+  height: "100%",
+  objectFit: "cover" as const,
+  objectPosition: "center" as const,
+  display: "block" as const,
+};
 
 /**
  * Local paths use next/image; remote URLs use a plain img so CMS can
@@ -41,7 +61,7 @@ export default function FeedbackPhoto({
         width={width}
         height={height}
         className={className}
-        style={{ width, height, objectFit: "cover" }}
+        style={coverStyle}
         referrerPolicy="no-referrer"
       />
     );
@@ -54,6 +74,7 @@ export default function FeedbackPhoto({
       width={width}
       height={height}
       className={className}
+      style={coverStyle}
     />
   );
 }

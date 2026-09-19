@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -19,14 +19,36 @@ import styles from "./detail.module.css";
 type Props = {
   product: Product;
   variants: Product[];
+  /** When true, disable navigation and cart/inquiry side effects (CMS preview). */
+  previewMode?: boolean;
 };
 
-export default function ProductPurchasePanel({ product, variants }: Props) {
+function isComboSwatch(p: Product) {
+  return Boolean(p.colorHexSecondary?.trim());
+}
+
+function swatchStyle(p: Product): CSSProperties {
+  if (isComboSwatch(p)) {
+    const a = p.colorHex || "#e53935";
+    const b = p.colorHexSecondary || "#1c141f";
+    return {
+      backgroundImage: `linear-gradient(to right, ${a} 0 50%, ${b} 50% 100%)`,
+    };
+  }
+  return { background: p.colorHex || "#ccc" };
+}
+
+export default function ProductPurchasePanel({
+  product,
+  variants,
+  previewMode = false,
+}: Props) {
   const router = useRouter();
   const [qty, setQty] = useState(1);
   const [descOpen, setDescOpen] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
-  const { itemCount, inquireHref: queueInquireHref, addToQueue } = useProductQueue();
+  const { itemCount, inquireHref: queueInquireHref, addToQueue } =
+    useProductQueue();
 
   const hasColorPicker = variants.length > 1 && variants.every((v) => v.color);
   const showColor = Boolean(product.color);
@@ -39,11 +61,12 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
   );
 
   const selectColor = (variant: Product) => {
-    if (variant.id === product.id) return;
+    if (previewMode || variant.id === product.id) return;
     router.push(getProductHref(variant));
   };
 
   const handleAddToQueue = () => {
+    if (previewMode) return;
     addToQueue(
       {
         productId: product.id,
@@ -66,12 +89,12 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
     variant: Product,
     opts: { selected: boolean; interactive: boolean }
   ) => {
-    const isCombo = variant.color === "Red & Black";
+    const combo = isComboSwatch(variant);
     const className = [
       styles.swatch,
       opts.selected ? styles.swatchActive : "",
       !opts.interactive ? styles.swatchStatic : "",
-      isCombo ? styles.swatchCombo : "",
+      combo ? styles.swatchCombo : "",
     ]
       .filter(Boolean)
       .join(" ");
@@ -86,7 +109,7 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
           aria-label={variant.color}
           title={`${variant.color} — ${variant.price}`}
           className={className}
-          style={isCombo ? undefined : { background: variant.colorHex || "#ccc" }}
+          style={swatchStyle(variant)}
           onClick={() => selectColor(variant)}
         />
       );
@@ -96,12 +119,18 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
       <div
         key={variant.id}
         className={className}
-        style={isCombo ? undefined : { background: variant.colorHex || "#ccc" }}
+        style={swatchStyle(variant)}
         title={variant.color}
         aria-hidden="true"
       />
     );
   };
+
+  const inquireHref = previewMode
+    ? "#"
+    : itemCount > 0
+      ? queueInquireHref
+      : singleInquireHref;
 
   return (
     <div className={styles.buyPanel}>
@@ -175,20 +204,35 @@ export default function ProductPurchasePanel({ product, variants }: Props) {
       </div>
 
       <div className={styles.ctaStack}>
-        <button type="button" className={styles.addQueue} onClick={handleAddToQueue}>
+        <button
+          type="button"
+          className={styles.addQueue}
+          onClick={handleAddToQueue}
+          disabled={previewMode}
+        >
           {justAdded ? "Added to cart" : "Add to cart"}
         </button>
-        <Link
-          href={itemCount > 0 ? queueInquireHref : singleInquireHref}
-          className={styles.primary}
-        >
-          {itemCount > 0
-            ? `Inquire about cart (${itemCount})`
-            : "Inquire about this product"}
-        </Link>
-        <Link href="/quote" className={styles.secondary}>
-          Request wholesale quote
-        </Link>
+        {previewMode ? (
+          <>
+            <span className={styles.primary} aria-disabled="true">
+              Inquire about this product
+            </span>
+            <span className={styles.secondary} aria-disabled="true">
+              Request wholesale quote
+            </span>
+          </>
+        ) : (
+          <>
+            <Link href={inquireHref} className={styles.primary}>
+              {itemCount > 0
+                ? `Inquire about cart (${itemCount})`
+                : "Inquire about this product"}
+            </Link>
+            <Link href="/quote" className={styles.secondary}>
+              Request wholesale quote
+            </Link>
+          </>
+        )}
       </div>
 
       <div className={styles.descBlock}>

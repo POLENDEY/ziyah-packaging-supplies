@@ -27,6 +27,7 @@ export type DbProductRow = {
   type: "Disposable" | "Reusable";
   color: string | null;
   color_hex: string | null;
+  color_hex_secondary: string | null;
   dimensions: string;
   unit: string;
   badge: string;
@@ -53,6 +54,7 @@ export type ProductWriteInput = {
   type: "Disposable" | "Reusable";
   color?: string | null;
   colorHex?: string | null;
+  colorHexSecondary?: string | null;
   dimensions: string;
   unit?: string;
   badge?: Product["badge"];

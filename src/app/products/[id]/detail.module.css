@@ -317,13 +317,7 @@
 }
 
 .swatchCombo {
-  /* Vertical split: left red · right black */
-  background-color: #1c141f;
-  background-image: linear-gradient(
-    to right,
-    #e53935 0 50%,
-    #1c141f 50% 100%
-  );
+  /* Gradient colors come from inline style (primary + secondary hex) */
   background-repeat: no-repeat;
   background-size: 100% 100%;
   background-position: center;

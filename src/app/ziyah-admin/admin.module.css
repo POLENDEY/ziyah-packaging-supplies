@@ -425,12 +425,18 @@
   border: 2px solid #fff;
   box-shadow: 0 0 0 2px var(--accent-light), 0 8px 18px rgba(27, 25, 49, 0.16);
   background: var(--primary-xlight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .feedbackPreview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
+  display: block;
 }
 
 .feedbackLivePreview {
@@ -960,12 +966,262 @@
   margin-top: 8px;
 }
 
+.formHeaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.previewToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy, #1b1931);
+  cursor: pointer;
+  user-select: none;
+}
+
+.formWithPreview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.formWithoutPreview {
+  display: block;
+}
+
+.livePreviewPane {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border: 1px solid rgba(27, 25, 49, 0.1);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(27, 25, 49, 0.06);
+}
+
+.livePreviewLabel {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  border-bottom: 1px solid rgba(27, 25, 49, 0.08);
+  background: #fafafa;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.livePreviewFrame {
+  padding: 12px 14px 20px;
+  transform-origin: top center;
+}
+
+.livePreviewFrame :global(.main),
+.livePreviewFrame {
+  font-size: 13px;
+}
+
+.previewTitleFlash {
+  display: inline-block;
+  animation: previewFlash 0.2s ease;
+}
+
+@keyframes previewFlash {
+  from {
+    opacity: 0.35;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.colorBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 14px;
+  border: 1px solid rgba(27, 25, 49, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.colorBlock > label:first-child {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.colorPresets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.colorPresetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(27, 25, 49, 0.12);
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 10px 6px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.colorPresetBtn:hover {
+  border-color: rgba(163, 64, 84, 0.45);
+}
+
+.colorPresetSwatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(27, 25, 49, 0.2);
+  flex-shrink: 0;
+}
+
+.colorNameRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.colorLivePreview {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(27, 25, 49, 0.15);
+  margin-bottom: 4px;
+}
+
+.colorPickerRow {
+  display: block;
+}
+
+.colorInputs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.colorInputs input[type="color"] {
+  width: 48px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(27, 25, 49, 0.15);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.colorInputs input[type="text"],
+.colorInputs input:not([type="color"]) {
+  flex: 1;
+}
+
+.help {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--gray-500);
+  line-height: 1.4;
+}
+
+.variantGroupSelect {
+  margin-top: 8px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.leaveOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(27, 25, 49, 0.45);
+}
+
+.leaveDialog {
+  width: min(420px, 100%);
+  background: #fff;
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 18px 40px rgba(27, 25, 49, 0.18);
+}
+
+.leaveDialog h3 {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  color: var(--navy, #1b1931);
+}
+
+.leaveDialog p {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--gray-600, #5c5a6b);
+}
+
+.leaveActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaveActions .linkBtn {
+  align-self: center;
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .formWithPreview {
+    grid-template-columns: 1fr;
+  }
+
+  .livePreviewPane {
+    position: relative;
+    top: 0;
+    max-height: none;
+    order: -1;
+  }
+}
+
 @media (max-width: 720px) {
   .userChip {
     display: none;
   }
 
   .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .colorNameRow {
     grid-template-columns: 1fr;
   }
 }
