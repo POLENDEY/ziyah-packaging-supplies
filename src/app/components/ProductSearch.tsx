@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  getProductCoverImage,
   getProductHref,
   getProductImageAlt,
   type Product,
@@ -55,7 +56,11 @@ export default function ProductSearch({
     if (!q) return [];
     return products
       .filter((p) =>
-        [p.name, p.category, p.desc].some((field) => field.toLowerCase().includes(q))
+        [p.name, p.category, p.desc, p.displayName].some((field) =>
+          String(field || "")
+            .toLowerCase()
+            .includes(q)
+        )
       )
       .slice(0, 8);
   }, [query, products]);
@@ -176,7 +181,9 @@ export default function ProductSearch({
           {results.length === 0 ? (
             <p className={styles.empty}>No products found</p>
           ) : (
-            results.map((product) => (
+            results.map((product) => {
+              const cover = getProductCoverImage(product);
+              return (
               <Link
                 key={product.id}
                 href={getProductHref(product)}
@@ -191,8 +198,8 @@ export default function ProductSearch({
               >
                 <span className={styles.thumb}>
                   <ProtectedProductImage
-                    src={product.images[0]}
-                    alt={getProductImageAlt(product.name, product.images[0], 0, {
+                    src={cover}
+                    alt={getProductImageAlt(product.name, cover, 0, {
                       category: product.category,
                       color: product.color,
                       dimensions: product.dimensions,
@@ -206,7 +213,8 @@ export default function ProductSearch({
                   <span className={styles.category}>{product.category}</span>
                 </span>
               </Link>
-            ))
+              );
+            })
           )}
         </div>
       )}

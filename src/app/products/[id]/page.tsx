@@ -61,9 +61,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     color: product.color,
     dimensions: product.dimensions,
   };
-  const primaryImage = product.images[0];
+  const primaryImage = product.images[0] || "/dummy-post-square-1.jpg";
   const imageAlt = getProductImageAlt(product.name, primaryImage, 0, imageMeta);
-  const absoluteImages = product.images.map((src, i) => ({
+  const absoluteImages = (product.images.length
+    ? product.images
+    : ["/dummy-post-square-1.jpg"]
+  ).map((src, i) => ({
     url: absoluteAssetUrl(src),
     alt: getProductImageAlt(product.name, src, i, imageMeta),
   }));

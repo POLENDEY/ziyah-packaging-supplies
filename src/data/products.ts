@@ -856,10 +856,16 @@ export function absoluteAssetUrl(path: string) {
   return `${getSiteOrigin()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+/** Cover image for cards/search; placeholder when CMS product has no photos yet. */
+export function getProductCoverImage(product: Pick<Product, "images">): string {
+  const src = product.images?.[0]?.trim();
+  return src || "/dummy-post-square-1.jpg";
+}
+
 /** Descriptive alt text for product photos (listing + gallery SEO). */
 export function getProductImageAlt(
   productName: string,
-  imageSrc: string,
+  imageSrc: string | null | undefined,
   index = 0,
   meta?: {
     category?: string;
@@ -867,7 +873,7 @@ export function getProductImageAlt(
     dimensions?: string;
   }
 ) {
-  const file = imageSrc.toLowerCase();
+  const file = String(imageSrc || "").toLowerCase();
   let view = `product photo ${index + 1}`;
   if (file.includes("flatview") || file.includes("flat")) {
     view = "flat view";

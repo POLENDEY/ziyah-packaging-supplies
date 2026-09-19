@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ProtectedProductImage from "@/app/components/ProtectedProductImage";
 import {
+  getProductCoverImage,
   getProductFaqs,
   getProductHref,
   getProductImageAlt,
@@ -125,8 +126,8 @@ export default function ProductSeoSections({ product, related: relatedProp }: Pr
               >
                 <div className={styles.relatedMedia}>
                   <ProtectedProductImage
-                    src={item.images[0]}
-                    alt={getProductImageAlt(item.name, item.images[0], 0, {
+                    src={getProductCoverImage(item)}
+                    alt={getProductImageAlt(item.name, getProductCoverImage(item), 0, {
                       category: item.category,
                       color: item.color,
                       dimensions: item.dimensions,

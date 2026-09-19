@@ -8,6 +8,7 @@ import { IconPackage } from "../components/Icons";
 import ProtectedProductImage from "../components/ProtectedProductImage";
 import {
   buildInquireHref,
+  getProductCoverImage,
   getProductHref,
   getProductImageAlt,
   type Product,
@@ -59,12 +60,14 @@ export default function ProductsClient({
       const typeMatch = activeType === "All" || p.type === activeType;
       const textMatch =
         !q ||
-        [p.name, p.category, p.desc, p.longDesc].some((field) =>
-          field.toLowerCase().includes(q)
+        [p.name, p.category, p.desc, p.longDesc, p.displayName].some((field) =>
+          String(field || "")
+            .toLowerCase()
+            .includes(q)
         );
       return catMatch && typeMatch && textMatch;
     });
-  }, [activeCategory, activeType, query]);
+  }, [products, activeCategory, activeType, query]);
 
   return (
     <>
@@ -126,7 +129,9 @@ export default function ProductsClient({
                 <p>No products match your filters.</p>
               </div>
             ) : (
-              filtered.map((product) => (
+              filtered.map((product) => {
+                const cover = getProductCoverImage(product);
+                return (
                 <article key={product.id} className={styles.productCard}>
                   <Link
                     href={getProductHref(product)}
@@ -135,8 +140,8 @@ export default function ProductsClient({
                   >
                     <div className={styles.productImageWrap}>
                       <ProtectedProductImage
-                        src={product.images[0]}
-                        alt={getProductImageAlt(product.name, product.images[0], 0, {
+                        src={cover}
+                        alt={getProductImageAlt(product.name, cover, 0, {
                           category: product.category,
                           color: product.color,
                           dimensions: product.dimensions,
@@ -170,7 +175,8 @@ export default function ProductsClient({
                     </Link>
                   </div>
                 </article>
-              ))
+                );
+              })
             )}
           </div>
         </div>
