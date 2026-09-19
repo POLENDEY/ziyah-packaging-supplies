@@ -5,8 +5,10 @@ import Image from "next/image";
 import styles from "./admin.module.css";
 import InquiryLightbox, { type InquiryDetail } from "./InquiryLightbox";
 import FeedbackManager from "./FeedbackManager";
+import ProductManager from "./ProductManager";
+import CategoryManager from "./CategoryManager";
 
-type Tab = "inquiries" | "feedback" | "profile";
+type Tab = "inquiries" | "feedback" | "products" | "categories" | "profile";
 
 const PAGE_SIZE = 10;
 
@@ -107,9 +109,14 @@ export default function AdminDashboard() {
     fetchInquiries();
   }, [fetchInquiries]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("admin_session");
     localStorage.removeItem("admin_username");
+    try {
+      await fetch("/api/admin/session", { method: "DELETE" });
+    } catch {
+      // ignore
+    }
     window.location.href = "/ziyah-admin/login";
   };
 
@@ -273,14 +280,22 @@ export default function AdminDashboard() {
                 ? "Inquiries Dashboard"
                 : tab === "feedback"
                   ? "Customer Feedback"
-                  : "Admin Profile"}
+                  : tab === "products"
+                    ? "Products CMS"
+                    : tab === "categories"
+                      ? "Categories"
+                      : "Admin Profile"}
             </h1>
             <p>
               {tab === "inquiries"
                 ? "Review customer messages, reply by email, and export records."
                 : tab === "feedback"
                   ? "Manage the 4 feedback cards shown on the home page."
-                  : "Update your CMS username and password."}
+                  : tab === "products"
+                    ? "Add, edit, and upload product images (WebP), prices, and sizes."
+                    : tab === "categories"
+                      ? "Create and manage product categories for the storefront filters."
+                      : "Update your CMS username and password."}
             </p>
           </div>
           <div className={styles.tabs}>
@@ -298,6 +313,20 @@ export default function AdminDashboard() {
               onClick={() => setTab("feedback")}
             >
               Feedback
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${tab === "products" ? styles.tabActive : ""}`}
+              onClick={() => setTab("products")}
+            >
+              Products
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${tab === "categories" ? styles.tabActive : ""}`}
+              onClick={() => setTab("categories")}
+            >
+              Categories
             </button>
             <button
               type="button"
@@ -455,6 +484,10 @@ export default function AdminDashboard() {
         )}
 
         {tab === "feedback" && <FeedbackManager />}
+
+        {tab === "products" && <ProductManager />}
+
+        {tab === "categories" && <CategoryManager />}
 
         {tab === "profile" && (
           <div className={styles.profileCard}>

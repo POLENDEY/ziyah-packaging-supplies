@@ -22,6 +22,8 @@ export type PriceTier = {
   perPiece: string;
 };
 
+export type ProductFaq = { question: string; answer: string };
+
 export type Product = {
   id: number;
   name: string;
@@ -46,6 +48,12 @@ export type Product = {
   colorHex?: string;
   /** Title without color suffix for PDP */
   displayName?: string;
+  /** Optional “Best for” key-feature line (CMS) */
+  bestFor?: string;
+  /** Optional extra About paragraph below longDesc (CMS) */
+  aboutExtra?: string;
+  /** Optional CMS FAQs; falls back to generated FAQs when empty */
+  faqs?: ProductFaq[];
 };
 
 type Draft = Omit<
@@ -746,8 +754,12 @@ export function getColorVariants(product: Product): Product[] {
 }
 
 /** Same-category products for internal linking (SEO). */
-export function getRelatedProducts(product: Product, limit = 4): Product[] {
-  const sameCategory = products.filter(
+export function getRelatedProducts(
+  product: Product,
+  limit = 4,
+  catalog: Product[] = products
+): Product[] {
+  const sameCategory = catalog.filter(
     (p) => p.id !== product.id && p.category === product.category
   );
   if (sameCategory.length >= limit) return sameCategory.slice(0, limit);
@@ -761,9 +773,11 @@ export function getRelatedProducts(product: Product, limit = 4): Product[] {
   return [...sameCategory, ...rest].slice(0, limit);
 }
 
-export type ProductFaq = { question: string; answer: string };
-
 export function getProductFaqs(product: Product): ProductFaq[] {
+  if (product.faqs && product.faqs.length > 0) {
+    return product.faqs.filter((f) => f.question.trim() && f.answer.trim());
+  }
+
   const label = product.displayName || product.name;
   const brand = SITE.name;
   const color = product.color;

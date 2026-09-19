@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   getProductHref,
   getProductImageAlt,
-  products,
+  type Product,
 } from "@/data/products";
 import ProtectedProductImage from "./ProtectedProductImage";
 import { IconSearch } from "./Icons";
@@ -31,6 +31,24 @@ export default function ProductSearch({
   const [query, setQuery] = useState("");
   const [resultsOpen, setResultsOpen] = useState(false);
   const [expanded, setExpanded] = useState(!collapsible);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/catalog/products")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && Array.isArray(data.products)) {
+          setProducts(data.products);
+        }
+      })
+      .catch(() => {
+        /* keep empty */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -40,7 +58,7 @@ export default function ProductSearch({
         [p.name, p.category, p.desc].some((field) => field.toLowerCase().includes(q))
       )
       .slice(0, 8);
-  }, [query]);
+  }, [query, products]);
 
   useEffect(() => {
     const onPointerDown = (event: MouseEvent) => {

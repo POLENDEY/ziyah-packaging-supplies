@@ -12,11 +12,12 @@ import styles from "./detail.module.css";
 
 type Props = {
   product: Product;
+  related?: Product[];
 };
 
-export default function ProductSeoSections({ product }: Props) {
+export default function ProductSeoSections({ product, related: relatedProp }: Props) {
   const faqs = getProductFaqs(product);
-  const related = getRelatedProducts(product, 4);
+  const related = relatedProp ?? getRelatedProducts(product, 4);
   const title = product.displayName || product.name;
 
   return (
@@ -44,10 +45,8 @@ export default function ProductSeoSections({ product }: Props) {
         <h2 id="about-product-heading">About this {product.category.toLowerCase()}</h2>
         <p className={styles.seoBody}>{product.longDesc}</p>
         <p className={styles.seoBody}>
-          Looking for food packaging suppliers near Pasay or wholesale takeout containers
-          for your kitchen? {SITE.name} helps restaurants, caterers, and home businesses
-          choose the right disposable meal packaging — then ships nationwide across the
-          Philippines.
+          {product.aboutExtra?.trim() ||
+            `Looking for food packaging suppliers near Pasay or wholesale takeout containers for your kitchen? ${SITE.name} helps restaurants, caterers, and home businesses choose the right disposable meal packaging — then ships nationwide across the Philippines.`}
         </p>
       </section>
 
@@ -77,7 +76,8 @@ export default function ProductSeoSections({ product }: Props) {
           <li>
             <span className={styles.featureLabel}>Best for</span>
             <span>
-              Takeout, meal prep, catering, and food delivery brands across the Philippines
+              {product.bestFor?.trim() ||
+                "Takeout, meal prep, catering, and food delivery brands across the Philippines"}
             </span>
           </li>
           <li>

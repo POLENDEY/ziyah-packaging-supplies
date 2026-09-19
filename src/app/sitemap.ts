@@ -1,11 +1,18 @@
 import type { MetadataRoute } from "next";
 import { CATEGORY_LANDINGS } from "@/data/categories";
-import { getProductImageUrls, products } from "@/data/products";
+import { getProductImageUrls, type Product } from "@/data/products";
 import { SITE_ORIGIN, SITE_SITELINKS, getSiteOrigin } from "@/data/site";
+import { getPublishedProducts } from "@/lib/catalog/queries";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteOrigin() || SITE_ORIGIN;
   const lastModified = new Date();
+  let products: Product[] = [];
+  try {
+    products = await getPublishedProducts();
+  } catch {
+    products = [];
+  }
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { path: "/", priority: 1, changeFrequency: "weekly" as const },

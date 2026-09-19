@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import type { CategoryLanding } from "@/data/categories";
-import { absoluteAssetUrl, getProductImageAlt, products } from "@/data/products";
+import { absoluteAssetUrl, getProductImageAlt } from "@/data/products";
 import { SITE, getSiteOrigin } from "@/data/site";
+import {
+  getCategories,
+  getPublishedProducts,
+} from "@/lib/catalog/queries";
 import ProductsClient from "./ProductsClient";
 import styles from "./page.module.css";
 
@@ -10,9 +14,14 @@ type Props = {
   landing: CategoryLanding;
 };
 
-export default function CategoryLandingView({ landing }: Props) {
-  const origin = getSiteOrigin();
+export default async function CategoryLandingView({ landing }: Props) {
+  const [products, dbCategories] = await Promise.all([
+    getPublishedProducts(),
+    getCategories(),
+  ]);
+  const categories = dbCategories.map((c) => c.name);
   const categoryProducts = products.filter((p) => p.category === landing.category);
+  const origin = getSiteOrigin();
   const pageUrl = `${origin}/products/${landing.slug}`;
 
   const jsonLd = {
@@ -115,7 +124,12 @@ export default function CategoryLandingView({ landing }: Props) {
         </div>
       </header>
       <Suspense fallback={<div className={styles.container}>Loading products…</div>}>
-        <ProductsClient initialCategory={landing.category} lockCategory />
+        <ProductsClient
+          products={products}
+          categories={categories}
+          initialCategory={landing.category}
+          lockCategory
+        />
       </Suspense>
     </main>
   );

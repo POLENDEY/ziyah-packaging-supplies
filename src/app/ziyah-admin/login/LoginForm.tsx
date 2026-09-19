@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import styles from "./login.module.css";
-import { supabase } from "@/lib/supabase";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -16,27 +15,15 @@ export default function LoginForm() {
     setError("");
     setLoading(true);
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseKey || supabaseUrl.includes("placeholder")) {
-      setError("Supabase is not configured. Please set environment variables.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const { data, error: queryError } = await supabase
-        .from("profile")
-        .select("*")
-        .eq("username", username)
-        .eq("password", password)
-        .maybeSingle();
-
-      if (queryError) {
-        setError(`Database Error: ${queryError.message}`);
-      } else if (!data) {
-        setError("Invalid username or password");
+      const response = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Invalid username or password");
       } else {
         localStorage.setItem("admin_session", "true");
         localStorage.setItem("admin_username", data.username);

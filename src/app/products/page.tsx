@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import styles from "./page.module.css";
 import ProductsClient from "./ProductsClient";
-import { absoluteAssetUrl, getProductImageAlt, products } from "@/data/products";
+import { absoluteAssetUrl, getProductImageAlt } from "@/data/products";
 import { getSiteOrigin, SITE } from "@/data/site";
+import {
+  getCategories,
+  getPublishedProducts,
+} from "@/lib/catalog/queries";
 
-export const dynamic = "force-static";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Shop Food Packaging | Bento Boxes & Sushi Trays PH",
@@ -37,7 +41,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const [products, dbCategories] = await Promise.all([
+    getPublishedProducts(),
+    getCategories(),
+  ]);
+  const categories = dbCategories.map((c) => c.name);
   const origin = getSiteOrigin();
   const itemListJsonLd = {
     "@context": "https://schema.org",
@@ -114,7 +123,7 @@ export default function ProductsPage() {
         </div>
       </header>
       <Suspense fallback={<div className={styles.container}>Loading products…</div>}>
-        <ProductsClient />
+        <ProductsClient products={products} categories={categories} />
       </Suspense>
     </main>
   );

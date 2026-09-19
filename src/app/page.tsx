@@ -1,26 +1,16 @@
 import type { Metadata } from "next";
 import styles from "./page.module.css";
 import Link from "next/link";
-import PromoMarquee from "./components/PromoMarquee";
-import PromoBannerSlider from "./components/PromoBannerSlider";
 import FeedbackSection from "./components/FeedbackSection";
 import HeroFulfillmentScene from "./components/HeroFulfillmentScene";
 import HomeScrollEffects from "./components/HomeScrollEffects";
 import BrandWordmark from "./components/BrandWordmark";
 import {
   IconArrowRight,
-  IconBento,
-  IconCheck,
   IconClock,
-  IconFactory,
-  IconList,
   IconMail,
   IconMapPin,
-  IconPackage,
   IconPhone,
-  IconSushi,
-  IconTray,
-  IconTruck,
 } from "./components/Icons";
 import { SITE, SITE_SITELINKS, getSiteOrigin } from "@/data/site";
 
@@ -54,31 +44,26 @@ const categories = [
   {
     name: "Hard Bento Clear",
     desc: "Clear hard bento boxes with lids — 2 to 5 divisions, 1000ml.",
-    Icon: IconBento,
     href: "/products/hard-bento-clear",
   },
   {
     name: "Bento Boxes",
     desc: "Red outside, black inside bento boxes with clear lids for everyday takeout.",
-    Icon: IconPackage,
     href: "/products/bento-boxes",
   },
   {
     name: "Hard Bento Black",
     desc: "Black hard bento boxes with lids — premium meal presentation.",
-    Icon: IconBento,
     href: "/products/hard-bento-black",
   },
   {
     name: "Round Sushi Trays",
     desc: "Round black sushi trays with gold pattern and lids — multiple sizes.",
-    Icon: IconSushi,
     href: "/products/round-sushi-trays",
   },
   {
     name: "Rectangular Sushi Trays",
     desc: "RE-ST series rectangular sushi trays with lids for plated sets.",
-    Icon: IconTray,
     href: "/products/rectangular-sushi-trays",
   },
 ];
@@ -87,22 +72,18 @@ const whyUs = [
   {
     title: "Food-Grade Quality",
     desc: "Packaging chosen for safe food contact — so your brand ships with confidence.",
-    Icon: IconCheck,
   },
   {
     title: "Wide Product Range",
     desc: "From disposable trays to reusable containers — stock what your menu needs.",
-    Icon: IconList,
   },
   {
     title: "Bulk & Retail Orders",
     desc: "Flexible ordering for small kitchens, home businesses, and high-volume operations.",
-    Icon: IconFactory,
   },
   {
     title: "Nationwide Delivery",
     desc: "We serve food businesses across the Philippines — not just Metro Manila.",
-    Icon: IconTruck,
   },
 ];
 
@@ -228,20 +209,21 @@ export default function Home() {
             <div className={styles.heroBrand}>
               <BrandWordmark variant="onDark" size="lg" />
             </div>
-            <div className={styles.heroBadge}>Pasay City · Nationwide PH</div>
-            <h1 className={styles.heroTitle}>
-              Buy Food Packaging{" "}
-              <span>Nationwide in the Philippines</span>
-            </h1>
+            <h1 className={styles.heroTitle}>Buy Food Packaging</h1>
             <p className={styles.heroDesc}>
-              Food-grade bento boxes, sushi trays, and wholesale takeout packaging —
-              from our Pasay City store to kitchens across the country.
+              <span className={styles.heroDescLong}>
+                Food-grade bento boxes, sushi trays, and wholesale takeout packaging —
+                from our Pasay City store to kitchens nationwide across the Philippines.
+              </span>
+              <span className={styles.heroDescShort}>
+                Food-grade bento boxes and sushi trays — Pasay store, delivery nationwide.
+              </span>
             </p>
             <div className={styles.heroActions}>
               <Link href="/products" className={styles.btnPrimary}>
                 Shop Products
               </Link>
-              <Link href="/quote" className={styles.btnOutline}>
+              <Link href="/quote" className={styles.btnText}>
                 Get a Quote
               </Link>
             </div>
@@ -249,29 +231,17 @@ export default function Home() {
         </div>
       </section>
 
-      <div data-reveal>
-        <PromoBannerSlider />
-      </div>
-
-      <div data-reveal>
-        <PromoMarquee />
-      </div>
-
       <section className={styles.section} data-reveal>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Shop Food Packaging by Category</h2>
+            <h2>Shop by Category</h2>
             <p>
-              Find disposable bento boxes and sushi trays for takeout, meal prep, catering,
-              and retail — ready for food businesses nationwide across the Philippines.
+              Bento boxes and sushi trays for takeout, meal prep, and wholesale.
             </p>
           </div>
           <div className={styles.categoryGrid}>
             {categories.map((cat) => (
               <Link key={cat.name} href={cat.href} className={styles.categoryCard}>
-                <div className={styles.categoryIcon}>
-                  <cat.Icon size={24} />
-                </div>
                 <h3>{cat.name}</h3>
                 <p>{cat.desc}</p>
                 <span className={styles.categoryArrow}>
@@ -286,19 +256,17 @@ export default function Home() {
       <section className={`${styles.section} ${styles.sectionAlt}`} data-reveal>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2>Why Food Businesses Buy from Ziyah Packaging Supplies</h2>
+            <h2>Why food businesses choose Ziyah</h2>
             <p>
-              We help restaurants, caterers, and home kitchens choose food-grade packaging
-              that fits the menu — with clear wholesale options and delivery across the
-              Philippines.
+              Food-grade packaging, flexible orders, and delivery across the Philippines.
             </p>
           </div>
           <div className={styles.whyGrid}>
-            {whyUs.map((item) => (
+            {whyUs.map((item, index) => (
               <div key={item.title} className={styles.whyCard}>
-                <div className={styles.whyIcon}>
-                  <item.Icon size={24} />
-                </div>
+                <span className={styles.whyIndex} aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <h3>{item.title}</h3>
                 <p>{item.desc}</p>
               </div>

@@ -10,18 +10,21 @@ import {
   buildInquireHref,
   getProductHref,
   getProductImageAlt,
-  productCategories,
-  products,
+  type Product,
 } from "@/data/products";
 import { getCategoryHref } from "@/data/categories";
 
 type Props = {
+  products: Product[];
+  categories: string[];
   initialCategory?: string;
   /** When true, hide category chips and keep the filter fixed */
   lockCategory?: boolean;
 };
 
 export default function ProductsClient({
+  products,
+  categories,
   initialCategory = "All",
   lockCategory = false,
 }: Props) {
@@ -29,6 +32,7 @@ export default function ProductsClient({
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [activeType, setActiveType] = useState("All");
   const [query, setQuery] = useState("");
+  const productCategories = ["All", ...categories];
 
   useEffect(() => {
     if (lockCategory) {
@@ -46,7 +50,7 @@ export default function ProductsClient({
     }
     const q = searchParams.get("q");
     setQuery(q?.trim() ?? "");
-  }, [searchParams, lockCategory, initialCategory]);
+  }, [searchParams, lockCategory, initialCategory, categories]);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase();

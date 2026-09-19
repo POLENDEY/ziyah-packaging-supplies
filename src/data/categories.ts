@@ -91,6 +91,9 @@ export function getCategoryHref(categoryOrSlug: string) {
   return `/products?category=${encodeURIComponent(categoryOrSlug)}`;
 }
 
-export function countProductsInCategory(category: string) {
-  return products.filter((p) => p.category === category).length;
+export function countProductsInCategory(
+  category: string,
+  catalog: { category: string }[] = products
+) {
+  return catalog.filter((p) => p.category === category).length;
 }

@@ -3,15 +3,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   absoluteAssetUrl,
-  getColorVariants,
-  getProductById,
   getProductFaqs,
   getProductImageAlt,
   getProductMetaDescription,
+  getRelatedProducts,
   getSiteOrigin,
-  products,
+  type Product,
 } from "@/data/products";
 import { SITE } from "@/data/site";
+import {
+  getPublishedProductById,
+  getPublishedProducts,
+} from "@/lib/catalog/queries";
 import ProductGallery from "./ProductGallery";
 import ProductPurchasePanel from "./ProductPurchasePanel";
 import ProductSeoSections from "./ProductSeoSections";
@@ -21,17 +24,34 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
-/** Pre-render every product at build time (SSG). */
-export const dynamic = "force-static";
-export const dynamicParams = false;
+export const revalidate = 60;
+export const dynamicParams = true;
 
-export function generateStaticParams() {
-  return products.map((product) => ({ id: String(product.id) }));
+const COLOR_ORDER = ["Clear", "Black", "Red", "White"];
+
+function getColorVariants(product: Product, catalog: Product[]): Product[] {
+  if (!product.variantGroup) return [product];
+  return catalog
+    .filter((p) => p.variantGroup === product.variantGroup)
+    .sort((a, b) => {
+      const ai = COLOR_ORDER.indexOf(a.color || "");
+      const bi = COLOR_ORDER.indexOf(b.color || "");
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+}
+
+export async function generateStaticParams() {
+  try {
+    const products = await getPublishedProducts();
+    return products.map((product) => ({ id: String(product.id) }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const product = getProductById(Number(id));
+  const product = await getPublishedProductById(Number(id));
   if (!product) {
     return { title: "Product Not Found" };
   }
@@ -47,18 +67,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     url: absoluteAssetUrl(src),
     alt: getProductImageAlt(product.name, src, i, imageMeta),
   }));
-  const titleName = product.displayName || product.name;
   const metaDescription = getProductMetaDescription(product);
 
   return {
-    // absolute avoids double brand from root title.template
     title: {
       absolute: `${product.name} | Buy Food Packaging Philippines | ${SITE.name}`,
     },
     description: metaDescription,
     keywords: [
       product.name,
-      titleName,
+      product.displayName || product.name,
       product.category,
       product.color,
       ...SITE.seoKeywords,
@@ -79,7 +97,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: `${product.name} | ${SITE.name}`,
       description: product.desc,
-      images: [absoluteAssetUrl(primaryImage)],
+      images: primaryImage ? [absoluteAssetUrl(primaryImage)] : ["/logo-512.png"],
     },
     other: {
       "og:image:alt": imageAlt,
@@ -99,10 +117,13 @@ function parsePrice(value: string) {
 
 export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
-  const product = getProductById(Number(id));
+  const [product, catalog] = await Promise.all([
+    getPublishedProductById(Number(id)),
+    getPublishedProducts(),
+  ]);
   if (!product) notFound();
 
-  const variants = getColorVariants(product);
+  const variants = getColorVariants(product, catalog);
   const faqs = getProductFaqs(product);
   const origin = getSiteOrigin();
   const productUrl = absoluteAssetUrl(`/products/${product.id}`);
@@ -243,7 +264,6 @@ export default async function ProductDetailPage({ params }: Props) {
             key={product.id}
             images={product.images}
             name={product.name}
-            video={product.video}
             category={product.category}
             color={product.color}
             dimensions={product.dimensions}
@@ -252,7 +272,10 @@ export default async function ProductDetailPage({ params }: Props) {
           <ProductPurchasePanel product={product} variants={variants} />
         </div>
 
-        <ProductSeoSections product={product} />
+        <ProductSeoSections
+          product={product}
+          related={getRelatedProducts(product, 4, catalog)}
+        />
       </div>
     </main>
   );
