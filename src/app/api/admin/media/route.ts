@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 import { Client } from "pg";
 import { requireAdmin } from "@/lib/adminAuth";
 import { getAllProductsAdmin } from "@/lib/catalog/queries";
@@ -301,6 +300,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const sharp = (await import("sharp")).default;
     const input = Buffer.from(await file.arrayBuffer());
     const meta = await sharp(input, { failOn: "none" }).metadata();
     const withinLimit = (meta.width ?? 0) <= 2000 && (meta.height ?? 0) <= 2000;
