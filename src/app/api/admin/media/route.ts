@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { Client } from "pg";
 import { requireAdmin } from "@/lib/adminAuth";
 import { getAllProductsAdmin } from "@/lib/catalog/queries";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
@@ -85,62 +84,13 @@ function safeImagePath(value: unknown) {
   return path;
 }
 
-async function backendSizes() {
-  const connectionString = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
-  if (!connectionString) throw new Error("Database connection is not configured");
-  const client = new Client({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
-  });
-  await client.connect();
-  try {
-    const { rows } = await client.query<{
-      database_bytes: string;
-      image_bytes: string;
-      other_file_bytes: string;
-      text_bytes: string;
-    }>(`
-      SELECT pg_database_size(current_database())::bigint AS database_bytes,
-             COALESCE((
-               SELECT SUM((metadata->>'size')::bigint)
-               FROM storage.objects
-               WHERE COALESCE(metadata->>'mimetype', '') LIKE 'image/%'
-                  OR lower(name) ~ '\\.(webp|png|jpe?g|gif|avif)$'
-             ), 0)::bigint AS image_bytes,
-             COALESCE((
-               SELECT SUM((metadata->>'size')::bigint)
-               FROM storage.objects
-               WHERE NOT (
-                 COALESCE(metadata->>'mimetype', '') LIKE 'image/%'
-                 OR lower(name) ~ '\\.(webp|png|jpe?g|gif|avif)$'
-               )
-             ), 0)::bigint AS other_file_bytes,
-             COALESCE((
-               SELECT SUM(pg_total_relation_size(t))
-               FROM (
-                 SELECT to_regclass('public.inquiries') AS t
-                 UNION ALL SELECT to_regclass('public.feedback')
-                 UNION ALL SELECT to_regclass('public.catalog_products')
-                 UNION ALL SELECT to_regclass('public.catalog_categories')
-                 UNION ALL SELECT to_regclass('public.profile')
-               ) tables
-               WHERE t IS NOT NULL
-             ), 0)::bigint AS text_bytes
-    `);
-    const databaseBytes = Number(rows[0]?.database_bytes || 0);
-    const imageBytes = Number(rows[0]?.image_bytes || 0);
-    const otherFileBytes = Number(rows[0]?.other_file_bytes || 0);
-    return {
-      databaseBytes,
-      storageBytes: imageBytes + otherFileBytes,
-      imageBytes,
-      otherBytes: databaseBytes + otherFileBytes,
-      textBytes: Number(rows[0]?.text_bytes || 0),
-    };
-  } finally {
-    await client.end();
-  }
-}
+const EMPTY_USAGE = {
+  databaseBytes: 0,
+  storageBytes: 0,
+  imageBytes: 0,
+  otherBytes: 0,
+  textBytes: 0,
+};
 
 export async function GET() {
   const denied = await requireAdmin();
@@ -148,11 +98,20 @@ export async function GET() {
 
   try {
     const sb = getSupabaseAdmin();
-    const [files, products, sizes] = await Promise.all([
-      listImages(sb),
+    const [files, products] = await Promise.all([
+      listImages(sb).catch((error) => {
+        console.error("media files failed", error);
+        return [];
+      }),
       getAllProductsAdmin(),
-      backendSizes(),
     ]);
+    let sizes = EMPTY_USAGE;
+    try {
+      const { readDatabaseUsage } = await import("@/lib/dbUsage");
+      sizes = await readDatabaseUsage();
+    } catch (error) {
+      console.error("database usage failed", error);
+    }
     files.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
     return NextResponse.json({
       files,
@@ -300,23 +259,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const sharp = (await import("sharp")).default;
+    const { imageToWebp } = await import("@/lib/imageWebp");
     const input = Buffer.from(await file.arrayBuffer());
-    const meta = await sharp(input, { failOn: "none" }).metadata();
-    const withinLimit = (meta.width ?? 0) <= 2000 && (meta.height ?? 0) <= 2000;
-    const webp =
-      file.type === "image/webp" && withinLimit
-        ? input
-        : await sharp(input, { failOn: "none" })
-            .rotate()
-            .resize({
-              width: 2000,
-              height: 2000,
-              fit: "inside",
-              withoutEnlargement: true,
-            })
-            .webp({ quality: 90, effort: 4 })
-            .toBuffer();
+    const webp = await imageToWebp(input, file.type);
     const path = `${folder}/${crypto.randomUUID()}.webp`;
     const { error } = await sb.storage.from("product-media").upload(path, webp, {
       contentType: "image/webp",
