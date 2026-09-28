@@ -46,7 +46,7 @@ export default function ProductGallery({
     [category, color, dimensions]
   );
   const slides = useMemo<Slide[]>(() => {
-    const imageList = images.length ? images : ["/dummy-post-square-1.jpg"];
+    const imageList = images.length ? images : ["/dummy-post-square-1.webp"];
     const list: Slide[] = [];
     if (video) list.push({ type: "video", src: video });
     imageList.forEach((src, i) =>
@@ -59,7 +59,7 @@ export default function ProductGallery({
     return list;
   }, [images, video, name, imageMeta]);
 
-  const poster = images[0] || "/dummy-post-square-1.jpg";
+  const poster = images[0] || "/dummy-post-square-1.webp";
   const posterAlt = getProductImageAlt(name, poster, 0, imageMeta);
   const [index, setIndex] = useState(0);
   const [videoPlaying, setVideoPlaying] = useState(false);

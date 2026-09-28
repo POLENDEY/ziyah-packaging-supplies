@@ -36,6 +36,7 @@ export default function ProtectedProductImage({
         {...imageProps}
         fill={fill}
         alt={alt}
+        quality={imageProps.quality ?? 90}
         className={`${styles.image}${className ? ` ${className}` : ""}`}
         draggable={false}
       />

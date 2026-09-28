@@ -6,6 +6,7 @@ import type { Product, PriceTier, ProductFaq } from "@/data/products";
 import type { DbCategory } from "@/lib/catalog/types";
 import ProductColorFields from "./ProductColorFields";
 import ProductLivePreview from "./ProductLivePreview";
+import { prepareUploadImage } from "./prepareUploadImage";
 import { formToPreviewProduct } from "./previewProduct";
 
 const PAGE_SIZE = 10;
@@ -74,6 +75,12 @@ export default function ProductManager() {
   const [showPreview, setShowPreview] = useState(false);
   const [formBaseline, setFormBaseline] = useState<FormState | null>(null);
   const [leavePromptOpen, setLeavePromptOpen] = useState(false);
+  const [imageMode, setImageMode] = useState<"white" | "raw">("white");
+  const [imagePreviewIndex, setImagePreviewIndex] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState<{
+    label: string;
+    percent: number;
+  } | null>(null);
 
   useEffect(() => {
     try {
@@ -203,28 +210,86 @@ export default function ProductManager() {
     setLeavePromptOpen(false);
   };
 
-  const uploadFile = async (file: File) => {
-    const fd = new FormData();
-    fd.set("file", file);
-    fd.set("kind", "image");
-    fd.set("productId", String(form.id || "temp"));
-    const res = await fetch("/api/admin/media", { method: "POST", body: fd });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Upload failed");
-    return data.url as string;
-  };
+  const postMedia = (file: File, onPercent: (percent: number) => void) =>
+    new Promise<string>((resolve, reject) => {
+      const fd = new FormData();
+      fd.set("file", file);
+      fd.set("kind", "image");
+      fd.set("productId", String(form.id || "temp"));
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/admin/media");
+      xhr.upload.onprogress = (event) => {
+        if (!event.lengthComputable) return;
+        onPercent(Math.round((event.loaded / event.total) * 100));
+      };
+      xhr.onload = () => {
+        let data: { url?: string; error?: string } = {};
+        try {
+          data = JSON.parse(xhr.responseText);
+        } catch {
+          /* ignore */
+        }
+        if (xhr.status >= 200 && xhr.status < 300 && data.url) {
+          resolve(data.url);
+          return;
+        }
+        reject(new Error(data.error || "Upload failed"));
+      };
+      xhr.onerror = () => reject(new Error("Upload failed"));
+      xhr.send(fd);
+    });
 
-  const onImages = async (files: FileList | null) => {
-    if (!files?.length) return;
+  const onImages = async (files: File[]) => {
+    if (!files.length) return;
+    const list = files;
     setSaving(true);
     setMessage(null);
+    setUploadProgress({
+      label:
+        list.length === 1
+          ? `Starting upload · ${list[0].name}`
+          : `Starting upload · ${list.length} images`,
+      percent: 4,
+    });
     try {
       const urls: string[] = [];
-      for (const file of Array.from(files)) {
-        urls.push(await uploadFile(file));
+      for (let index = 0; index < list.length; index++) {
+        const file = list[index];
+        const prefix =
+          list.length > 1 ? `Image ${index + 1} of ${list.length} · ` : "";
+        const prepared = await prepareUploadImage(file, imageMode, (update) => {
+          setUploadProgress({
+            label: `${prefix}${update.text}`,
+            percent: Math.round(((index + update.percent / 100) / list.length) * 80),
+          });
+        });
+        if (imageMode === "raw") {
+          setUploadProgress({
+            label: `${prefix}Uploading…`,
+            percent: Math.round((index / list.length) * 100 + 8),
+          });
+        }
+        const url = await postMedia(prepared, (percent) => {
+          const fileStart = index / list.length;
+          const fileSpan = 1 / list.length;
+          const within = imageMode === "white" ? 0.8 + percent / 100 * 0.2 : percent / 100;
+          setUploadProgress({
+            label: `${prefix}Uploading…`,
+            percent: Math.min(99, Math.round((fileStart + within * fileSpan) * 100)),
+          });
+        });
+        urls.push(url);
       }
+      setUploadProgress({ label: "Upload complete", percent: 100 });
+      setImagePreviewIndex(form.images.length + urls.length - 1);
       setForm((f) => ({ ...f, images: [...f.images, ...urls] }));
-      setMessage({ type: "ok", text: `Uploaded ${urls.length} WebP image(s)` });
+      setMessage({
+        type: "ok",
+        text:
+          imageMode === "white"
+            ? `Uploaded ${urls.length} image(s) on white with logo watermark (WebP)`
+            : `Uploaded ${urls.length} raw WebP image(s)`,
+      });
     } catch (e) {
       setMessage({
         type: "err",
@@ -232,6 +297,7 @@ export default function ProductManager() {
       });
     } finally {
       setSaving(false);
+      window.setTimeout(() => setUploadProgress(null), 700);
     }
   };
 
@@ -680,14 +746,85 @@ export default function ProductManager() {
             <label>Images (auto WebP)</label>
             <p className={styles.fieldHint}>
               The first image is the store cover (product cards &amp; search). Use
-              “Set as cover” to choose another.
+              “Set as cover” to choose another. Every upload is converted to WebP.
             </p>
+            <div className={styles.imageModeRow} role="radiogroup" aria-label="Image upload style">
+              <label className={styles.imageModeOption}>
+                <input
+                  type="radio"
+                  name="imageMode"
+                  checked={imageMode === "white"}
+                  onChange={() => setImageMode("white")}
+                />
+                <span>
+                  White background + logo watermark
+                  <small>Removes the photo background, places the product on plain white, and adds a small logo at the bottom right.</small>
+                </span>
+              </label>
+              <label className={styles.imageModeOption}>
+                <input
+                  type="radio"
+                  name="imageMode"
+                  checked={imageMode === "raw"}
+                  onChange={() => setImageMode("raw")}
+                />
+                <span>
+                  Upload as raw photo
+                  <small>Keeps the original background. Still saved as WebP.</small>
+                </span>
+              </label>
+            </div>
             <input
               type="file"
               accept="image/*"
               multiple
-              onChange={(e) => onImages(e.target.files)}
+              disabled={saving}
+              onChange={(e) => {
+                const picked = Array.from(e.target.files ?? []);
+                e.target.value = "";
+                onImages(picked);
+              }}
             />
+            {uploadProgress && (
+              <div className={styles.uploadProgress}>
+                <div className={styles.uploadProgressLabel}>
+                  <span>{uploadProgress.label}</span>
+                  <span>{uploadProgress.percent}%</span>
+                </div>
+                <div
+                  className={styles.uploadProgressTrack}
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={uploadProgress.percent}
+                  aria-label={uploadProgress.label}
+                >
+                  <div
+                    className={styles.uploadProgressBar}
+                    style={{ width: `${uploadProgress.percent}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            {form.images.length > 0 && (
+              <figure className={styles.imagePreview}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={
+                    form.images[
+                      Math.min(imagePreviewIndex, form.images.length - 1)
+                    ]
+                  }
+                  alt="Uploaded product preview"
+                />
+                <figcaption>
+                  Preview
+                  {Math.min(imagePreviewIndex, form.images.length - 1) === 0
+                    ? " · Cover"
+                    : ""}
+                </figcaption>
+              </figure>
+            )}
             <div className={styles.thumbRow}>
               {form.images.map((src, index) => (
                 <div
@@ -700,7 +837,18 @@ export default function ProductManager() {
                     <span className={styles.coverBadge}>Cover</span>
                   )}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" />
+                  <button
+                    type="button"
+                    className={styles.thumbPreviewBtn}
+                    onClick={() => setImagePreviewIndex(index)}
+                    aria-label={
+                      index === Math.min(imagePreviewIndex, form.images.length - 1)
+                        ? "Showing this image in the preview"
+                        : "Show this image in the preview"
+                    }
+                  >
+                    <img src={src} alt="" />
+                  </button>
                   <div className={styles.thumbActions}>
                     {index !== 0 && (
                       <button

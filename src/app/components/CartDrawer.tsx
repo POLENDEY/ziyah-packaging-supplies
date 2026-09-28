@@ -79,7 +79,7 @@ export default function CartDrawer() {
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={item.image || "/dummy-post-square-1.jpg"}
+                      src={item.image || "/dummy-post-square-1.webp"}
                       alt=""
                       width={72}
                       height={72}

@@ -22,7 +22,7 @@ export const reviews: Review[] = [
     name: "James Rivera",
     role: "Catering lead · Quezon City",
     rating: 5,
-    photo: "/dummy-post-square-1.jpg",
+    photo: "/dummy-post-square-1.webp",
     quote:
       "Reliable trays and lids for big events. Nationwide delivery made restocking simple for our team.",
   },
@@ -40,7 +40,7 @@ export const reviews: Review[] = [
     name: "Kenji Ong",
     role: "Meal-prep brand · Cebu",
     rating: 5,
-    photo: "/dummy-post-square-1.jpg",
+    photo: "/dummy-post-square-1.webp",
     quote:
       "Wholesale pricing that works for our volume. Packaging quality holds up through delivery.",
   },

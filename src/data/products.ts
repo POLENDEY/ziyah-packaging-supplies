@@ -1,6 +1,6 @@
 import { getSiteOrigin, SITE } from "@/data/site";
 
-const IMG = "/dummy-post-square-1.jpg";
+const IMG = "/dummy-post-square-1.webp";
 const SAMPLE_PRODUCT_VIDEO = "https://www.w3schools.com/html/movie.mp4";
 const RST = "/round-sushi-tray";
 
@@ -9,10 +9,10 @@ export { getSiteOrigin };
 /** Top view first (products grid), then flat view (detail gallery). */
 function roundSushiImages(sizeKey: string, withDivision = false) {
   const div = withDivision ? "-with-division" : "";
-  const top = `${RST}/Round-Sushi-tray_${sizeKey}${div}-top.png`;
+  const top = `${RST}/Round-Sushi-tray_${sizeKey}${div}-top.webp`;
   const flat = withDivision
-    ? `${RST}/Round-Sushi-tray${sizeKey}${div}_flatview.png`
-    : `${RST}/Round-Sushi-tray_${sizeKey}_flatview.png`;
+    ? `${RST}/Round-Sushi-tray${sizeKey}${div}_flatview.webp`
+    : `${RST}/Round-Sushi-tray_${sizeKey}_flatview.webp`;
   return [top, flat];
 }
 
@@ -859,7 +859,7 @@ export function absoluteAssetUrl(path: string) {
 /** Cover image for cards/search; placeholder when CMS product has no photos yet. */
 export function getProductCoverImage(product: Pick<Product, "images">): string {
   const src = product.images?.[0]?.trim();
-  return src || "/dummy-post-square-1.jpg";
+  return src || "/dummy-post-square-1.webp";
 }
 
 /** Descriptive alt text for product photos (listing + gallery SEO). */

@@ -7,8 +7,36 @@ import InquiryLightbox, { type InquiryDetail } from "./InquiryLightbox";
 import FeedbackManager from "./FeedbackManager";
 import ProductManager from "./ProductManager";
 import CategoryManager from "./CategoryManager";
+import MediaGallery from "./MediaGallery";
 
-type Tab = "inquiries" | "feedback" | "products" | "categories" | "profile";
+type Tab = "inquiries" | "feedback" | "products" | "categories" | "gallery" | "profile";
+
+const TAB_COPY: Record<Tab, { title: string; text: string }> = {
+  inquiries: {
+    title: "Inquiries Dashboard",
+    text: "Review customer messages, reply by email, and export records.",
+  },
+  feedback: {
+    title: "Customer Feedback",
+    text: "Manage the 4 feedback cards shown on the home page.",
+  },
+  products: {
+    title: "Products CMS",
+    text: "Add, edit, and upload product images (WebP), prices, and sizes.",
+  },
+  categories: {
+    title: "Categories",
+    text: "Create and manage product categories for the storefront filters.",
+  },
+  gallery: {
+    title: "Image Gallery",
+    text: "Every product in the database. Total usage is the whole database.",
+  },
+  profile: {
+    title: "Admin Profile",
+    text: "Update your CMS username and password.",
+  },
+};
 
 const PAGE_SIZE = 10;
 
@@ -275,28 +303,8 @@ export default function AdminDashboard() {
         <div className={styles.header}>
           <div className={styles.title}>
             <p className={styles.eyebrow}>Ziyah Packaging Supplies</p>
-            <h1>
-              {tab === "inquiries"
-                ? "Inquiries Dashboard"
-                : tab === "feedback"
-                  ? "Customer Feedback"
-                  : tab === "products"
-                    ? "Products CMS"
-                    : tab === "categories"
-                      ? "Categories"
-                      : "Admin Profile"}
-            </h1>
-            <p>
-              {tab === "inquiries"
-                ? "Review customer messages, reply by email, and export records."
-                : tab === "feedback"
-                  ? "Manage the 4 feedback cards shown on the home page."
-                  : tab === "products"
-                    ? "Add, edit, and upload product images (WebP), prices, and sizes."
-                    : tab === "categories"
-                      ? "Create and manage product categories for the storefront filters."
-                      : "Update your CMS username and password."}
-            </p>
+            <h1>{TAB_COPY[tab].title}</h1>
+            <p>{TAB_COPY[tab].text}</p>
           </div>
           <div className={styles.tabs}>
             <button
@@ -327,6 +335,13 @@ export default function AdminDashboard() {
               onClick={() => setTab("categories")}
             >
               Categories
+            </button>
+            <button
+              type="button"
+              className={`${styles.tab} ${tab === "gallery" ? styles.tabActive : ""}`}
+              onClick={() => setTab("gallery")}
+            >
+              Gallery
             </button>
             <button
               type="button"
@@ -488,6 +503,8 @@ export default function AdminDashboard() {
         {tab === "products" && <ProductManager />}
 
         {tab === "categories" && <CategoryManager />}
+
+        {tab === "gallery" && <MediaGallery />}
 
         {tab === "profile" && (
           <div className={styles.profileCard}>

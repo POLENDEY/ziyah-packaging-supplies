@@ -23,7 +23,7 @@ export type PreviewFormInput = {
   images: string[];
 };
 
-const PLACEHOLDER_IMAGE = "/dummy-post-square-1.jpg";
+const PLACEHOLDER_IMAGE = "/dummy-post-square-1.webp";
 
 export function formToPreviewProduct(
   form: PreviewFormInput,
