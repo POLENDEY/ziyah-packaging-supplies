@@ -185,14 +185,13 @@ export async function DELETE(request: Request) {
 
   try {
     const body = await request.json();
-    const requested = Array.isArray(body?.paths) ? body.paths : [body?.path];
-    const paths = [
-      ...new Set(
-        requested
-          .map((value: unknown) => safeImagePath(value))
-          .filter((value: string | null): value is string => Boolean(value))
-      ),
-    ];
+    const requested: unknown[] = Array.isArray(body?.paths) ? body.paths : [body?.path];
+    const unique = new Set<string>();
+    for (const value of requested) {
+      const path = safeImagePath(value);
+      if (path) unique.add(path);
+    }
+    const paths = [...unique];
     if (!paths.length) {
       return NextResponse.json({ error: "Invalid image path" }, { status: 400 });
     }
