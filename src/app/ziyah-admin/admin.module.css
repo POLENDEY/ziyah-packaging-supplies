@@ -1378,7 +1378,6 @@
 }
 
 .galleryCard {
-  content-visibility: auto;
   position: relative;
   background: #fff;
   border: 1px solid rgba(27, 25, 49, 0.12);

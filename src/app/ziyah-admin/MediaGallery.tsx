@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./admin.module.css";
 
 type GalleryFile = {
@@ -20,6 +20,80 @@ type GalleryProduct = {
 
 const PLACEHOLDER = "/dummy-post-square-1.webp";
 const USAGE_LIMIT = 500 * 1024 * 1024;
+
+type GalleryItem = {
+  key: string;
+  src: string;
+  title: string;
+  category: string;
+  files: GalleryFile[];
+};
+
+function isPlaceholder(url: string) {
+  return /dummy-post-square-1\.(webp|jpe?g|png)/i.test(url);
+}
+
+function filesForProduct(product: GalleryProduct, files: GalleryFile[]) {
+  return files.filter(
+    (file) =>
+      file.path.startsWith(`products/${product.id}/`) ||
+      product.images.some((url) => url.includes(file.path))
+  );
+}
+
+function galleryItems(products: GalleryProduct[], files: GalleryFile[]): GalleryItem[] {
+  const shown = new Set<string>();
+  const items: GalleryItem[] = [];
+
+  for (const product of products) {
+    const owned = filesForProduct(product, files);
+    const catalogImages = product.images.filter(
+      (url) => url && !isPlaceholder(url) && !owned.some((file) => url.includes(file.path))
+    );
+    if (!owned.length && !catalogImages.length) {
+      items.push({
+        key: `product-${product.id}`,
+        src: product.images.find((url) => url) || PLACEHOLDER,
+        title: product.name,
+        category: product.category,
+        files: [],
+      });
+      continue;
+    }
+    for (const file of owned) {
+      shown.add(file.path);
+      items.push({
+        key: file.path,
+        src: file.url,
+        title: product.name,
+        category: product.category,
+        files: [file],
+      });
+    }
+    catalogImages.forEach((src, index) => {
+      items.push({
+        key: `${product.id}-${index}-${src}`,
+        src,
+        title: product.name,
+        category: product.category,
+        files: [],
+      });
+    });
+  }
+
+  for (const file of files) {
+    if (shown.has(file.path)) continue;
+    items.push({
+      key: file.path,
+      src: file.url,
+      title: "Uploaded image",
+      category: file.name,
+      files: [file],
+    });
+  }
+
+  return items;
+}
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -93,6 +167,7 @@ export default function MediaGallery() {
     });
   };
 
+  const items = useMemo(() => galleryItems(products, files), [products, files]);
   const selectedFiles = files.filter((file) => selected.has(file.path));
   const selectedBytes = selectedFiles.reduce((sum, file) => sum + file.size, 0);
   const allSelected = files.length > 0 && selectedFiles.length === files.length;
@@ -215,54 +290,49 @@ export default function MediaGallery() {
         <p className={styles.galleryEmpty}>No products in the database yet.</p>
       ) : (
         <ul className={styles.galleryGrid}>
-          {products.map((product) => {
-            const owned = files.filter(
-              (file) =>
-                file.path.startsWith(`products/${product.id}/`) ||
-                product.images.some((url) => url.includes(file.path))
-            );
-            const cover = product.images[0] || owned[0]?.url || PLACEHOLDER;
-            const ownedSelected = owned.length > 0 && owned.every((file) => selected.has(file.path));
+          {items.map((item) => {
+            const itemSelected =
+              item.files.length > 0 && item.files.every((file) => selected.has(file.path));
             return (
               <li
-                key={product.id}
-                className={`${styles.galleryCard} ${ownedSelected ? styles.galleryCardSelected : ""}`}
+                key={item.key}
+                className={`${styles.galleryCard} ${itemSelected ? styles.galleryCardSelected : ""}`}
               >
-                {owned.length > 0 && (
+                {item.files.length > 0 && (
                   <label className={styles.galleryCheck}>
                     <input
                       type="checkbox"
-                      checked={ownedSelected}
+                      checked={itemSelected}
                       onChange={() => {
-                        const allOn = owned.every((file) => selected.has(file.path));
+                        const allOn = item.files.every((file) => selected.has(file.path));
                         setSelected((current) => {
                           const next = new Set(current);
-                          for (const file of owned) {
+                          for (const file of item.files) {
                             if (allOn) next.delete(file.path);
                             else next.add(file.path);
                           }
                           return next;
                         });
                       }}
-                      aria-label={`Select ${product.name}`}
+                      aria-label={`Select ${item.title}`}
                     />
                   </label>
                 )}
                 <div className={styles.galleryPick}>
-                  <img src={cover} alt="" />
+                  <img src={item.src} alt="" />
                 </div>
                 <div className={styles.galleryMeta}>
                   <span className={styles.galleryName}>
-                    {product.name}
-                    {product.category ? (
-                      <small className={styles.galleryCategory}>{product.category}</small>
+                    {item.title}
+                    {item.category ? (
+                      <small className={styles.galleryCategory}>{item.category}</small>
                     ) : null}
                   </span>
-                  {owned.length > 0 && (
+                  {item.files.length > 0 && (
                     <button
                       type="button"
                       className={styles.dangerBtn}
-                      onClick={() => setPending(owned)}
+                      onClick={() => setPending(item.files)}
                     >
                       Delete
                     </button>
