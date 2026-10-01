@@ -839,6 +839,11 @@
   text-decoration: underline;
 }
 
+.linkBtn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .secondaryBtn {
   background: #fff;
   border: 1px solid rgba(27, 25, 49, 0.15);

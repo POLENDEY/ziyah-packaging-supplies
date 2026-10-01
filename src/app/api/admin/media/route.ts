@@ -1,3 +1,5 @@
+import { readFile } from "fs/promises";
+import path from "path";
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminAuth";
 import { getAllProductsAdmin } from "@/lib/catalog/queries";
@@ -198,6 +200,34 @@ export async function DELETE(request: Request) {
   }
 }
 
+async function readImageSource(sourceUrl: string) {
+  if (sourceUrl.startsWith("/")) {
+    const pathname = sourceUrl.split("?")[0];
+    if (!/^\/[\w./%-]+$/.test(pathname) || pathname.includes("..")) {
+      throw new Error("That image cannot be rotated");
+    }
+    const publicRoot = path.join(process.cwd(), "public");
+    const filePath = path.join(publicRoot, pathname.replace(/^\/+/, ""));
+    const relative = path.relative(publicRoot, filePath);
+    if (relative.startsWith("..") || path.isAbsolute(relative)) {
+      throw new Error("That image cannot be rotated");
+    }
+    return readFile(filePath);
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = new URL(sourceUrl);
+  if (!supabaseUrl || url.origin !== new URL(supabaseUrl).origin) {
+    throw new Error("That image cannot be rotated");
+  }
+  if (!url.pathname.includes("/storage/v1/object/")) {
+    throw new Error("That image cannot be rotated");
+  }
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Could not load that image to rotate");
+  return Buffer.from(await response.arrayBuffer());
+}
+
 export async function POST(request: Request) {
   const denied = await requireAdmin();
   if (denied) return denied;
@@ -208,12 +238,32 @@ export async function POST(request: Request) {
     const kind = String(form.get("kind") || "image");
     const productId = String(form.get("productId") || "temp");
 
+    const sourceUrl = String(form.get("sourceUrl") || "");
+    const sb = getSupabaseAdmin();
+    const folder = `products/${productId}`;
+
+    if (sourceUrl) {
+      const input = await readImageSource(sourceUrl);
+      if (input.length > MAX_IMAGE) {
+        return NextResponse.json({ error: "Image too large (max 20MB)" }, { status: 400 });
+      }
+      const { rotateQuarterTurn } = await import("@/lib/imageWebp");
+      const webp = await rotateQuarterTurn(input);
+      const storedPath = `${folder}/${crypto.randomUUID()}.webp`;
+      const { error } = await sb.storage.from("product-media").upload(storedPath, webp, {
+        contentType: "image/webp",
+        upsert: false,
+      });
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      const { data } = sb.storage.from("product-media").getPublicUrl(storedPath);
+      return NextResponse.json({ url: data.publicUrl });
+    }
+
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "file required" }, { status: 400 });
     }
-
-    const sb = getSupabaseAdmin();
-    const folder = `products/${productId}`;
 
     if (kind === "video") {
       if (!VIDEO_TYPES.has(file.type)) {

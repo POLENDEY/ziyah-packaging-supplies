@@ -77,6 +77,7 @@ export default function ProductManager() {
   const [leavePromptOpen, setLeavePromptOpen] = useState(false);
   const [imageMode, setImageMode] = useState<"white" | "raw">("white");
   const [imagePreviewIndex, setImagePreviewIndex] = useState(0);
+  const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     label: string;
     percent: number;
@@ -210,10 +211,15 @@ export default function ProductManager() {
     setLeavePromptOpen(false);
   };
 
-  const postMedia = (file: File, onPercent: (percent: number) => void) =>
+  const postMedia = (
+    file: File | null,
+    onPercent: (percent: number) => void,
+    sourceUrl?: string
+  ) =>
     new Promise<string>((resolve, reject) => {
       const fd = new FormData();
-      fd.set("file", file);
+      if (sourceUrl) fd.set("sourceUrl", sourceUrl);
+      else if (file) fd.set("file", file);
       fd.set("kind", "image");
       fd.set("productId", String(form.id || "temp"));
       const xhr = new XMLHttpRequest();
@@ -296,6 +302,42 @@ export default function ProductManager() {
         text: e instanceof Error ? e.message : "Upload failed",
       });
     } finally {
+      setSaving(false);
+      window.setTimeout(() => setUploadProgress(null), 700);
+    }
+  };
+
+  const rotateImageAt = async (index: number) => {
+    const src = form.images[index];
+    if (!src || saving || rotatingIndex !== null) return;
+    setRotatingIndex(index);
+    setSaving(true);
+    setMessage(null);
+    setImagePreviewIndex(index);
+    setUploadProgress({ label: "Rotating image…", percent: 20 });
+    try {
+      setUploadProgress({ label: "Uploading rotated image…", percent: 55 });
+      const url = await postMedia(null, (percent) => {
+        setUploadProgress({
+          label: "Uploading rotated image…",
+          percent: Math.min(99, 55 + Math.round(percent * 0.4)),
+        });
+      }, src);
+      setForm((current) => {
+        const images = [...current.images];
+        if (!images[index]) return current;
+        images[index] = url;
+        return { ...current, images };
+      });
+      setUploadProgress({ label: "Rotated", percent: 100 });
+      setMessage({ type: "ok", text: "Image rotated 90°. Save the product to keep it." });
+    } catch (e) {
+      setMessage({
+        type: "err",
+        text: e instanceof Error ? e.message : "Could not rotate that image",
+      });
+    } finally {
+      setRotatingIndex(null);
       setSaving(false);
       window.setTimeout(() => setUploadProgress(null), 700);
     }
@@ -746,7 +788,8 @@ export default function ProductManager() {
             <label>Images (auto WebP)</label>
             <p className={styles.fieldHint}>
               The first image is the store cover (product cards &amp; search). Use
-              “Set as cover” to choose another. Every upload is converted to WebP.
+              “Set as cover” to choose another. Rotate turns that one photo 90°
+              clockwise. Every upload is converted to WebP.
             </p>
             <div className={styles.imageModeRow} role="radiogroup" aria-label="Image upload style">
               <label className={styles.imageModeOption}>
@@ -850,6 +893,14 @@ export default function ProductManager() {
                     <img src={src} alt="" />
                   </button>
                   <div className={styles.thumbActions}>
+                    <button
+                      type="button"
+                      className={styles.linkBtn}
+                      disabled={saving || rotatingIndex !== null}
+                      onClick={() => rotateImageAt(index)}
+                    >
+                      {rotatingIndex === index ? "Rotating…" : "Rotate"}
+                    </button>
                     {index !== 0 && (
                       <button
                         type="button"
