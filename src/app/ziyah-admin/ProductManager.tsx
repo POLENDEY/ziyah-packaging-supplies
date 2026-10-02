@@ -12,6 +12,30 @@ import { formToPreviewProduct } from "./previewProduct";
 const PAGE_SIZE = 10;
 const PREVIEW_KEY = "ziyah-admin-product-preview";
 
+type GalleryChoice = { url: string; label: string };
+
+function isPlaceholderImage(url: string) {
+  return /dummy-post-square-1\.(webp|jpe?g|png)/i.test(url);
+}
+
+function choicesFromGallery(
+  files: { url?: string; name?: string }[],
+  products: { name?: string; images?: string[] }[]
+): GalleryChoice[] {
+  const seen = new Set<string>();
+  const choices: GalleryChoice[] = [];
+  const add = (url: string, label: string) => {
+    if (!url || isPlaceholderImage(url) || seen.has(url)) return;
+    seen.add(url);
+    choices.push({ url, label });
+  };
+  for (const file of files) add(file.url || "", file.name || "Uploaded image");
+  for (const product of products) {
+    for (const url of product.images || []) add(url, product.name || "Product image");
+  }
+  return choices;
+}
+
 type FormState = {
   id?: number;
   name: string;
@@ -78,6 +102,11 @@ export default function ProductManager() {
   const [imageMode, setImageMode] = useState<"white" | "raw">("white");
   const [imagePreviewIndex, setImagePreviewIndex] = useState(0);
   const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryChoices, setGalleryChoices] = useState<GalleryChoice[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryPicked, setGalleryPicked] = useState<Set<string>>(new Set());
+  const [galleryError, setGalleryError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     label: string;
     percent: number;
@@ -341,6 +370,48 @@ export default function ProductManager() {
       setSaving(false);
       window.setTimeout(() => setUploadProgress(null), 700);
     }
+  };
+
+  const openGalleryPicker = async () => {
+    setGalleryOpen(true);
+    setGalleryPicked(new Set());
+    setGalleryError(null);
+    setGalleryLoading(true);
+    try {
+      const res = await fetch("/api/admin/media");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not load gallery");
+      setGalleryChoices(
+        choicesFromGallery(
+          Array.isArray(data.files) ? data.files : [],
+          Array.isArray(data.products) ? data.products : []
+        )
+      );
+    } catch (e) {
+      setGalleryChoices([]);
+      setGalleryError(e instanceof Error ? e.message : "Could not load gallery");
+    } finally {
+      setGalleryLoading(false);
+    }
+  };
+
+  const addGalleryPicks = () => {
+    const urls = [...galleryPicked].filter((url) => !form.images.includes(url));
+    if (!urls.length) {
+      setMessage({ type: "err", text: "Those photos are already on this product." });
+      setGalleryOpen(false);
+      return;
+    }
+    setForm((current) => ({ ...current, images: [...current.images, ...urls] }));
+    setImagePreviewIndex(form.images.length + urls.length - 1);
+    setMessage({
+      type: "ok",
+      text:
+        urls.length === 1
+          ? "Added 1 photo from the Gallery. Save the product to keep it."
+          : `Added ${urls.length} photos from the Gallery. Save the product to keep them.`,
+    });
+    setGalleryOpen(false);
   };
 
   const createCategoryInline = async () => {
@@ -789,7 +860,8 @@ export default function ProductManager() {
             <p className={styles.fieldHint}>
               The first image is the store cover (product cards &amp; search). Use
               “Set as cover” to choose another. Rotate turns that one photo 90°
-              clockwise. Every upload is converted to WebP.
+              clockwise. Upload from your computer, or choose photos already in
+              the Gallery. New computer uploads are converted to WebP.
             </p>
             <div className={styles.imageModeRow} role="radiogroup" aria-label="Image upload style">
               <label className={styles.imageModeOption}>
@@ -817,17 +889,30 @@ export default function ProductManager() {
                 </span>
               </label>
             </div>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              disabled={saving}
-              onChange={(e) => {
-                const picked = Array.from(e.target.files ?? []);
-                e.target.value = "";
-                onImages(picked);
-              }}
-            />
+            <div className={styles.imageSourceRow}>
+              <label className={styles.imageSourceComputer}>
+                <span>From computer</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={saving}
+                  onChange={(e) => {
+                    const picked = Array.from(e.target.files ?? []);
+                    e.target.value = "";
+                    onImages(picked);
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                className={styles.secondaryBtn}
+                disabled={saving}
+                onClick={openGalleryPicker}
+              >
+                From Gallery
+              </button>
+            </div>
             {uploadProgress && (
               <div className={styles.uploadProgress}>
                 <div className={styles.uploadProgressLabel}>
@@ -957,6 +1042,81 @@ export default function ProductManager() {
           />
         )}
         </div>
+
+        {galleryOpen && (
+          <div
+            className={styles.leaveOverlay}
+            role="presentation"
+            onClick={() => !galleryLoading && setGalleryOpen(false)}
+          >
+            <div
+              className={`${styles.leaveDialog} ${styles.galleryPicker}`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="gallery-picker-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 id="gallery-picker-title">Choose from Gallery</h3>
+              <p>Select uploaded photos to add to this product. They stay as they already look.</p>
+              {galleryError && <p className={styles.galleryErr}>{galleryError}</p>}
+              {galleryLoading ? (
+                <p className={styles.galleryEmpty}>Loading gallery…</p>
+              ) : galleryChoices.length === 0 ? (
+                <p className={styles.galleryEmpty}>No uploaded images in the Gallery yet.</p>
+              ) : (
+                <ul className={styles.galleryPickerGrid}>
+                  {galleryChoices.map((choice) => {
+                    const already = form.images.includes(choice.url);
+                    const picked = galleryPicked.has(choice.url);
+                    return (
+                      <li key={choice.url}>
+                        <button
+                          type="button"
+                          className={`${styles.galleryPickerItem} ${
+                            picked ? styles.galleryPickerItemOn : ""
+                          }`}
+                          disabled={already}
+                          aria-pressed={picked}
+                          onClick={() => {
+                            setGalleryPicked((current) => {
+                              const next = new Set(current);
+                              if (next.has(choice.url)) next.delete(choice.url);
+                              else next.add(choice.url);
+                              return next;
+                            });
+                          }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={choice.url} alt="" />
+                          <span>{already ? "Already added" : choice.label}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <div className={styles.galleryPickerActions}>
+                <button
+                  type="button"
+                  className={styles.saveBtn}
+                  disabled={galleryPicked.size === 0}
+                  onClick={addGalleryPicks}
+                >
+                  {galleryPicked.size === 0
+                    ? "Add selected"
+                    : `Add ${galleryPicked.size} selected`}
+                </button>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={() => setGalleryOpen(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {leavePromptOpen && (
           <div
