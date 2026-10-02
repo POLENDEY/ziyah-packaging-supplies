@@ -25,6 +25,29 @@ function isPlaceholderImage(url: string) {
   return /dummy-post-square-1\.(webp|jpe?g|png)/i.test(url);
 }
 
+function moveListItem<T>(list: T[], from: number, to: number): T[] {
+  if (
+    from === to ||
+    from < 0 ||
+    to < 0 ||
+    from >= list.length ||
+    to >= list.length
+  ) {
+    return list;
+  }
+  const next = [...list];
+  const [picked] = next.splice(from, 1);
+  next.splice(to, 0, picked);
+  return next;
+}
+
+function indexAfterMove(index: number, from: number, to: number) {
+  if (index === from) return to;
+  if (from < to && index > from && index <= to) return index - 1;
+  if (to < from && index >= to && index < from) return index + 1;
+  return index;
+}
+
 function choicesFromGallery(
   files: { url?: string; name?: string }[],
   products: { name?: string; images?: string[] }[]
@@ -108,6 +131,9 @@ export default function ProductManager() {
   const [leavePromptOpen, setLeavePromptOpen] = useState(false);
   const [imageMode, setImageMode] = useState<"white" | "raw">("white");
   const [imagePreviewIndex, setImagePreviewIndex] = useState(0);
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
+  const dragFromRef = useRef<number | null>(null);
   const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryChoices, setGalleryChoices] = useState<GalleryChoice[]>([]);
@@ -980,8 +1006,9 @@ export default function ProductManager() {
           <div className={styles.formGroup}>
             <label>Images (auto WebP)</label>
             <p className={styles.fieldHint}>
-              The first image is the store cover (product cards &amp; search). Use
-              “Set as cover” to choose another. Rotate turns that one photo 90°
+              Drag a photo onto another to change the order. The first image is
+              the store cover (product cards &amp; search). Use “Set as cover” to
+              move one to the front. Rotate turns that one photo 90°
               clockwise. Brush restores a part you want to keep, or erases
               background and anything else. Upload from your computer, or choose
               photos already in the Gallery. New computer uploads are converted to WebP.
@@ -1082,7 +1109,30 @@ export default function ProductManager() {
                   key={`${src}-${index}`}
                   className={`${styles.thumbItem} ${
                     index === 0 ? styles.thumbItemCover : ""
+                  } ${dragFrom === index ? styles.thumbDragging : ""} ${
+                    dragOver === index && dragFrom !== index ? styles.thumbDropTarget : ""
                   }`}
+                  onDragOver={(event) => {
+                    if (dragFromRef.current === null) return;
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = "move";
+                    if (dragOver !== index) setDragOver(index);
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    const from = dragFromRef.current;
+                    dragFromRef.current = null;
+                    setDragFrom(null);
+                    setDragOver(null);
+                    if (from === null || from === index) return;
+                    setForm((current) => ({
+                      ...current,
+                      images: moveListItem(current.images, from, index),
+                    }));
+                    setImagePreviewIndex((current) =>
+                      indexAfterMove(current, from, index)
+                    );
+                  }}
                 >
                   {index === 0 && (
                     <span className={styles.coverBadge}>Cover</span>
@@ -1091,14 +1141,27 @@ export default function ProductManager() {
                   <button
                     type="button"
                     className={styles.thumbPreviewBtn}
+                    draggable
                     onClick={() => setImagePreviewIndex(index)}
+                    onDragStart={(event) => {
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/plain", String(index));
+                      dragFromRef.current = index;
+                      setDragFrom(index);
+                      setDragOver(index);
+                    }}
+                    onDragEnd={() => {
+                      dragFromRef.current = null;
+                      setDragFrom(null);
+                      setDragOver(null);
+                    }}
                     aria-label={
                       index === Math.min(imagePreviewIndex, form.images.length - 1)
-                        ? "Showing this image in the preview"
-                        : "Show this image in the preview"
+                        ? "Showing this image in the preview. Drag to reorder."
+                        : "Show this image in the preview. Drag to reorder."
                     }
                   >
-                    <img src={src} alt="" />
+                    <img src={src} alt="" draggable={false} />
                   </button>
                   <div className={styles.thumbActions}>
                     <button
