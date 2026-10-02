@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
-import { ADMIN_SESSION_COOKIE } from "@/lib/adminAuth";
+import { ADMIN_SESSION_COOKIE, isAdminSession } from "@/lib/adminAuth";
+
+export async function GET() {
+  const ok = await isAdminSession();
+  if (!ok) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  return NextResponse.json({ ok: true });
+}
 
 export async function POST(request: Request) {
   try {

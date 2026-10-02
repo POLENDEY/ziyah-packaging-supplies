@@ -11,16 +11,34 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const session = localStorage.getItem("admin_session");
+    let cancelled = false;
 
-    if (session === "true") {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-      if (pathname !== LOGIN_PATH) {
-        router.push(LOGIN_PATH);
+    async function checkSession() {
+      if (pathname === LOGIN_PATH) {
+        if (!cancelled) setIsAuthenticated(false);
+        return;
       }
+      try {
+        const response = await fetch("/api/admin/session");
+        if (cancelled) return;
+        if (response.ok) {
+          setIsAuthenticated(true);
+          return;
+        }
+      } catch {
+        /* treat as signed out */
+      }
+      if (cancelled) return;
+      localStorage.removeItem("admin_session");
+      localStorage.removeItem("admin_username");
+      setIsAuthenticated(false);
+      router.push(LOGIN_PATH);
     }
+
+    checkSession();
+    return () => {
+      cancelled = true;
+    };
   }, [pathname, router]);
 
   if (isAuthenticated === null && pathname !== LOGIN_PATH) {
