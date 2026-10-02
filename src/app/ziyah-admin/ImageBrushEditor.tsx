@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./admin.module.css";
 
-type BrushMode = "restore" | "erase";
+type BrushMode = "restore" | "erase" | "pen";
+type Point = { x: number; y: number };
 
 export async function canvasFromUrl(src: string) {
   const response = await fetch(src);
@@ -30,14 +31,30 @@ export async function canvasToWebp(canvas: HTMLCanvasElement) {
   return new File([blob], "brushed.webp", { type: "image/webp" });
 }
 
+function pointInPolygon(x: number, y: number, points: Point[]) {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const xi = points[i].x;
+    const yi = points[i].y;
+    const xj = points[j].x;
+    const yj = points[j].y;
+    const crosses = yi > y !== yj > y;
+    if (!crosses) continue;
+    const edge = ((xj - xi) * (y - yi)) / (yj - yi || 0.00001) + xi;
+    if (x < edge) inside = !inside;
+  }
+  return inside;
+}
+
 function stamp(
   work: HTMLCanvasElement,
   history: HTMLCanvasElement,
   x: number,
   y: number,
   radius: number,
-  mode: BrushMode,
-  eraseWhite: boolean
+  mode: Exclude<BrushMode, "pen">,
+  eraseWhite: boolean,
+  selection: Point[] | null
 ) {
   const ctx = work.getContext("2d", { willReadFrequently: true });
   const historyCtx = history.getContext("2d", { willReadFrequently: true });
@@ -56,6 +73,7 @@ function stamp(
     for (let px = 0; px < width; px++) {
       const dist = Math.hypot(x0 + px - x, y0 + py - y);
       if (dist > radius) continue;
+      if (selection && !pointInPolygon(x0 + px, y0 + py, selection)) continue;
       const edge = dist / radius;
       const strength = edge > 0.72 ? (1 - edge) / 0.28 : 1;
       const i = (py * width + px) * 4;
@@ -95,9 +113,13 @@ export default function ImageBrushEditor({
   const undoRef = useRef<ImageData[]>([]);
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
-  const [mode, setMode] = useState<BrushMode>("restore");
+  const [mode, setMode] = useState<BrushMode>("pen");
   const [size, setSize] = useState(28);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
+  const [penClosed, setPenClosed] = useState(false);
+  const [penCount, setPenCount] = useState(0);
+  const pointsRef = useRef<Point[]>([]);
+  const closedRef = useRef(false);
 
   const blit = () => {
     const view = viewRef.current;
@@ -111,7 +133,32 @@ export default function ImageBrushEditor({
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, view.width, view.height);
     ctx.drawImage(work, 0, 0);
+    const points = pointsRef.current;
+    if (!points.length) return;
+    ctx.save();
+    ctx.lineWidth = Math.max(2, work.width / 500);
+    ctx.strokeStyle = "#5b21b6";
+    ctx.fillStyle = "rgba(91, 33, 182, 0.16)";
+    ctx.setLineDash([Math.max(8, work.width / 180), Math.max(6, work.width / 240)]);
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (const point of points.slice(1)) ctx.lineTo(point.x, point.y);
+    if (closedRef.current) ctx.closePath();
+    if (closedRef.current) ctx.fill();
+    ctx.stroke();
+    ctx.setLineDash([]);
+    for (const point of points) {
+      ctx.beginPath();
+      ctx.fillStyle = "#5b21b6";
+      ctx.arc(point.x, point.y, Math.max(4, work.width / 280), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
   };
+
+  const selection = () => (closedRef.current && pointsRef.current.length >= 3 ? pointsRef.current : null);
+
+  const paintMode = (): Exclude<BrushMode, "pen"> => (mode === "erase" ? "erase" : "restore");
 
   useEffect(() => {
     blit();
@@ -130,7 +177,7 @@ export default function ImageBrushEditor({
     const from = last.current;
     const step = Math.max(1, radius / 4);
     if (!from) {
-      stamp(work, history, x, y, radius, mode, eraseWhite);
+      stamp(work, history, x, y, radius, paintMode(), eraseWhite, selection());
     } else {
       const dist = Math.hypot(x - from.x, y - from.y);
       const count = Math.max(1, Math.ceil(dist / step));
@@ -142,8 +189,9 @@ export default function ImageBrushEditor({
           from.x + (x - from.x) * t,
           from.y + (y - from.y) * t,
           radius,
-          mode,
-          eraseWhite
+          paintMode(),
+          eraseWhite,
+          selection()
         );
       }
     }
@@ -161,10 +209,18 @@ export default function ImageBrushEditor({
       >
         <h3 id="brush-title">Brush this photo</h3>
         <p>
-          Restore paints the original back so that part is kept. Erase removes
-          background or anything else you do not want.
+          Use the pen to click around the portion you want. Close the shape, then
+          Restore or Erase only inside that selection. Restore paints the original
+          back. Erase removes background or anything else.
         </p>
         <div className={styles.brushTools}>
+          <button
+            type="button"
+            className={mode === "pen" ? styles.saveBtn : styles.secondaryBtn}
+            onClick={() => setMode("pen")}
+          >
+            Pen
+          </button>
           <button
             type="button"
             className={mode === "restore" ? styles.saveBtn : styles.secondaryBtn}
@@ -191,6 +247,71 @@ export default function ImageBrushEditor({
           </label>
           <button
             type="button"
+            className={styles.secondaryBtn}
+            disabled={!penClosed || mode === "pen"}
+            onClick={() => {
+              const points = pointsRef.current;
+              if (!closedRef.current || points.length < 3) return;
+              const ctx = work.getContext("2d", { willReadFrequently: true });
+              const historyCtx = history.getContext("2d", { willReadFrequently: true });
+              if (!ctx || !historyCtx) return;
+              undoRef.current.push(ctx.getImageData(0, 0, work.width, work.height));
+              if (undoRef.current.length > 8) undoRef.current.shift();
+              const image = ctx.getImageData(0, 0, work.width, work.height);
+              const source =
+                paintMode() === "restore"
+                  ? historyCtx.getImageData(0, 0, work.width, work.height)
+                  : null;
+              const data = image.data;
+              const from = source?.data;
+              let minX = work.width;
+              let minY = work.height;
+              let maxX = 0;
+              let maxY = 0;
+              for (const point of points) {
+                minX = Math.min(minX, point.x);
+                minY = Math.min(minY, point.y);
+                maxX = Math.max(maxX, point.x);
+                maxY = Math.max(maxY, point.y);
+              }
+              const xStart = Math.max(0, Math.floor(minX));
+              const yStart = Math.max(0, Math.floor(minY));
+              const xEnd = Math.min(work.width - 1, Math.ceil(maxX));
+              const yEnd = Math.min(work.height - 1, Math.ceil(maxY));
+              const target = eraseWhite ? [255, 255, 255, 255] : [255, 255, 255, 0];
+              for (let y = yStart; y <= yEnd; y++) {
+                for (let x = xStart; x <= xEnd; x++) {
+                  if (!pointInPolygon(x, y, points)) continue;
+                  const i = (y * work.width + x) * 4;
+                  if (paintMode() === "erase") {
+                    for (let c = 0; c < 4; c++) data[i + c] = target[c];
+                  } else if (from) {
+                    for (let c = 0; c < 4; c++) data[i + c] = from[i + c];
+                  }
+                }
+              }
+              ctx.putImageData(image, 0, 0);
+              blit();
+            }}
+          >
+            Apply to selection
+          </button>
+          <button
+            type="button"
+            className={styles.linkBtn}
+            disabled={penCount === 0}
+            onClick={() => {
+              pointsRef.current = [];
+              closedRef.current = false;
+              setPenClosed(false);
+              setPenCount(0);
+              blit();
+            }}
+          >
+            Clear pen
+          </button>
+          <button
+            type="button"
             className={styles.linkBtn}
             onClick={() => {
               const previous = undoRef.current.pop();
@@ -206,19 +327,41 @@ export default function ImageBrushEditor({
         <div className={styles.brushStage}>
           <canvas
             ref={viewRef}
-            className={styles.brushCanvas}
+            className={`${styles.brushCanvas} ${mode === "pen" ? styles.brushCanvasPen : ""}`}
             onPointerDown={(event) => {
+              const point = imagePoint(event);
+              if (mode === "pen") {
+                if (closedRef.current) return;
+                const points = pointsRef.current;
+                const closeDistance = (16 / event.currentTarget.getBoundingClientRect().width) * work.width;
+                if (
+                  points.length >= 3 &&
+                  Math.hypot(point.x - points[0].x, point.y - points[0].y) <= closeDistance
+                ) {
+                  closedRef.current = true;
+                  setPenClosed(true);
+                  blit();
+                  return;
+                }
+                pointsRef.current = [...points, { x: point.x, y: point.y }];
+                setPenCount(pointsRef.current.length);
+                blit();
+                return;
+              }
               const ctx = work.getContext("2d");
               if (ctx) undoRef.current.push(ctx.getImageData(0, 0, work.width, work.height));
               if (undoRef.current.length > 8) undoRef.current.shift();
               drawing.current = true;
               last.current = null;
               event.currentTarget.setPointerCapture(event.pointerId);
-              const point = imagePoint(event);
               paintTo(point.x, point.y, point.radius);
               setCursor({ x: event.clientX, y: event.clientY });
             }}
             onPointerMove={(event) => {
+              if (mode === "pen") {
+                setCursor(null);
+                return;
+              }
               setCursor({ x: event.clientX, y: event.clientY });
               if (!drawing.current) return;
               const point = imagePoint(event);
@@ -232,7 +375,7 @@ export default function ImageBrushEditor({
               if (!drawing.current) setCursor(null);
             }}
           />
-          {cursor && (
+          {cursor && mode !== "pen" && (
             <span
               className={styles.brushCursor}
               style={{

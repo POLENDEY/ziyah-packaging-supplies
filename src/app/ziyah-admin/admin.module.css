@@ -1055,6 +1055,10 @@
   background: #fff;
 }
 
+.brushCanvasPen {
+  cursor: crosshair;
+}
+
 .brushCursor {
   position: fixed;
   z-index: 90;
