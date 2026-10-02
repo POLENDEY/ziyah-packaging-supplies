@@ -185,7 +185,30 @@ function cropCanvas(
 
 export type PrepareProgress = { text: string; percent: number };
 
-async function cutoutToWhiteWatermark(
+async function canvasFromBlob(blob: Blob) {
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Could not prepare image");
+  ctx.drawImage(bitmap, 0, 0);
+  bitmap.close();
+  return canvas;
+}
+
+export function cloneCanvas(source: HTMLCanvasElement) {
+  const canvas = document.createElement("canvas");
+  canvas.width = source.width;
+  canvas.height = source.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Could not prepare image");
+  ctx.drawImage(source, 0, 0);
+  return canvas;
+}
+
+/** Cutout plus the original photo in the same frame, before the logo is added. */
+export async function buildCutoutCanvases(
   file: File,
   onProgress?: (update: PrepareProgress) => void
 ) {
@@ -196,7 +219,7 @@ async function cutoutToWhiteWatermark(
   const source = await resizeFile(file, 3200);
   onProgress?.({ text: "Removing background…", percent: 18 });
   const { removeBackground } = await import("@imgly/background-removal");
-  const cutout = await removeBackground(source, {
+  const cutoutBlob = await removeBackground(source, {
     model: "isnet",
     device: "cpu",
     rescale: true,
@@ -213,19 +236,27 @@ async function cutoutToWhiteWatermark(
       }
     },
   });
-  onProgress?.({ text: "Leveling, sizing, and adding watermark…", percent: 72 });
+  const cutout = await canvasFromBlob(cutoutBlob);
+  const sourceCanvas = await canvasFromBlob(source);
+  const history = document.createElement("canvas");
+  history.width = cutout.width;
+  history.height = cutout.height;
+  const historyCtx = history.getContext("2d", { willReadFrequently: true });
+  if (!historyCtx) throw new Error("Could not prepare image");
+  historyCtx.drawImage(sourceCanvas, 0, 0, cutout.width, cutout.height);
 
-  const bitmap = await createImageBitmap(cutout);
-  const canvas = document.createElement("canvas");
-  canvas.width = bitmap.width;
-  canvas.height = bitmap.height;
+  const ctx = cutout.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Could not clean image edges");
+  const pixels = ctx.getImageData(0, 0, cutout.width, cutout.height);
+  hardenAlpha(pixels.data, cutout.width, cutout.height);
+  ctx.putImageData(pixels, 0, 0);
+  return { cutout, history };
+}
+
+export async function finishWhiteCutout(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("Could not clean image edges");
-  ctx.drawImage(bitmap, 0, 0);
-  bitmap.close();
   const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  hardenAlpha(pixels.data, canvas.width, canvas.height);
-  ctx.putImageData(pixels, 0, 0);
 
   const tilt = levelDegrees(pixels.data, canvas.width, canvas.height);
   const leveled = tilt ? rotateCanvas(canvas, tilt) : canvas;
@@ -287,6 +318,15 @@ async function cutoutToWhiteWatermark(
     );
   });
   return new File([webp], "product-white.webp", { type: "image/webp" });
+}
+
+async function cutoutToWhiteWatermark(
+  file: File,
+  onProgress?: (update: PrepareProgress) => void
+) {
+  const { cutout } = await buildCutoutCanvases(file, onProgress);
+  onProgress?.({ text: "Leveling, sizing, and adding watermark…", percent: 72 });
+  return finishWhiteCutout(cutout);
 }
 
 export async function prepareUploadImage(

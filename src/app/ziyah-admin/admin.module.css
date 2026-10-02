@@ -1013,6 +1013,58 @@
   cursor: default;
 }
 
+.brushDialog {
+  width: min(860px, 100%);
+  max-height: min(92vh, 920px);
+  display: flex;
+  flex-direction: column;
+}
+
+.brushTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.brushSize {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.brushStage {
+  margin-bottom: 14px;
+  max-height: 60vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid rgba(27, 25, 49, 0.12);
+}
+
+.brushCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: none;
+  background: #fff;
+}
+
+.brushCursor {
+  position: fixed;
+  z-index: 90;
+  pointer-events: none;
+  border: 2px solid #1b1931;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
 .galleryPickerActions {
   display: flex;
   flex-wrap: wrap;

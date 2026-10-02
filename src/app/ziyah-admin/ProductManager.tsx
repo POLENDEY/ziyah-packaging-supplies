@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./admin.module.css";
 import type { Product, PriceTier, ProductFaq } from "@/data/products";
 import type { DbCategory } from "@/lib/catalog/types";
 import ProductColorFields from "./ProductColorFields";
 import ProductLivePreview from "./ProductLivePreview";
-import { prepareUploadImage } from "./prepareUploadImage";
+import ImageBrushEditor, { canvasFromUrl, canvasToWebp } from "./ImageBrushEditor";
+import {
+  buildCutoutCanvases,
+  cloneCanvas,
+  finishWhiteCutout,
+  prepareUploadImage,
+} from "./prepareUploadImage";
 import { formToPreviewProduct } from "./previewProduct";
 
 const PAGE_SIZE = 10;
@@ -107,6 +113,14 @@ export default function ProductManager() {
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryPicked, setGalleryPicked] = useState<Set<string>>(new Set());
   const [galleryError, setGalleryError] = useState<string | null>(null);
+  const brushResolve = useRef<((canvas: HTMLCanvasElement | null) => void) | null>(null);
+  const [brushSession, setBrushSession] = useState<{
+    work: HTMLCanvasElement;
+    history: HTMLCanvasElement;
+    eraseWhite: boolean;
+    confirmLabel: string;
+    cancelLabel: string;
+  } | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     label: string;
     percent: number;
@@ -292,12 +306,33 @@ export default function ProductManager() {
         const file = list[index];
         const prefix =
           list.length > 1 ? `Image ${index + 1} of ${list.length} · ` : "";
-        const prepared = await prepareUploadImage(file, imageMode, (update) => {
-          setUploadProgress({
-            label: `${prefix}${update.text}`,
-            percent: Math.round(((index + update.percent / 100) / list.length) * 80),
+        let prepared: File;
+        if (imageMode === "white") {
+          const { cutout, history } = await buildCutoutCanvases(file, (update) => {
+            setUploadProgress({
+              label: `${prefix}${update.text}`,
+              percent: Math.round(((index + update.percent / 100) / list.length) * 70),
+            });
           });
-        });
+          setUploadProgress({
+            label: `${prefix}Brush what to keep or erase…`,
+            percent: Math.round(((index + 0.75) / list.length) * 80),
+          });
+          const brushed = await openBrush(
+            cloneCanvas(cutout),
+            history,
+            false,
+            "Use this photo",
+            "Keep automatic"
+          );
+          setUploadProgress({
+            label: `${prefix}Leveling, sizing, and adding watermark…`,
+            percent: Math.round(((index + 0.82) / list.length) * 80),
+          });
+          prepared = await finishWhiteCutout(brushed ?? cutout);
+        } else {
+          prepared = await prepareUploadImage(file, imageMode);
+        }
         if (imageMode === "raw") {
           setUploadProgress({
             label: `${prefix}Uploading…`,
@@ -329,6 +364,60 @@ export default function ProductManager() {
       setMessage({
         type: "err",
         text: e instanceof Error ? e.message : "Upload failed",
+      });
+    } finally {
+      setSaving(false);
+      window.setTimeout(() => setUploadProgress(null), 700);
+    }
+  };
+
+  const openBrush = (
+    work: HTMLCanvasElement,
+    history: HTMLCanvasElement,
+    eraseWhite: boolean,
+    confirmLabel: string,
+    cancelLabel: string
+  ) =>
+    new Promise<HTMLCanvasElement | null>((resolve) => {
+      brushResolve.current = resolve;
+      setBrushSession({ work, history, eraseWhite, confirmLabel, cancelLabel });
+    });
+
+  const closeBrush = (canvas: HTMLCanvasElement | null) => {
+    const resolve = brushResolve.current;
+    brushResolve.current = null;
+    setBrushSession(null);
+    resolve?.(canvas);
+  };
+
+  const brushImageAt = async (index: number) => {
+    const src = form.images[index];
+    if (!src || saving || rotatingIndex !== null) return;
+    setSaving(true);
+    setMessage(null);
+    setImagePreviewIndex(index);
+    try {
+      const work = await canvasFromUrl(src);
+      const edited = await openBrush(work, cloneCanvas(work), true, "Use this photo", "Cancel");
+      if (!edited) return;
+      setUploadProgress({ label: "Uploading brushed image…", percent: 40 });
+      const url = await postMedia(await canvasToWebp(edited), (percent) => {
+        setUploadProgress({
+          label: "Uploading brushed image…",
+          percent: Math.min(99, 40 + Math.round(percent * 0.6)),
+        });
+      });
+      setForm((current) => {
+        const images = [...current.images];
+        if (!images[index]) return current;
+        images[index] = url;
+        return { ...current, images };
+      });
+      setMessage({ type: "ok", text: "Brushed image updated. Save the product to keep it." });
+    } catch (e) {
+      setMessage({
+        type: "err",
+        text: e instanceof Error ? e.message : "Could not brush that image",
       });
     } finally {
       setSaving(false);
@@ -860,8 +949,9 @@ export default function ProductManager() {
             <p className={styles.fieldHint}>
               The first image is the store cover (product cards &amp; search). Use
               “Set as cover” to choose another. Rotate turns that one photo 90°
-              clockwise. Upload from your computer, or choose photos already in
-              the Gallery. New computer uploads are converted to WebP.
+              clockwise. Brush restores a part you want to keep, or erases
+              background and anything else. Upload from your computer, or choose
+              photos already in the Gallery. New computer uploads are converted to WebP.
             </p>
             <div className={styles.imageModeRow} role="radiogroup" aria-label="Image upload style">
               <label className={styles.imageModeOption}>
@@ -982,6 +1072,14 @@ export default function ProductManager() {
                       type="button"
                       className={styles.linkBtn}
                       disabled={saving || rotatingIndex !== null}
+                      onClick={() => brushImageAt(index)}
+                    >
+                      Brush
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.linkBtn}
+                      disabled={saving || rotatingIndex !== null}
                       onClick={() => rotateImageAt(index)}
                     >
                       {rotatingIndex === index ? "Rotating…" : "Rotate"}
@@ -1042,6 +1140,18 @@ export default function ProductManager() {
           />
         )}
         </div>
+
+        {brushSession && (
+          <ImageBrushEditor
+            work={brushSession.work}
+            history={brushSession.history}
+            eraseWhite={brushSession.eraseWhite}
+            confirmLabel={brushSession.confirmLabel}
+            cancelLabel={brushSession.cancelLabel}
+            onCancel={() => closeBrush(null)}
+            onDone={(canvas) => closeBrush(canvas)}
+          />
+        )}
 
         {galleryOpen && (
           <div
