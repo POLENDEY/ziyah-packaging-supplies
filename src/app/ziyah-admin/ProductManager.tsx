@@ -12,6 +12,7 @@ import {
   cloneCanvas,
   finishWhiteCutout,
   prepareUploadImage,
+  rotateCanvasKeepWatermark,
 } from "./prepareUploadImage";
 import { formToPreviewProduct } from "./previewProduct";
 
@@ -432,16 +433,7 @@ export default function ProductManager() {
     setImagePreviewIndex(index);
     try {
       const current = await canvasFromUrl(src);
-      const turned = document.createElement("canvas");
-      turned.width = current.height;
-      turned.height = current.width;
-      const ctx = turned.getContext("2d");
-      if (!ctx) throw new Error("Could not rotate that image");
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-      ctx.translate(turned.width / 2, turned.height / 2);
-      ctx.rotate(Math.PI / 2);
-      ctx.drawImage(current, -current.width / 2, -current.height / 2);
+      const turned = await rotateCanvasKeepWatermark(current);
       const url = rememberLocalFile(await canvasToWebp(turned));
       forgetLocalFile(src);
       setForm((formNow) => {

@@ -253,6 +253,91 @@ export async function buildCutoutCanvases(
   return { cutout, history };
 }
 
+function watermarkFrame(width: number, height: number) {
+  const size = Math.min(width, height);
+  const logoSize = Math.round(size * 0.14);
+  const margin = Math.round(size * 0.045);
+  const x = width - margin - logoSize;
+  const y = height - margin - logoSize;
+  return {
+    x,
+    y,
+    logoSize,
+    cx: x + logoSize / 2,
+    cy: y + logoSize / 2,
+    radius: logoSize / 2,
+  };
+}
+
+async function stampWatermark(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number
+) {
+  const logo = await loadImage("/logo.png");
+  const box = watermarkFrame(width, height);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(box.cx, box.cy, box.radius, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.drawImage(logo, box.x, box.y, box.logoSize, box.logoSize);
+  ctx.restore();
+}
+
+function cornerHasWatermark(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return false;
+  const box = watermarkFrame(canvas.width, canvas.height);
+  const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let dark = 0;
+  let total = 0;
+  const radius = box.radius * box.radius;
+  const y0 = Math.max(0, Math.floor(box.cy - box.radius));
+  const y1 = Math.min(canvas.height - 1, Math.ceil(box.cy + box.radius));
+  const x0 = Math.max(0, Math.floor(box.cx - box.radius));
+  const x1 = Math.min(canvas.width - 1, Math.ceil(box.cx + box.radius));
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      const dx = x + 0.5 - box.cx;
+      const dy = y + 0.5 - box.cy;
+      if (dx * dx + dy * dy > radius) continue;
+      const i = (y * canvas.width + x) * 4;
+      total += 1;
+      if (data[i] + data[i + 1] + data[i + 2] < 680) dark += 1;
+    }
+  }
+  return total > 20 && dark / total > 0.12;
+}
+
+/** Turn the product 90° clockwise and put the watermark back in the same corner. */
+export async function rotateCanvasKeepWatermark(source: HTMLCanvasElement) {
+  const marked = cornerHasWatermark(source);
+  const base = cloneCanvas(source);
+  if (marked) {
+    const ctx = base.getContext("2d");
+    const box = watermarkFrame(base.width, base.height);
+    if (ctx) {
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(box.cx, box.cy, box.radius + 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  const turned = document.createElement("canvas");
+  turned.width = base.height;
+  turned.height = base.width;
+  const ctx = turned.getContext("2d");
+  if (!ctx) throw new Error("Could not rotate that image");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.translate(turned.width / 2, turned.height / 2);
+  ctx.rotate(Math.PI / 2);
+  ctx.drawImage(base, -base.width / 2, -base.height / 2);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (marked) await stampWatermark(ctx, turned.width, turned.height);
+  return turned;
+}
+
 export async function finishWhiteCutout(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("Could not clean image edges");
@@ -290,25 +375,7 @@ export async function finishWhiteCutout(canvas: HTMLCanvasElement) {
   const dy = (size - dh) / 2 - size * 0.02;
   outCtx.drawImage(product, dx, dy, dw, dh);
 
-  outCtx.imageSmoothingEnabled = true;
-  outCtx.imageSmoothingQuality = "high";
-  const logo = await loadImage("/logo.png");
-  const logoSize = Math.round(size * 0.14);
-  const margin = Math.round(size * 0.045);
-  const logoX = size - margin - logoSize;
-  const logoY = size - margin - logoSize;
-  outCtx.save();
-  outCtx.beginPath();
-  outCtx.arc(
-    logoX + logoSize / 2,
-    logoY + logoSize / 2,
-    logoSize / 2,
-    0,
-    Math.PI * 2
-  );
-  outCtx.clip();
-  outCtx.drawImage(logo, logoX, logoY, logoSize, logoSize);
-  outCtx.restore();
+  await stampWatermark(outCtx, size, size);
 
   const webp = await new Promise<Blob>((resolve, reject) => {
     out.toBlob(
