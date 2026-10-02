@@ -114,6 +114,7 @@ export default function ProductManager() {
   const [galleryPicked, setGalleryPicked] = useState<Set<string>>(new Set());
   const [galleryError, setGalleryError] = useState<string | null>(null);
   const brushResolve = useRef<((canvas: HTMLCanvasElement | null) => void) | null>(null);
+  const pendingFiles = useRef<Map<string, File>>(new Map());
   const [brushSession, setBrushSession] = useState<{
     work: HTMLCanvasElement;
     history: HTMLCanvasElement;
@@ -212,7 +213,24 @@ export default function ProductManager() {
     return match?.id ?? "";
   };
 
+  const rememberLocalFile = (file: File) => {
+    const url = URL.createObjectURL(file);
+    pendingFiles.current.set(url, file);
+    return url;
+  };
+
+  const forgetLocalFile = (url: string) => {
+    if (!pendingFiles.current.has(url)) return;
+    URL.revokeObjectURL(url);
+    pendingFiles.current.delete(url);
+  };
+
+  const forgetAllLocalFiles = () => {
+    for (const url of pendingFiles.current.keys()) forgetLocalFile(url);
+  };
+
   const startCreate = () => {
+    forgetAllLocalFiles();
     const next = emptyForm();
     setForm(next);
     setFormBaseline(next);
@@ -222,6 +240,7 @@ export default function ProductManager() {
   };
 
   const startEdit = (p: Product) => {
+    forgetAllLocalFiles();
     const next: FormState = {
       id: p.id,
       name: p.name,
@@ -296,8 +315,8 @@ export default function ProductManager() {
     setUploadProgress({
       label:
         list.length === 1
-          ? `Starting upload · ${list[0].name}`
-          : `Starting upload · ${list.length} images`,
+          ? `Preparing · ${list[0].name}`
+          : `Preparing · ${list.length} images`,
       percent: 4,
     });
     try {
@@ -333,32 +352,17 @@ export default function ProductManager() {
         } else {
           prepared = await prepareUploadImage(file, imageMode);
         }
-        if (imageMode === "raw") {
-          setUploadProgress({
-            label: `${prefix}Uploading…`,
-            percent: Math.round((index / list.length) * 100 + 8),
-          });
-        }
-        const url = await postMedia(prepared, (percent) => {
-          const fileStart = index / list.length;
-          const fileSpan = 1 / list.length;
-          const within = imageMode === "white" ? 0.8 + percent / 100 * 0.2 : percent / 100;
-          setUploadProgress({
-            label: `${prefix}Uploading…`,
-            percent: Math.min(99, Math.round((fileStart + within * fileSpan) * 100)),
-          });
-        });
-        urls.push(url);
+        urls.push(rememberLocalFile(prepared));
       }
-      setUploadProgress({ label: "Upload complete", percent: 100 });
+      setUploadProgress({ label: "Ready to save", percent: 100 });
       setImagePreviewIndex(form.images.length + urls.length - 1);
       setForm((f) => ({ ...f, images: [...f.images, ...urls] }));
       setMessage({
         type: "ok",
         text:
-          imageMode === "white"
-            ? `Uploaded ${urls.length} image(s) on white with logo watermark (WebP)`
-            : `Uploaded ${urls.length} raw WebP image(s)`,
+          urls.length === 1
+            ? "Photo added. Click Save product to upload it."
+            : `${urls.length} photos added. Click Save product to upload them.`,
       });
     } catch (e) {
       setMessage({
@@ -400,20 +404,15 @@ export default function ProductManager() {
       const work = await canvasFromUrl(src);
       const edited = await openBrush(work, cloneCanvas(work), true, "Use this photo", "Cancel");
       if (!edited) return;
-      setUploadProgress({ label: "Uploading brushed image…", percent: 40 });
-      const url = await postMedia(await canvasToWebp(edited), (percent) => {
-        setUploadProgress({
-          label: "Uploading brushed image…",
-          percent: Math.min(99, 40 + Math.round(percent * 0.6)),
-        });
-      });
+      const url = rememberLocalFile(await canvasToWebp(edited));
+      forgetLocalFile(src);
       setForm((current) => {
         const images = [...current.images];
         if (!images[index]) return current;
         images[index] = url;
         return { ...current, images };
       });
-      setMessage({ type: "ok", text: "Brushed image updated. Save the product to keep it." });
+      setMessage({ type: "ok", text: "Brush updated. Click Save product to upload it." });
     } catch (e) {
       setMessage({
         type: "err",
@@ -429,26 +428,29 @@ export default function ProductManager() {
     const src = form.images[index];
     if (!src || saving || rotatingIndex !== null) return;
     setRotatingIndex(index);
-    setSaving(true);
     setMessage(null);
     setImagePreviewIndex(index);
-    setUploadProgress({ label: "Rotating image…", percent: 20 });
     try {
-      setUploadProgress({ label: "Uploading rotated image…", percent: 55 });
-      const url = await postMedia(null, (percent) => {
-        setUploadProgress({
-          label: "Uploading rotated image…",
-          percent: Math.min(99, 55 + Math.round(percent * 0.4)),
-        });
-      }, src);
-      setForm((current) => {
-        const images = [...current.images];
-        if (!images[index]) return current;
+      const current = await canvasFromUrl(src);
+      const turned = document.createElement("canvas");
+      turned.width = current.height;
+      turned.height = current.width;
+      const ctx = turned.getContext("2d");
+      if (!ctx) throw new Error("Could not rotate that image");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.translate(turned.width / 2, turned.height / 2);
+      ctx.rotate(Math.PI / 2);
+      ctx.drawImage(current, -current.width / 2, -current.height / 2);
+      const url = rememberLocalFile(await canvasToWebp(turned));
+      forgetLocalFile(src);
+      setForm((formNow) => {
+        const images = [...formNow.images];
+        if (images[index] !== src) return formNow;
         images[index] = url;
-        return { ...current, images };
+        return { ...formNow, images };
       });
-      setUploadProgress({ label: "Rotated", percent: 100 });
-      setMessage({ type: "ok", text: "Image rotated 90°. Save the product to keep it." });
+      setMessage({ type: "ok", text: "Rotated 90°. Click Save product to upload it." });
     } catch (e) {
       setMessage({
         type: "err",
@@ -456,8 +458,6 @@ export default function ProductManager() {
       });
     } finally {
       setRotatingIndex(null);
-      setSaving(false);
-      window.setTimeout(() => setUploadProgress(null), 700);
     }
   };
 
@@ -528,6 +528,7 @@ export default function ProductManager() {
   }, [form, formBaseline]);
 
   const goToList = () => {
+    forgetAllLocalFiles();
     setLeavePromptOpen(false);
     setFormBaseline(null);
     setMode("list");
@@ -555,6 +556,45 @@ export default function ProductManager() {
     setSaving(true);
     setMessage(null);
     const asDraft = opts?.asDraft === true;
+    let images = form.images;
+    try {
+      const pending = form.images.filter((src) => pendingFiles.current.has(src));
+      if (pending.length) {
+        const uploaded: string[] = [];
+        let done = 0;
+        for (const src of form.images) {
+          const file = pendingFiles.current.get(src);
+          if (!file) {
+            uploaded.push(src);
+            continue;
+          }
+          done += 1;
+          const label =
+            pending.length === 1
+              ? "Uploading image…"
+              : `Uploading image ${done} of ${pending.length}…`;
+          setUploadProgress({ label, percent: Math.round(((done - 1) / pending.length) * 100) });
+          const url = await postMedia(file, (percent) => {
+            const start = (done - 1) / pending.length;
+            setUploadProgress({
+              label,
+              percent: Math.min(99, Math.round((start + percent / 100 / pending.length) * 100)),
+            });
+          });
+          uploaded.push(url);
+        }
+        images = uploaded;
+        setUploadProgress(null);
+      }
+    } catch (e) {
+      setSaving(false);
+      setUploadProgress(null);
+      setMessage({
+        type: "err",
+        text: e instanceof Error ? e.message : "Could not upload images",
+      });
+      return false;
+    }
     const payload = {
       name: form.name.trim() || "Untitled draft",
       displayName: form.displayName,
@@ -574,7 +614,7 @@ export default function ProductManager() {
       priceTiers: form.priceTiers.filter((t) => t.quantity || t.price),
       specs: form.specs.filter((s) => s.label.trim() || s.value.trim()),
       faqs: form.faqs.filter((f) => f.question.trim() && f.answer.trim()),
-      images: form.images,
+      images,
       videoUrl: null,
       isPublished: asDraft ? false : form.isPublished,
     };
@@ -596,6 +636,7 @@ export default function ProductManager() {
       type: "ok",
       text: asDraft ? "Draft saved" : "Product saved",
     });
+    forgetAllLocalFiles();
     goToList();
     load();
     return true;
@@ -1101,12 +1142,13 @@ export default function ProductManager() {
                     <button
                       type="button"
                       className={styles.dangerBtn}
-                      onClick={() =>
+                      onClick={() => {
+                        forgetLocalFile(src);
                         setForm({
                           ...form,
                           images: form.images.filter((_, i) => i !== index),
-                        })
-                      }
+                        });
+                      }}
                     >
                       Remove
                     </button>
