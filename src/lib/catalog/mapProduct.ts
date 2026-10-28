@@ -59,6 +59,7 @@ export function mapDbProductToProduct(row: DbProductRow): Product {
     bestFor: row.best_for?.trim() || undefined,
     aboutExtra: row.about_extra?.trim() || undefined,
     faqs: mapFaqs(row.faqs),
+    isPublished: row.is_published !== false,
   };
 }
 

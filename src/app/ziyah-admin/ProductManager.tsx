@@ -113,6 +113,44 @@ const emptyForm = (): FormState => ({
   isPublished: true,
 });
 
+const sampleForm = (categoryId: number | ""): FormState => ({
+  name: "3 Compartment Black Meal Prep Container",
+  displayName: "3 Compartment Meal Prep Container",
+  description:
+    "Sturdy black meal prep container with three compartments and a clear snap-fit lid.",
+  longDescription:
+    "Keep rice, mains, and sides apart in one neat container. The black base looks clean on display, stacks well in the fridge, and holds up during delivery. The clear lid lets customers see the meal before they open it.",
+  aboutExtra:
+    "Ideal for daily meal plans, office lunches, and food businesses that want a tidy, premium look for every order.",
+  bestFor: "Takeout, meal prep, catering, and food delivery brands",
+  categoryId,
+  type: "Disposable",
+  color: "Black",
+  colorHex: "#1c141f",
+  colorHexSecondary: "",
+  variantGroup: "meal-prep-3div",
+  dimensions: "1000ml · 23 × 17 × 5 cm",
+  unit: "/ piece",
+  price: "₱9.50",
+  priceTiers: [
+    { quantity: "1 BOX (150's)", price: "₱1,425.00", perPiece: "₱9.50" },
+    { quantity: "1 PACK (50's)", price: "₱550.00", perPiece: "₱11.00" },
+  ],
+  specs: [
+    { label: "Material", value: "PP base, PET lid" },
+    { label: "Compartments", value: "3" },
+    { label: "Capacity", value: "1000ml" },
+  ],
+  faqs: [
+    {
+      question: "Is it microwave safe?",
+      answer: "Yes, the PP base is microwave safe. Remove the clear lid before heating.",
+    },
+  ],
+  images: [],
+  isPublished: true,
+});
+
 export default function ProductManager() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<DbCategory[]>([]);
@@ -258,7 +296,7 @@ export default function ProductManager() {
 
   const startCreate = () => {
     forgetAllLocalFiles();
-    const next = emptyForm();
+    const next = sampleForm(categories[0]?.id ?? "");
     setForm(next);
     setFormBaseline(next);
     setMode("form");
@@ -291,7 +329,7 @@ export default function ProductManager() {
       specs: p.specs.length ? p.specs : [{ label: "", value: "" }],
       faqs: p.faqs?.length ? p.faqs : [{ question: "", answer: "" }],
       images: p.images || [],
-      isPublished: true,
+      isPublished: p.isPublished !== false,
     };
     setForm(next);
     setFormBaseline(next);
@@ -567,13 +605,13 @@ export default function ProductManager() {
       setMessage({ type: "err", text: "Select a category before saving" });
       return false;
     }
-    if (!form.name.trim()) {
+    const asDraft = opts?.asDraft === true;
+    if (!asDraft && !form.name.trim()) {
       setMessage({ type: "err", text: "Enter a title before saving" });
       return false;
     }
     setSaving(true);
     setMessage(null);
-    const asDraft = opts?.asDraft === true;
     let images = form.images;
     try {
       const pending = form.images.filter((src) => pendingFiles.current.has(src));
@@ -652,7 +690,11 @@ export default function ProductManager() {
     }
     setMessage({
       type: "ok",
-      text: asDraft ? "Draft saved" : "Product saved",
+      text: asDraft
+        ? "Draft saved. It stays hidden from the store until you publish it."
+        : payload.isPublished
+          ? "Product saved"
+          : "Product saved as a draft (not published)",
     });
     forgetAllLocalFiles();
     goToList();
@@ -729,6 +771,7 @@ export default function ProductManager() {
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="e.g. 3 Compartment Black Meal Prep Container"
             />
           </div>
           <div className={styles.formGroup}>
@@ -736,6 +779,7 @@ export default function ProductManager() {
             <input
               value={form.displayName}
               onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+              placeholder="e.g. 3 Compartment Meal Prep Container"
             />
           </div>
           <div className={styles.formGroup}>
@@ -745,6 +789,7 @@ export default function ProductManager() {
               rows={2}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="e.g. Sturdy black meal prep container with a clear snap-fit lid."
             />
           </div>
           <div className={styles.formGroup}>
@@ -790,7 +835,7 @@ export default function ProductManager() {
                   }}
                 />
                 <input
-                  placeholder="Value"
+                  placeholder="Value (e.g. PP base, PET lid)"
                   value={spec.value}
                   onChange={(e) => {
                     const specs = [...form.specs];
@@ -833,7 +878,7 @@ export default function ProductManager() {
             {form.faqs.map((faq, i) => (
               <div key={i} className={styles.faqEditor}>
                 <input
-                  placeholder="Question"
+                  placeholder="Question (e.g. Is it microwave safe?)"
                   value={faq.question}
                   onChange={(e) => {
                     const faqs = [...form.faqs];
@@ -843,7 +888,7 @@ export default function ProductManager() {
                 />
                 <textarea
                   rows={2}
-                  placeholder="Answer"
+                  placeholder="Answer (e.g. Yes, remove the lid before heating.)"
                   value={faq.answer}
                   onChange={(e) => {
                     const faqs = [...form.faqs];
@@ -941,6 +986,7 @@ export default function ProductManager() {
                 required
                 value={form.dimensions}
                 onChange={(e) => setForm({ ...form, dimensions: e.target.value })}
+                placeholder="e.g. 1000ml · 23 × 17 × 5 cm"
               />
             </div>
             <div className={styles.formGroup}>
@@ -949,6 +995,7 @@ export default function ProductManager() {
                 required
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
+                placeholder="e.g. ₱9.50"
               />
             </div>
           </div>
@@ -958,7 +1005,7 @@ export default function ProductManager() {
             {form.priceTiers.map((tier, i) => (
               <div key={i} className={styles.tierRow}>
                 <input
-                  placeholder="Quantity"
+                  placeholder="Quantity (e.g. 1 BOX (150's))"
                   value={tier.quantity}
                   onChange={(e) => {
                     const priceTiers = [...form.priceTiers];
@@ -967,7 +1014,7 @@ export default function ProductManager() {
                   }}
                 />
                 <input
-                  placeholder="Price"
+                  placeholder="Price (e.g. ₱1,425.00)"
                   value={tier.price}
                   onChange={(e) => {
                     const priceTiers = [...form.priceTiers];
@@ -976,7 +1023,7 @@ export default function ProductManager() {
                   }}
                 />
                 <input
-                  placeholder="Per piece"
+                  placeholder="Per piece (e.g. ₱9.50)"
                   value={tier.perPiece}
                   onChange={(e) => {
                     const priceTiers = [...form.priceTiers];
@@ -1228,7 +1275,19 @@ export default function ProductManager() {
             <button type="submit" className={styles.saveBtn} disabled={saving}>
               {saving ? "Saving…" : "Save product"}
             </button>
+            <button
+              type="button"
+              className={styles.secondaryBtn}
+              disabled={saving}
+              onClick={() => saveProduct({ asDraft: true })}
+            >
+              {saving ? "Saving…" : "Save as draft"}
+            </button>
           </div>
+          <p className={styles.fieldHint}>
+            Save as draft keeps this product hidden from the store. Open it later,
+            tick Published, and click Save product to make it live.
+          </p>
         </form>
         {showPreview && (
           <ProductLivePreview
@@ -1452,7 +1511,12 @@ export default function ProductManager() {
                       />
                     ) : null}
                   </td>
-                  <td>{p.name}</td>
+                  <td>
+                    {p.name}
+                    {p.isPublished === false && (
+                      <span className={styles.draftBadge}>Draft</span>
+                    )}
+                  </td>
                   <td>{p.category}</td>
                   <td>{p.price}</td>
                   <td>

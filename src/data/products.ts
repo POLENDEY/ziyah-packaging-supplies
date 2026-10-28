@@ -56,6 +56,8 @@ export type Product = {
   aboutExtra?: string;
   /** Optional CMS FAQs; falls back to generated FAQs when empty */
   faqs?: ProductFaq[];
+  /** CMS status; false means a draft hidden from the store */
+  isPublished?: boolean;
 };
 
 type Draft = Omit<
