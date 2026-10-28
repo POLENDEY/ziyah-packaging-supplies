@@ -98,6 +98,8 @@ export default function ImageBrushEditor({
   eraseWhite,
   confirmLabel,
   cancelLabel,
+  skipLabel,
+  onSkip,
   onCancel,
   onDone,
 }: {
@@ -106,6 +108,8 @@ export default function ImageBrushEditor({
   eraseWhite: boolean;
   confirmLabel: string;
   cancelLabel: string;
+  skipLabel?: string;
+  onSkip?: () => void;
   onCancel: () => void;
   onDone: (canvas: HTMLCanvasElement) => void;
 }) {
@@ -394,6 +398,11 @@ export default function ImageBrushEditor({
           <button type="button" className={styles.secondaryBtn} onClick={onCancel}>
             {cancelLabel}
           </button>
+          {skipLabel && onSkip && (
+            <button type="button" className={styles.dangerBtn} onClick={onSkip}>
+              {skipLabel}
+            </button>
+          )}
         </div>
       </div>
     </div>

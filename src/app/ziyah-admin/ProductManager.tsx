@@ -21,6 +21,8 @@ const PREVIEW_KEY = "ziyah-admin-product-preview";
 
 type GalleryChoice = { url: string; label: string };
 
+type BrushResult = HTMLCanvasElement | null | "skip";
+
 function isPlaceholderImage(url: string) {
   return /dummy-post-square-1\.(webp|jpe?g|png)/i.test(url);
 }
@@ -178,7 +180,7 @@ export default function ProductManager() {
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryPicked, setGalleryPicked] = useState<Set<string>>(new Set());
   const [galleryError, setGalleryError] = useState<string | null>(null);
-  const brushResolve = useRef<((canvas: HTMLCanvasElement | null) => void) | null>(null);
+  const brushResolve = useRef<((result: BrushResult) => void) | null>(null);
   const pendingFiles = useRef<Map<string, File>>(new Map());
   const [brushSession, setBrushSession] = useState<{
     work: HTMLCanvasElement;
@@ -186,6 +188,7 @@ export default function ProductManager() {
     eraseWhite: boolean;
     confirmLabel: string;
     cancelLabel: string;
+    skipLabel?: string;
   } | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     label: string;
@@ -386,6 +389,7 @@ export default function ProductManager() {
     });
     try {
       const urls: string[] = [];
+      let skipped = 0;
       for (let index = 0; index < list.length; index++) {
         const file = list[index];
         const prefix =
@@ -407,8 +411,13 @@ export default function ProductManager() {
             history,
             false,
             "Use this photo",
-            "Keep automatic"
+            "Keep automatic",
+            index < list.length - 1 ? "Don't use this one · next photo" : "Don't use this one"
           );
+          if (brushed === "skip") {
+            skipped += 1;
+            continue;
+          }
           setUploadProgress({
             label: `${prefix}Leveling, sizing, and adding watermark…`,
             percent: Math.round(((index + 0.82) / list.length) * 80),
@@ -419,15 +428,27 @@ export default function ProductManager() {
         }
         urls.push(rememberLocalFile(prepared));
       }
+      const skippedNote =
+        skipped === 0
+          ? ""
+          : skipped === 1
+            ? " 1 photo was skipped."
+            : ` ${skipped} photos were skipped.`;
+      if (urls.length === 0) {
+        setUploadProgress(null);
+        setMessage({ type: "ok", text: `No photos added.${skippedNote}` });
+        return;
+      }
       setUploadProgress({ label: "Ready to save", percent: 100 });
       setImagePreviewIndex(form.images.length + urls.length - 1);
       setForm((f) => ({ ...f, images: [...f.images, ...urls] }));
       setMessage({
         type: "ok",
         text:
-          urls.length === 1
+          (urls.length === 1
             ? "Photo added. Click Save product to upload it."
-            : `${urls.length} photos added. Click Save product to upload them.`,
+            : `${urls.length} photos added. Click Save product to upload them.`) +
+          skippedNote,
       });
     } catch (e) {
       setMessage({
@@ -445,18 +466,19 @@ export default function ProductManager() {
     history: HTMLCanvasElement,
     eraseWhite: boolean,
     confirmLabel: string,
-    cancelLabel: string
+    cancelLabel: string,
+    skipLabel?: string
   ) =>
-    new Promise<HTMLCanvasElement | null>((resolve) => {
+    new Promise<BrushResult>((resolve) => {
       brushResolve.current = resolve;
-      setBrushSession({ work, history, eraseWhite, confirmLabel, cancelLabel });
+      setBrushSession({ work, history, eraseWhite, confirmLabel, cancelLabel, skipLabel });
     });
 
-  const closeBrush = (canvas: HTMLCanvasElement | null) => {
+  const closeBrush = (result: BrushResult) => {
     const resolve = brushResolve.current;
     brushResolve.current = null;
     setBrushSession(null);
-    resolve?.(canvas);
+    resolve?.(result);
   };
 
   const brushImageAt = async (index: number) => {
@@ -468,7 +490,7 @@ export default function ProductManager() {
     try {
       const work = await canvasFromUrl(src);
       const edited = await openBrush(work, cloneCanvas(work), true, "Use this photo", "Cancel");
-      if (!edited) return;
+      if (!edited || edited === "skip") return;
       const url = rememberLocalFile(await canvasToWebp(edited));
       forgetLocalFile(src);
       setForm((current) => {
@@ -1304,6 +1326,8 @@ export default function ProductManager() {
             eraseWhite={brushSession.eraseWhite}
             confirmLabel={brushSession.confirmLabel}
             cancelLabel={brushSession.cancelLabel}
+            skipLabel={brushSession.skipLabel}
+            onSkip={() => closeBrush("skip")}
             onCancel={() => closeBrush(null)}
             onDone={(canvas) => closeBrush(canvas)}
           />
