@@ -1,9 +1,9 @@
-import { products, type Product } from "@/data/products";
+import { products as seedProducts, type Product } from "@/data/products";
 import { SITE } from "@/data/site";
 
 /** Compact catalog + business facts for the support chatbot. */
-export function buildBusinessKnowledge(): string {
-  const catalog = products
+export function buildBusinessKnowledge(catalog: Product[]): string {
+  const lines = catalog
     .map((p) => {
       const color = p.color ? ` | Color: ${p.color}` : "";
       const tiers = p.priceTiers
@@ -24,11 +24,12 @@ Shopee: ${SITE.social.shopee.href}
 Pages: /products /contact /quote /about
 
 CATALOG:
-${catalog}
+${lines}
 `.trim();
 }
 
-export const CHAT_SYSTEM_PROMPT = `You are Ziyah Support for ${SITE.name} (Pasay City, Philippines food packaging).
+export function buildChatSystemPrompt(catalog: Product[]): string {
+  return `You are Ziyah Support for ${SITE.name} (Pasay City, Philippines food packaging).
 
 Style: warm, clear, ChatGPT-like. Answer in 2-5 short paragraphs or tight bullets. Match English/Tagalog to the user.
 
@@ -42,8 +43,12 @@ Rules:
 7) Do not dump the whole catalog. Pick the most relevant 1-4 items.
 
 KNOWLEDGE BASE:
-${buildBusinessKnowledge()}
+${buildBusinessKnowledge(catalog)}
 `;
+}
+
+/** @deprecated Prefer buildChatSystemPrompt(liveCatalog) — seed catalog only. */
+export const CHAT_SYSTEM_PROMPT = buildChatSystemPrompt(seedProducts);
 
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
@@ -88,11 +93,15 @@ function tokens(text: string): string[] {
     .filter((w) => w.length > 1 && !STOP.has(w));
 }
 
-export function findRelevantProducts(query: string, limit = 4): Product[] {
+export function findRelevantProducts(
+  query: string,
+  catalog: Product[],
+  limit = 4
+): Product[] {
   const toks = tokens(query);
   if (!toks.length) return [];
 
-  const ranked = products
+  const ranked = catalog
     .map((p) => {
       const hay = [p.name, p.category, p.desc, p.color || "", p.dimensions, p.longDesc]
         .join(" ")
@@ -109,7 +118,6 @@ export function findRelevantProducts(query: string, limit = 4): Product[] {
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  // Diversify colors/categories so replies don't look like a repeated list
   const picked: Product[] = [];
   const seenKey = new Set<string>();
   for (const row of ranked) {
@@ -146,10 +154,14 @@ function formatProductLine(p: Product): string {
 }
 
 /** ChatGPT-like reply grounded only in site/catalog data (no external API). */
-export function buildSiteReply(userText: string, history: ChatTurn[]): string {
+export function buildSiteReply(
+  userText: string,
+  history: ChatTurn[],
+  catalog: Product[] = seedProducts
+): string {
   const q = userText.trim();
   const lower = q.toLowerCase();
-  const relevant = findRelevantProducts(q, 4);
+  const relevant = findRelevantProducts(q, catalog, 4);
   const lastBot = [...history].reverse().find((m) => m.role === "assistant")?.content || "";
 
   const closings = [
@@ -181,7 +193,7 @@ export function buildSiteReply(userText: string, history: ChatTurn[]): string {
   }
 
   if (/bulk|wholesale|quote|volume|marami|dosena|box rate/i.test(lower)) {
-    const sample = (relevant.length ? relevant : products.slice(0, 3))
+    const sample = (relevant.length ? relevant : catalog.slice(0, 3))
       .map(formatProductLine)
       .join("\n");
     return `We do wholesale and bulk — pack and box tiers are listed per product.\n\nExamples from our catalog:\n${sample}\n\nFor a custom volume quote, list SKUs + quantities on /quote or /contact, or tell me them here.\n\n${closing}`;
@@ -193,7 +205,7 @@ export function buildSiteReply(userText: string, history: ChatTurn[]): string {
         .map(formatProductLine)
         .join("\n")}\n\nThose are listed piece/pack/box rates on /products. Large monthly volume can be quoted separately.\n\n${closing}`;
     }
-    return `Product prices are on /products (piece, pack, and box). Hard bentos often start near ₱7.86–₱10+/pc by the box depending on divisions/color; sushi trays vary by size.\n\nTell me a product name or size (e.g. "11 inch round sushi tray") and I'll pull the exact listed rates.\n\n${closing}`;
+    return `Product prices are on /products (piece, pack, and box). Tell me a product name or size (e.g. "11 inch round sushi tray") and I'll pull the exact listed rates.\n\n${closing}`;
   }
 
   if (/shopee|facebook|messenger|social/i.test(lower)) {

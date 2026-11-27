@@ -1,12 +1,24 @@
 import { NextResponse } from "next/server";
 import {
-  CHAT_SYSTEM_PROMPT,
+  buildChatSystemPrompt,
   buildSiteReply,
   type ChatTurn,
 } from "@/lib/chatContext";
+import { products as seedProducts, type Product } from "@/data/products";
 import { SITE } from "@/data/site";
+import { getPublishedProducts } from "@/lib/catalog/queries";
 
 export const runtime = "nodejs";
+
+async function loadChatCatalog(): Promise<Product[]> {
+  try {
+    const live = await getPublishedProducts();
+    if (live.length) return live;
+  } catch (err) {
+    console.warn("Chat catalog: live DB unavailable, using seed fallback", err);
+  }
+  return seedProducts;
+}
 
 type Body = {
   messages?: { role?: string; content?: string }[];
@@ -73,7 +85,10 @@ function collapseRepeatedParagraphs(text: string): string {
   return out.join("\n\n");
 }
 
-async function askGemini(messages: ChatTurn[]): Promise<string | null> {
+async function askGemini(
+  messages: ChatTurn[],
+  systemPrompt: string
+): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) return null;
 
@@ -95,7 +110,7 @@ async function askGemini(messages: ChatTurn[]): Promise<string | null> {
             "x-goog-api-key": apiKey,
           },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: CHAT_SYSTEM_PROMPT }] },
+            systemInstruction: { parts: [{ text: systemPrompt }] },
             contents,
             generationConfig: {
               temperature: 0.75,
@@ -128,7 +143,10 @@ async function askGemini(messages: ChatTurn[]): Promise<string | null> {
   return null;
 }
 
-async function askOpenAI(messages: ChatTurn[]): Promise<string | null> {
+async function askOpenAI(
+  messages: ChatTurn[],
+  systemPrompt: string
+): Promise<string | null> {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) return null;
 
@@ -144,7 +162,7 @@ async function askOpenAI(messages: ChatTurn[]): Promise<string | null> {
       temperature: 0.75,
       max_tokens: 550,
       messages: [
-        { role: "system", content: CHAT_SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         ...normalizeForGemini(messages).map((m) => ({
           role: m.role,
           content: m.content,
@@ -185,16 +203,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Message required" }, { status: 400 });
     }
 
+    const catalog = await loadChatCatalog();
+    const systemPrompt = buildChatSystemPrompt(catalog);
+
     let provider: "gemini" | "openai" | "site" = "site";
-    let reply = await askGemini(messages);
+    let reply = await askGemini(messages, systemPrompt);
     if (reply) provider = "gemini";
     else {
-      reply = await askOpenAI(messages);
+      reply = await askOpenAI(messages, systemPrompt);
       if (reply) provider = "openai";
     }
 
     if (!reply || tooSimilar(reply, lastAssistant)) {
-      reply = buildSiteReply(lastUser.content, messages);
+      reply = buildSiteReply(lastUser.content, messages, catalog);
       provider = "site";
     }
 

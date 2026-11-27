@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:e2e": "playwright test",
     "db:setup": "node scripts/setup-db.mjs",
     "db:seed-products": "npx tsx scripts/seed-products.ts",
-    "db:migrate-products": "node --env-file=.env.local scripts/apply-product-cms-migration.cjs"
+    "db:migrate-products": "node --env-file=.env.local scripts/apply-product-cms-migration.cjs",
+    "db:lock-admin": "node --env-file=.env.local scripts/apply-rls-lockdown.cjs"
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
@@ -24,6 +26,7 @@
     "three": "^0.185.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^20",
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.23.1",
