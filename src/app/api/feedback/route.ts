@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/adminAuth";
 import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { reviews as fallbackReviews } from "@/data/reviews";
 
 export async function GET() {
@@ -20,6 +22,9 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   try {
     const body = await request.json();
     const items = Array.isArray(body.items) ? body.items : null;
@@ -30,6 +35,8 @@ export async function PUT(request: Request) {
         { status: 400 }
       );
     }
+
+    const sb = getSupabaseAdmin();
 
     for (const item of items) {
       const id = Number(item.id);
@@ -55,7 +62,7 @@ export async function PUT(request: Request) {
         updated_at: new Date().toISOString(),
       };
 
-      const { data: updated, error: updateError } = await supabase
+      const { data: updated, error: updateError } = await sb
         .from("feedback")
         .update(payload)
         .eq("id", id)
@@ -66,9 +73,8 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: updateError.message }, { status: 500 });
       }
 
-      // If the row was missing, insert it (requires INSERT policy)
       if (!updated) {
-        const { error: insertError } = await supabase.from("feedback").insert({
+        const { error: insertError } = await sb.from("feedback").insert({
           id,
           ...payload,
         });
@@ -78,7 +84,7 @@ export async function PUT(request: Request) {
       }
     }
 
-    const { data } = await supabase
+    const { data } = await sb
       .from("feedback")
       .select("id, name, role, rating, photo, quote")
       .order("id", { ascending: true });

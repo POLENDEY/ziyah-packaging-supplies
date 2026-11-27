@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/adminAuth";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { sendInquiryReply } from "@/lib/mail";
 
 export async function POST(request: Request) {
-  try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      return NextResponse.json(
-        { error: "Supabase configuration missing" },
-        { status: 500 }
-      );
-    }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
+  try {
     const body = await request.json();
     const id = Number(body.id);
     const message = String(body.message || "").trim();
@@ -22,7 +19,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data: inquiry, error: fetchError } = await supabase
+    const sb = getSupabaseAdmin();
+    const { data: inquiry, error: fetchError } = await sb
       .from("inquiries")
       .select("*")
       .eq("id", id)
@@ -40,7 +38,7 @@ export async function POST(request: Request) {
       originalMessage: inquiry.message,
     });
 
-    const { data: updated, error: updateError } = await supabase
+    const { data: updated, error: updateError } = await sb
       .from("inquiries")
       .update({ status: "replied", is_read: true })
       .eq("id", id)

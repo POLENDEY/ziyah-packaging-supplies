@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/adminAuth";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { hashPassword, verifyPassword } from "@/lib/password";
 
 export async function PATCH(request: Request) {
-  try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      return NextResponse.json(
-        { error: "Supabase configuration missing" },
-        { status: 500 }
-      );
-    }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
+  try {
     const body = await request.json();
     const currentUsername = String(body.currentUsername || "").trim();
     const currentPassword = String(body.currentPassword || "");
@@ -37,18 +35,18 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const { data: existing, error: findError } = await supabase
+    const sb = getSupabaseAdmin();
+    const { data: existing, error: findError } = await sb
       .from("profile")
-      .select("*")
+      .select("id, username, password")
       .eq("username", currentUsername)
-      .eq("password", currentPassword)
       .maybeSingle();
 
     if (findError) {
       return NextResponse.json({ error: findError.message }, { status: 500 });
     }
 
-    if (!existing) {
+    if (!existing || !verifyPassword(currentPassword, String(existing.password || ""))) {
       return NextResponse.json(
         { error: "Current username or password is incorrect." },
         { status: 401 }
@@ -56,10 +54,12 @@ export async function PATCH(request: Request) {
     }
 
     const nextUsername = newUsername || existing.username;
-    const nextPassword = newPassword || existing.password;
+    const nextPassword = newPassword
+      ? hashPassword(newPassword)
+      : String(existing.password || "");
 
     if (nextUsername !== existing.username) {
-      const { data: taken } = await supabase
+      const { data: taken } = await sb
         .from("profile")
         .select("id")
         .eq("username", nextUsername)
@@ -72,7 +72,7 @@ export async function PATCH(request: Request) {
       }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from("profile")
       .update({ username: nextUsername, password: nextPassword })
       .eq("id", existing.id)

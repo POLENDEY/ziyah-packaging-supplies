@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -9,31 +9,48 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check for admin session
-    const session = localStorage.getItem('admin_session');
-    
-    if (session === 'true') {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-      // Redirect to login if not authenticated and not already on the login page
-      if (pathname !== '/admin/login') {
-        router.push('/admin/login');
+    let cancelled = false;
+
+    async function checkSession() {
+      if (pathname === "/admin/login" || pathname === "/ziyah-admin/login") {
+        if (!cancelled) setIsAuthenticated(false);
+        return;
       }
+      try {
+        const response = await fetch("/api/admin/session");
+        if (cancelled) return;
+        if (response.ok) {
+          setIsAuthenticated(true);
+          return;
+        }
+      } catch {
+        /* treat as signed out */
+      }
+      if (cancelled) return;
+      localStorage.removeItem("admin_session");
+      localStorage.removeItem("admin_username");
+      setIsAuthenticated(false);
+      router.push("/ziyah-admin/login");
     }
+
+    checkSession();
+    return () => {
+      cancelled = true;
+    };
   }, [pathname, router]);
 
-  // Prevent flicker of protected content
-  if (isAuthenticated === null && pathname !== '/admin/login') {
+  if (isAuthenticated === null && pathname !== "/admin/login") {
     return (
-      <div style={{ 
-        height: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        fontFamily: 'var(--font-geist-sans)',
-        color: 'var(--gray-500)'
-      }}>
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "var(--font-geist-sans)",
+          color: "var(--gray-500)",
+        }}
+      >
         Authenticating...
       </div>
     );

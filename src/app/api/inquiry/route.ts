@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/adminAuth";
 import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { sendInquiryNotification } from "@/lib/mail";
 
 export async function POST(request: Request) {
@@ -78,49 +80,48 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      return NextResponse.json({
-        error: 'Supabase configuration missing',
-        details: 'Environment variables NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set.'
-      }, { status: 500 });
-    }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
-    const { data, error } = await supabase
-      .from('inquiries')
-      .select('*')
-      .order('created_at', { ascending: false });
+  try {
+    const sb = getSupabaseAdmin();
+    const { data, error } = await sb
+      .from("inquiries")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Supabase Select Error:', error);
-      return NextResponse.json({ error: error.message || 'Database fetch failed' }, { status: 500 });
+      console.error("Supabase Select Error:", error);
+      return NextResponse.json(
+        { error: error.message || "Database fetch failed" },
+        { status: 500 }
+      );
     }
 
-    // Map created_at to date for backward compatibility with frontend
-    const mappedData = data?.map(item => ({
-      ...item,
-      date: item.created_at
-    })) || [];
+    const mappedData =
+      data?.map((item) => ({
+        ...item,
+        date: item.created_at,
+      })) || [];
 
     return NextResponse.json(mappedData);
-  } catch (error: any) {
-    console.error('Error fetching inquiries:', error);
-    return NextResponse.json({
-      error: 'Failed to fetch inquiries',
-      details: error.message
-    }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("Error fetching inquiries:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to fetch inquiries",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
 
 export async function PATCH(request: Request) {
-  try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      return NextResponse.json({
-        error: 'Supabase configuration missing',
-        details: 'Environment variables NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set.'
-      }, { status: 500 });
-    }
+  const denied = await requireAdmin();
+  if (denied) return denied;
 
+  try {
     const body = await request.json();
     const { id } = body;
 
@@ -136,7 +137,8 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "No updates provided" }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    const sb = getSupabaseAdmin();
+    const { data, error } = await sb
       .from("inquiries")
       .update(updates)
       .eq("id", id)
@@ -153,26 +155,23 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      return NextResponse.json({
-        error: 'Supabase configuration missing',
-        details: 'Environment variables NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set.'
-      }, { status: 500 });
+    const { id } = await request.json();
+    if (!id) {
+      return NextResponse.json({ error: "Missing inquiry id" }, { status: 400 });
     }
 
-    const { id } = await request.json();
-
-    const { error } = await supabase
-      .from('inquiries')
-      .delete()
-      .eq('id', id);
+    const sb = getSupabaseAdmin();
+    const { error } = await sb.from("inquiries").delete().eq("id", id);
 
     if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting inquiry:', error);
-    return NextResponse.json({ error: 'Failed to delete inquiry' }, { status: 500 });
+    console.error("Error deleting inquiry:", error);
+    return NextResponse.json({ error: "Failed to delete inquiry" }, { status: 500 });
   }
 }

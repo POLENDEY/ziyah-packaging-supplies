@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { ADMIN_SESSION_COOKIE, isAdminSession } from "@/lib/adminAuth";
+import {
+  hashPassword,
+  isHashedPassword,
+  verifyPassword,
+} from "@/lib/password";
 
 export async function GET() {
   const ok = await isAdminSession();
@@ -26,19 +31,24 @@ export async function POST(request: Request) {
     const sb = getSupabaseAdmin();
     const { data, error } = await sb
       .from("profile")
-      .select("id, username")
+      .select("id, username, password")
       .eq("username", username)
-      .eq("password", password)
       .maybeSingle();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    if (!data) {
+    if (!data || !verifyPassword(password, String(data.password || ""))) {
       return NextResponse.json(
         { error: "Invalid username or password" },
         { status: 401 }
       );
+    }
+
+    // Upgrade legacy plaintext passwords on successful login.
+    if (!isHashedPassword(String(data.password || ""))) {
+      const hashed = hashPassword(password);
+      await sb.from("profile").update({ password: hashed }).eq("id", data.id);
     }
 
     const res = NextResponse.json({

@@ -80,7 +80,7 @@ ALTER TABLE public.profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chatbot_logs ENABLE ROW LEVEL SECURITY;
 
--- inquiries: public can submit; public read/update/delete needed for current CMS API (anon key)
+-- inquiries: public can submit only; admin reads/updates via service-role API
 DROP POLICY IF EXISTS "Allow anon insert inquiries" ON public.inquiries;
 CREATE POLICY "Allow anon insert inquiries"
   ON public.inquiries FOR INSERT
@@ -88,30 +88,14 @@ CREATE POLICY "Allow anon insert inquiries"
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow anon select inquiries" ON public.inquiries;
-CREATE POLICY "Allow anon select inquiries"
-  ON public.inquiries FOR SELECT
-  TO anon, authenticated
-  USING (true);
-
 DROP POLICY IF EXISTS "Allow anon update inquiries" ON public.inquiries;
-CREATE POLICY "Allow anon update inquiries"
-  ON public.inquiries FOR UPDATE
-  TO anon, authenticated
-  USING (true)
-  WITH CHECK (true);
-
 DROP POLICY IF EXISTS "Allow anon delete inquiries" ON public.inquiries;
-CREATE POLICY "Allow anon delete inquiries"
-  ON public.inquiries FOR DELETE
-  TO anon, authenticated
-  USING (true);
 
--- profile: allow login lookup (matches current LoginForm)
+-- profile: no anon access; login/profile updates use service-role API
 DROP POLICY IF EXISTS "Allow anon select profile" ON public.profile;
-CREATE POLICY "Allow anon select profile"
-  ON public.profile FOR SELECT
-  TO anon, authenticated
-  USING (true);
+DROP POLICY IF EXISTS "Allow anon update profile" ON public.profile;
+DROP POLICY IF EXISTS "Allow anon insert profile" ON public.profile;
+DROP POLICY IF EXISTS "Allow anon delete profile" ON public.profile;
 
 -- products: public can view active products
 DROP POLICY IF EXISTS "Public can view active products" ON public.products;
