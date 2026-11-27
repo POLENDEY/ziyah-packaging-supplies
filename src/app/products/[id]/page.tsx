@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
+import {
+  getCategoryLanding,
+  getCategoryLandingByCategory,
+} from "@/data/categories";
 import {
   absoluteAssetUrl,
   getProductFaqs,
@@ -29,6 +33,21 @@ export const dynamicParams = true;
 
 const COLOR_ORDER = ["Clear", "Black", "Red", "White"];
 
+/** Only real product ids — avoids NaN queries that used to 500. */
+function parseProductId(raw: string): number | null {
+  if (!/^\d+$/.test(raw)) return null;
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+function redirectIfCategoryPath(raw: string) {
+  const decoded = decodeURIComponent(raw).trim();
+  const bySlug = getCategoryLanding(decoded);
+  if (bySlug) permanentRedirect(`/products/${bySlug.slug}`);
+  const byName = getCategoryLandingByCategory(decoded);
+  if (byName) permanentRedirect(`/products/${byName.slug}`);
+}
+
 function getColorVariants(product: Product, catalog: Product[]): Product[] {
   if (!product.variantGroup) return [product];
   return catalog
@@ -51,9 +70,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const product = await getPublishedProductById(Number(id));
+  const productId = parseProductId(id);
+  if (!productId) {
+    redirectIfCategoryPath(id);
+    return { title: "Product Not Found", robots: { index: false, follow: true } };
+  }
+  const product = await getPublishedProductById(productId);
   if (!product) {
-    return { title: "Product Not Found" };
+    return { title: "Product Not Found", robots: { index: false, follow: true } };
   }
 
   const imageMeta = {
@@ -120,8 +144,13 @@ function parsePrice(value: string) {
 
 export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
+  const productId = parseProductId(id);
+  if (!productId) {
+    redirectIfCategoryPath(id);
+    notFound();
+  }
   const [product, catalog] = await Promise.all([
-    getPublishedProductById(Number(id)),
+    getPublishedProductById(productId),
     getPublishedProducts(),
   ]);
   if (!product) notFound();

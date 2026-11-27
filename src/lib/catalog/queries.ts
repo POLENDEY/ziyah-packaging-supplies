@@ -34,6 +34,7 @@ export async function getPublishedProducts(): Promise<Product[]> {
 export async function getPublishedProductById(
   id: number
 ): Promise<Product | null> {
+  if (!Number.isFinite(id) || id <= 0) return null;
   const { data, error } = await supabase
     .from("catalog_products")
     .select(PRODUCT_SELECT)

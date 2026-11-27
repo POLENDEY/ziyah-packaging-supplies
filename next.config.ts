@@ -38,6 +38,88 @@ const nextConfig: NextConfig = {
         destination: "/ziyah-admin/:path*",
         permanent: false,
       },
+      // Common crawler / old-path mistakes → real pages (stops Search Console 404s)
+      {
+        source: "/product/:id",
+        destination: "/products/:id",
+        permanent: true,
+      },
+      {
+        source: "/products/category/:slug",
+        destination: "/products/:slug",
+        permanent: true,
+      },
+      {
+        source: "/shop",
+        destination: "/products",
+        permanent: true,
+      },
+      {
+        source: "/home",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/index.html",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/cart",
+        destination: "/products",
+        permanent: true,
+      },
+      {
+        source: "/checkout",
+        destination: "/products",
+        permanent: true,
+      },
+      {
+        source: "/blog",
+        destination: "/about",
+        permanent: true,
+      },
+      {
+        source: "/feed",
+        destination: "/sitemap.xml",
+        permanent: true,
+      },
+      {
+        source: "/rss",
+        destination: "/sitemap.xml",
+        permanent: true,
+      },
+      {
+        source: "/sitemap_index.xml",
+        destination: "/sitemap.xml",
+        permanent: true,
+      },
+      // Favicon / PWA aliases crawlers request by default
+      {
+        source: "/apple-touch-icon.png",
+        destination: "/apple-icon.png",
+        permanent: true,
+      },
+      {
+        source: "/apple-touch-icon-precomposed.png",
+        destination: "/apple-icon.png",
+        permanent: true,
+      },
+      {
+        source: "/favicon-16x16.png",
+        destination: "/favicon-48.png",
+        permanent: true,
+      },
+      {
+        source: "/favicon-32x32.png",
+        destination: "/favicon-48.png",
+        permanent: true,
+      },
+      {
+        source: "/manifest.webmanifest",
+        destination: "/site.webmanifest",
+        permanent: true,
+      },
       // Old query filters → clean sitelink category pages
       {
         source: "/products",
